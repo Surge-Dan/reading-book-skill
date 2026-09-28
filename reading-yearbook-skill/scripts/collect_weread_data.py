@@ -6,10 +6,10 @@ import os
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
-from yearbook_core import build_gateway_payload
+from yearbook_core import YEARBOOK_TIMEZONE, build_gateway_payload
 
 
 GATEWAY_URL = "https://i.weread.qq.com/api/agent/gateway"
@@ -49,12 +49,52 @@ def gateway_call(api_name: str, params: dict, api_key: str, timeout: int = 30, r
     raise WeReadError("微信读书接口请求失败")
 
 
-def _collect_notebooks(api_key: str) -> dict:
+def collection_status(errors: list, truncated: bool) -> str:
+    return "partial_unverified" if errors or truncated else "implemented_unverified"
+
+
+def _in_year(value, year: int) -> bool:
+    try:
+        numeric = int(value)
+        if numeric > 10_000_000_000:
+            numeric //= 1000
+        return datetime.fromtimestamp(numeric, tz=YEARBOOK_TIMEZONE).year == year
+    except (TypeError, ValueError, OSError, OverflowError):
+        return False
+
+
+def select_candidate_books(year: int, shelf: dict, notebooks: dict, stats: dict, scan_all: bool = False) -> list[dict]:
+    candidates = {}
+    for book in shelf.get("books", []) or []:
+        book_id = str(book.get("bookId") or "")
+        if book_id and (scan_all or _in_year(book.get("readUpdateTime") or book.get("updateTime"), year)):
+            candidates[book_id] = dict(book)
+    for item in notebooks.get("books", []) or []:
+        book = item.get("book") or item
+        book_id = str(item.get("bookId") or book.get("bookId") or "")
+        if book_id and (scan_all or _in_year(item.get("sort"), year)):
+            candidates[book_id] = {**book, **candidates.get(book_id, {})}
+    for item in stats.get("readLongest", []) or []:
+        book = item.get("book") or {}
+        book_id = str(book.get("bookId") or "")
+        if book_id:
+            candidates[book_id] = {**book, **candidates.get(book_id, {})}
+    return list(candidates.values())
+
+
+def _collect_notebooks(api_key: str) -> tuple[dict, list[dict]]:
     books, cursor = [], None
     total_note_count = 0
+    errors = []
     while True:
         params = {"count": 50, "lastSort": cursor}
-        page = gateway_call("/user/notebooks", params, api_key)
+        try:
+            page = gateway_call("/user/notebooks", params, api_key)
+        except WeReadError as exc:
+            if not books:
+                raise
+            errors.append({"scope": "notebooks", "cursor": cursor, "error": str(exc)})
+            break
         page_books = page.get("books", [])
         books.extend(page_books)
         total_note_count = int(page.get("totalNoteCount", total_note_count) or total_note_count)
@@ -62,9 +102,10 @@ def _collect_notebooks(api_key: str) -> dict:
             break
         next_cursor = page_books[-1].get("sort")
         if next_cursor is None or next_cursor == cursor:
-            raise WeReadError("笔记本分页游标没有前进，已停止以避免重复请求。")
+            errors.append({"scope": "notebooks", "cursor": cursor, "error": "笔记本分页游标没有前进，已停止以避免重复请求。"})
+            break
         cursor = next_cursor
-    return {"books": books, "totalBookCount": len(books), "totalNoteCount": total_note_count, "hasMore": 0}
+    return {"books": books, "totalBookCount": len(books), "totalNoteCount": total_note_count, "hasMore": 1 if errors else 0}, errors
 
 
 def _collect_reviews(book_id: str, api_key: str) -> dict:
@@ -81,15 +122,16 @@ def _collect_reviews(book_id: str, api_key: str) -> dict:
     return {"reviews": reviews, "totalCount": len(reviews), "hasMore": 0}
 
 
-def collect_year(year: int, api_key: str, max_books: int | None = None) -> dict:
-    base_time = int(datetime(year, 1, 1, tzinfo=timezone.utc).timestamp())
+def collect_year(year: int, api_key: str, max_books: int | None = None, scan_all_shelf: bool = False) -> dict:
+    base_time = int(datetime(year, 1, 1, tzinfo=YEARBOOK_TIMEZONE).timestamp())
     shelf = gateway_call("/shelf/sync", {}, api_key)
-    notebooks = _collect_notebooks(api_key)
+    notebooks, pagination_errors = _collect_notebooks(api_key)
     stats = gateway_call("/readdata/detail", {"mode": "annually", "baseTime": base_time}, api_key)
-    shelf_books = list(shelf.get("books", []))
+    shelf_books = select_candidate_books(year, shelf, notebooks, stats, scan_all_shelf)
+    truncated = max_books is not None and len(shelf_books) > max_books
     if max_books is not None:
         shelf_books = shelf_books[:max_books]
-    details, errors = {}, []
+    details, errors = {}, list(pagination_errors)
     for index, book in enumerate(shelf_books, start=1):
         book_id = str(book.get("bookId") or "")
         if not book_id:
@@ -105,7 +147,9 @@ def collect_year(year: int, api_key: str, max_books: int | None = None) -> dict:
             errors.append({"book_id": book_id, "index": index, "error": str(exc)})
     return {
         "source_mode": "live",
-        "verification_status": "live_verified" if not errors else "partial_unverified",
+        "verification_status": collection_status(errors, truncated),
+        "collection_complete": not errors and not truncated,
+        "truncated": truncated,
         "year": year,
         "shelf": shelf,
         "notebooks": notebooks,
@@ -120,13 +164,14 @@ def main() -> int:
     parser.add_argument("--year", type=int, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-books", type=int, help="只用于调试；正式年报应省略")
+    parser.add_argument("--scan-all-shelf", action="store_true", help="逐本扫描整个书架；耗时较长，仅在年度候选明显缺失时使用")
     args = parser.parse_args()
     api_key = os.environ.get("WEREAD_API_KEY", "").strip()
     if not api_key:
         print(json.dumps({"status": "missing_credentials", "message": "未检测到 WEREAD_API_KEY；可先运行样例模式。"}, ensure_ascii=False))
         return 2
     try:
-        result = collect_year(args.year, api_key, args.max_books)
+        result = collect_year(args.year, api_key, args.max_books, args.scan_all_shelf)
     except WeReadError as exc:
         print(json.dumps({"status": "failed", "message": str(exc)}, ensure_ascii=False))
         return 2

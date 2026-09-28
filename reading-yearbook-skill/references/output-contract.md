@@ -7,6 +7,9 @@ output/<year>/
 ├── atlas.html
 ├── yearbook-data.json
 ├── selection-preview.md
+├── selection.json
+├── yearbook-data.draft.json
+├── cards-manifest.json
 ├── validation-report.json
 ├── cards/
 ├── cards-html/
@@ -22,10 +25,10 @@ output/<year>/
 
 - `atlas.html`、数据 JSON 和精选预览存在。
 - 单书档案数等于年度书籍数。
-- 至少有一张可编辑 HTML 卡片。
+- 卡组包含封面、节律、主题、年度之书、精选单书与年度问题；HTML 与 PNG 一一对应。
 - 没有 `wrk-...` 或包含 Key 的赋值文本。
 - 每条直接引用有 `source_id`。
-- PNG 导出状态单独报告，不用 HTML 成功替代。
+- 要求 PNG 时，导出失败、数量不一致或尺寸不是 900×1200，顶层验证状态必须失败。
 
 ## 状态语义
 

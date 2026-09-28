@@ -33,15 +33,19 @@ description: Turn one natural year of WeRead bookshelf, progress, reading statis
 在 Skill 目录执行。Windows 下使用 `python -X utf8`。
 
 ```powershell
-# 完整样例
-python -X utf8 scripts/run_yearbook.py --year 2026 --input assets/sample-data.json --output output/2026 --export-png
+# 第一步：生成确认页与 selection.json
+python -X utf8 scripts/run_yearbook.py --stage preview --year 2026 --input assets/sample-data.json --output output/2026
+
+# 用户编辑并确认 output/2026/selection.json 后，生成最终样例
+python -X utf8 scripts/run_yearbook.py --stage finalize --year 2026 --input assets/sample-data.json --output output/2026 --selection output/2026/selection.json --export-png
 
 # 真实数据：先采集，再生成
 python -X utf8 scripts/collect_weread_data.py --year 2026 --output private/2026-raw.json
-python -X utf8 scripts/run_yearbook.py --year 2026 --input private/2026-raw.json --output output/2026 --export-png
+python -X utf8 scripts/run_yearbook.py --stage preview --year 2026 --input private/2026-raw.json --output output/2026
+python -X utf8 scripts/run_yearbook.py --stage finalize --year 2026 --input private/2026-raw.json --output output/2026 --selection output/2026/selection.json --export-png
 
 # 深度蒸馏
-python -X utf8 scripts/build_deep_distill.py .\book.txt --title "书名" --output output/2026/books/book/deep --create-skill
+python -X utf8 scripts/build_deep_distill.py .\book.txt --title "书名" --output output/2026/books/book/deep --full-text-confirmed --create-skill
 
 # 复核产物
 python -X utf8 scripts/validate_yearbook.py output/2026

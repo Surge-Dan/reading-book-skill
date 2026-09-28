@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import math
 import re
+import hashlib
 from collections import Counter
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 
 SKILL_VERSION = "1.0.4"
+YEARBOOK_TIMEZONE = timezone(timedelta(hours=8))
 
 
 def build_gateway_payload(api_name: str, params: dict | None = None) -> dict:
@@ -43,7 +45,7 @@ def _timestamp_parts(value) -> tuple[int | None, int | None]:
     if numeric > 10_000_000_000:
         numeric //= 1000
     try:
-        moment = datetime.fromtimestamp(numeric, tz=timezone.utc)
+        moment = datetime.fromtimestamp(numeric, tz=YEARBOOK_TIMEZONE)
         return moment.year, moment.month
     except (OverflowError, OSError, ValueError):
         return None, None
@@ -84,32 +86,68 @@ def _book_activity_timestamps(book: dict, progress: dict, bookmarks: list, revie
     return [value for value in values if value]
 
 
+def _stable_source_id(book_id: str, kind: str, row: dict, text: str) -> str:
+    raw = "|".join(str(value or "") for value in (book_id, kind, row.get("createTime"), row.get("chapterUid"), row.get("range"), text))
+    return f"{book_id}-{kind}-{hashlib.sha1(raw.encode('utf-8')).hexdigest()[:12]}"
+
+
+def _annual_read_map(stats: dict) -> dict[str, int]:
+    result = {}
+    for item in stats.get("readLongest", []) or []:
+        book = item.get("book") or {}
+        book_id = str(book.get("bookId") or "")
+        if book_id:
+            result[book_id] = int(item.get("readTime", 0) or 0)
+    return result
+
+
 def normalize_yearbook(raw: dict, year: int) -> dict:
     shelf = raw.get("shelf") or {}
     note_map = _note_book_map(raw.get("notebooks") or {})
     details = raw.get("book_details") or {}
+    stats = raw.get("stats") or {}
+    annual_read_seconds = _annual_read_map(stats)
     normalized_books = []
-    for shelf_book in _as_list(shelf, "books"):
+    source_books = {}
+    for item in _as_list(shelf, "books"):
+        if item.get("bookId"):
+            source_books[str(item["bookId"])] = dict(item)
+    for item in _as_list(raw.get("notebooks") or {}, "books"):
+        note_book = item.get("book") or item
+        book_id = str(item.get("bookId") or note_book.get("bookId") or "")
+        if book_id:
+            source_books[book_id] = {**note_book, **source_books.get(book_id, {})}
+    for item in stats.get("readLongest", []) or []:
+        stat_book = item.get("book") or {}
+        book_id = str(stat_book.get("bookId") or "")
+        if book_id:
+            source_books[book_id] = {**stat_book, **source_books.get(book_id, {})}
+    for shelf_book in source_books.values():
         book_id = str(shelf_book.get("bookId") or "")
         if not book_id:
             continue
         detail = details.get(book_id, {})
         progress_payload = detail.get("progress") or {}
         progress_book = progress_payload.get("book", progress_payload)
-        bookmarks = _bookmark_rows(detail.get("bookmarks") or [])
-        reviews = _review_rows(detail.get("reviews") or [])
+        note_summary = note_map.get(book_id, {})
+        all_bookmarks = _bookmark_rows(detail.get("bookmarks") or [])
+        all_reviews = _review_rows(detail.get("reviews") or [])
+        bookmarks = [row for row in all_bookmarks if _timestamp_parts(row.get("createTime"))[0] == year]
+        reviews = [row for row in all_reviews if _timestamp_parts(row.get("createTime"))[0] == year]
         activity = _book_activity_timestamps(shelf_book, progress_payload, bookmarks, reviews)
-        activity_years = {_timestamp_parts(value)[0] for value in activity}
-        if activity and year not in activity_years:
+        if note_summary.get("sort"):
+            activity.append(note_summary["sort"])
+        year_activity = [value for value in activity if _timestamp_parts(value)[0] == year]
+        annual_seconds = annual_read_seconds.get(book_id, 0)
+        if not year_activity and not annual_seconds:
             continue
 
-        note_summary = note_map.get(book_id, {})
         progress = float(progress_book.get("progress", note_summary.get("readingProgress", 0)) or 0)
-        reading_seconds = int(progress_book.get("recordReadingTime", 0) or 0)
+        lifetime_reading_seconds = int(progress_book.get("recordReadingTime", 0) or 0)
         highlight_rows = [
             {
                 "text": str(row.get("markText", "")).strip(),
-                "source_id": str(row.get("bookmarkId") or f"{book_id}-highlight-{index + 1}"),
+                "source_id": str(row.get("bookmarkId") or _stable_source_id(book_id, "highlight", row, str(row.get("markText", "")))),
                 "chapter_uid": row.get("chapterUid"),
                 "range": row.get("range"),
                 "created_at": row.get("createTime"),
@@ -123,20 +161,23 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
                 thought_rows.append(
                     {
                         "text": content,
-                        "source_id": str(row.get("reviewId") or f"{book_id}-thought-{index + 1}"),
+                        "source_id": str(row.get("reviewId") or _stable_source_id(book_id, "thought", row, content)),
                         "quote": str(row.get("abstract", "")).strip(),
                         "chapter_uid": row.get("chapterUid"),
                         "range": row.get("range"),
                         "created_at": row.get("createTime"),
                     }
                 )
-        months = sorted({month for value in activity for event_year, month in [_timestamp_parts(value)] if event_year == year and month})
+        months = sorted({month for value in year_activity for event_year, month in [_timestamp_parts(value)] if event_year == year and month})
         category = str(shelf_book.get("category") or detail.get("book", {}).get("category") or "未分类")
         topics = [str(item).strip() for item in shelf_book.get("topics", []) if str(item).strip()]
         if not topics and category != "未分类":
             topics = [item.strip() for item in re.split(r"[-/·,，]", category) if item.strip()][:3]
         bookmark_count = int(note_summary.get("bookmarkCount", 0) or 0)
-        evidence_level = classify_evidence(progress, len(highlight_rows), len(thought_rows), False)
+        progress_signal = progress if any(_timestamp_parts(value)[0] == year for value in (progress_book.get("updateTime"), progress_book.get("finishTime"), shelf_book.get("readUpdateTime"))) else 0
+        if annual_seconds and progress_signal == 0:
+            progress_signal = 2
+        evidence_level = classify_evidence(progress_signal, len(highlight_rows), len(thought_rows), False)
         normalized_books.append(
             {
                 "book_id": book_id,
@@ -146,7 +187,9 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
                 "category": category,
                 "intro": str(shelf_book.get("intro") or detail.get("book", {}).get("intro") or ""),
                 "progress": round(progress, 1),
-                "reading_seconds": reading_seconds,
+                "reading_seconds": annual_seconds,
+                "annual_reading_seconds": annual_seconds,
+                "lifetime_reading_seconds": lifetime_reading_seconds,
                 "finish_time": progress_book.get("finishTime"),
                 "read_update_time": progress_book.get("updateTime") or shelf_book.get("readUpdateTime"),
                 "months": months,
@@ -155,12 +198,11 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
                 "bookmark_count": bookmark_count,
                 "topics": topics,
                 "evidence_level": evidence_level,
-                "evidence_reason": f"{evidence_level}：进度 {progress:g}%，划线 {len(highlight_rows)} 条，想法 {len(thought_rows)} 条。",
+                "evidence_reason": f"{evidence_level}：年内进度信号 {progress_signal:g}%，年内划线 {len(highlight_rows)} 条，年内想法 {len(thought_rows)} 条。",
                 "reusability_hint": float(shelf_book.get("reusabilityHint", 0) or 0),
             }
         )
 
-    stats = raw.get("stats") or {}
     monthly = [0] * 12
     for key, seconds in (stats.get("readTimes") or {}).items():
         event_year, month = _timestamp_parts(key)
@@ -189,7 +231,7 @@ def _ratio(value: float, maximum: float) -> float:
 def score_books(books: list[dict]) -> list[dict]:
     if not books:
         return []
-    max_seconds = max(float(book.get("reading_seconds", 0) or 0) for book in books) or 1
+    max_seconds = max(float(book.get("annual_reading_seconds", book.get("reading_seconds", 0)) or 0) for book in books) or 1
     topic_counts = Counter(topic for book in books for topic in book.get("topics", []))
     scored = []
     for source in books:
@@ -198,7 +240,9 @@ def score_books(books: list[dict]) -> list[dict]:
         highlights = len(book.get("highlights", []))
         thoughts = len(book.get("thoughts", []))
         bookmarks = int(book.get("bookmark_count", 0) or 0)
-        reading = 0.7 * _ratio(progress, 100) + 0.3 * _ratio(float(book.get("reading_seconds", 0) or 0), max_seconds)
+        annual_seconds = float(book.get("annual_reading_seconds", book.get("reading_seconds", 0)) or 0)
+        active_months = len(book.get("months", []))
+        reading = 0.55 * _ratio(progress, 100) + 0.3 * _ratio(annual_seconds, max_seconds) + 0.15 * _ratio(active_months, 4)
         personal = min(1.0, (highlights + thoughts * 2 + bookmarks * 0.25) / 10)
         annual = max((_ratio(topic_counts[topic], max(2, len(books) * 0.4)) for topic in book.get("topics", [])), default=0.0)
         turning = min(1.0, (0.55 if thoughts else 0.0) + (0.25 if len(book.get("months", [])) > 1 else 0.0) + (0.2 if progress == 100 else 0.0))

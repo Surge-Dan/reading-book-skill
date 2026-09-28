@@ -3,10 +3,15 @@ from __future__ import annotations
 import html
 import json
 import math
+import re
 from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _safe_file_id(value: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_-]+", "-", str(value)).strip("-") or "book"
 
 
 def _replace(template: str, values: dict[str, str]) -> str:
@@ -79,23 +84,64 @@ def _cover_orbit(data: dict) -> str:
     return "".join(parts)
 
 
-def render_cards(data: dict, output_dir: Path) -> list[Path]:
+def _layout_for_book(book: dict) -> str:
+    category = str(book.get("category", ""))
+    if any(word in category for word in ("文学", "小说", "随笔", "人物", "传记")):
+        return "vertical"
+    if any(word in category for word in ("商业", "管理", "工具", "教育", "方法")):
+        return "fold"
+    return "spread"
+
+
+def _annual_page(template: str, number: int, card_type: str, title: str, body: str, year: int, footer: str) -> tuple[str, dict]:
+    filename = f"{number:02d}-{card_type}.html"
+    page = _replace(template, {"LAYOUT": "annual", "META": f"{number:02d} / {card_type.upper()}", "TITLE": html.escape(title), "AUTHOR": "", "BODY": body, "FOOT_LEFT": html.escape(footer), "FOOT_RIGHT": str(year)})
+    return page, {"file": filename, "type": card_type, "status": "generated"}
+
+
+def render_cards(data: dict, output_dir: Path) -> tuple[list[Path], list[dict]]:
     output_dir.mkdir(parents=True, exist_ok=True)
     template = (SKILL_ROOT / "assets" / "card-template.html").read_text("utf-8")
-    rendered = []
-    cover = _replace(template, {"LAYOUT": "cover", "META": f"READING YEARBOOK / {data['year']}", "TITLE": html.escape(data["thesis"]), "AUTHOR": "", "BODY": _cover_orbit(data), "FOOT_LEFT": f"{data['summary']['book_count']} 本书", "FOOT_RIGHT": data["source_mode"]})
+    rendered, manifest = [], []
+    cover = _replace(template, {"LAYOUT": "cover", "META": f"READING YEARBOOK / {data['year']}", "TITLE": html.escape(data["thesis"]), "AUTHOR": "", "BODY": _cover_orbit(data), "FOOT_LEFT": f"{data['summary']['book_count']} 本书", "FOOT_RIGHT": html.escape(str(data["source_mode"]))})
     cover_path = output_dir / "01-cover.html"
     cover_path.write_text(cover, "utf-8")
     rendered.append(cover_path)
+    manifest.append({"file": cover_path.name, "type": "cover", "status": "generated"})
+
+    monthly = data["summary"]["monthly_read_seconds"]
+    maximum = max(monthly or [0]) or 1
+    rhythm_body = '<div class="content">' + "".join(f'<div class="annual-row"><span>{month:02d} 月</span><span class="annual-bar"><i style="width:{seconds / maximum * 100:.1f}%"></i></span><span>{seconds / 3600:.1f}h</span></div>' for month, seconds in enumerate(monthly, start=1)) + "</div>"
+    page, item = _annual_page(template, 2, "reading-rhythm", "阅读发生在什么时候", rhythm_body, data["year"], f"{data['summary']['read_days']} 个有效阅读日")
+    path = output_dir / item["file"]; path.write_text(page, "utf-8"); rendered.append(path); manifest.append(item)
+
+    topic_body = '<div class="content">' + "".join(f'<div class="topic-line"><span class="copy">{html.escape(topic["name"])}</span><span>{topic["book_count"]} 本书</span></div>' for topic in data.get("topics", [])) + "</div>"
+    page, item = _annual_page(template, 3, "recurring-topics", "反复出现的问题", topic_body, data["year"], "主题来自书目与明确笔记")
+    path = output_dir / item["file"]; path.write_text(page, "utf-8"); rendered.append(path); manifest.append(item)
+
     profile_map = {item["book_id"]: item for item in data["profiles"]}
-    cards = [book for book in data["books"] if book["selected"] or book["book_of_year_candidate"]]
-    layouts = ("vertical", "spread", "fold")
-    for index, book in enumerate(cards, start=2):
+    book_of_year = next((book for book in data["books"] if book.get("book_of_year")), None)
+    if book_of_year:
+        profile = dict(profile_map[book_of_year["book_id"]]); profile["topics"] = book_of_year.get("topics", [])
+        layout = _layout_for_book(book_of_year)
+        page = _replace(template, {"LAYOUT": layout, "META": f"04 / BOOK OF THE YEAR / {book_of_year['evidence_level']}", "TITLE": html.escape(book_of_year["title"]), "AUTHOR": html.escape(book_of_year["author"]), "BODY": _profile_body(layout, profile), "FOOT_LEFT": html.escape(book_of_year["score_reason"]), "FOOT_RIGHT": str(data["year"])})
+        path = output_dir / f"04-book-of-year-{_safe_file_id(book_of_year['book_id'])}.html"; path.write_text(page, "utf-8"); rendered.append(path); manifest.append({"file": path.name, "type": "book-of-year", "book_id": book_of_year["book_id"], "layout": layout, "status": "generated"})
+
+    cards = [book for book in data["books"] if book["selected"] and not book.get("book_of_year")]
+    for index, book in enumerate(cards, start=5):
         profile = dict(profile_map[book["book_id"]])
         profile["topics"] = book.get("topics", [])
-        layout = layouts[(index - 2) % len(layouts)]
+        layout = _layout_for_book(book)
         page = _replace(template, {"LAYOUT": layout, "META": f"{index:02d} / {book['evidence_level']} / SCORE {book['score']}", "TITLE": html.escape(book["title"]), "AUTHOR": html.escape(book["author"]), "BODY": _profile_body(layout, profile), "FOOT_LEFT": html.escape(book["score_reason"]), "FOOT_RIGHT": f"{data['year']} · {book['progress']}%"})
-        path = output_dir / f"{index:02d}-{book['book_id']}.html"
+        path = output_dir / f"{index:02d}-{_safe_file_id(book['book_id'])}.html"
         path.write_text(page, "utf-8")
         rendered.append(path)
-    return rendered
+        manifest.append({"file": path.name, "type": "selected-book", "book_id": book["book_id"], "layout": layout, "status": "generated"})
+
+    number = 5 + len(cards)
+    topic = data.get("topics", [{}])[0].get("name", "尚未回答的问题") if data.get("topics") else "尚未回答的问题"
+    question = f"下一年，我愿意为“{topic}”保留哪个反例？"
+    body = f'<div class="content"><p class="question">{html.escape(question)}</p></div>'
+    page, item = _annual_page(template, number, "final-question", "留给下一年的问题", body, data["year"], "答案留到下一次阅读发生时")
+    path = output_dir / item["file"]; path.write_text(page, "utf-8"); rendered.append(path); manifest.append(item)
+    return rendered, manifest

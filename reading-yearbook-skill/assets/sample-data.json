@@ -74,6 +74,14 @@
   "stats": {
     "totalReadTime": 118800,
     "readDays": 94,
+    "readLongest": [
+      {"book": {"bookId": "sample-001"}, "readTime": 28800},
+      {"book": {"bookId": "sample-003"}, "readTime": 25200},
+      {"book": {"bookId": "sample-002"}, "readTime": 21600},
+      {"book": {"bookId": "sample-005"}, "readTime": 18000},
+      {"book": {"bookId": "sample-004"}, "readTime": 9000},
+      {"book": {"bookId": "sample-006"}, "readTime": 600}
+    ],
     "readTimes": {
       "1767225600": 7200,
       "1769904000": 10800,

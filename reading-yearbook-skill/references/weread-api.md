@@ -21,6 +21,8 @@ Key 绑定用户身份。不得把 Key 写入输出、日志、异常或命令�
 - `/review/list/mine`：参数名是小写 `bookid`；使用 `synckey` 游标分页。
 - `/readdata/detail`：年度请求使用 `mode: annually` 和目标年 1 月 1 日时间戳；`totalReadTime`、`readTimes` 均为秒。
 
+默认只对书架年内更新时间、笔记本年内 `sort` 和年度 `readLongest` 命中的书逐本请求详情，避免对整个书架发起大量调用。候选明显缺失时可显式使用 `--scan-all-shelf`，但要向用户说明耗时和官方接口无法保证覆盖已移出书架且没有笔记的书。
+
 官方资料：
 
 - https://github.com/Tencent/WeChatReading

@@ -20,6 +20,12 @@ def main() -> None:
         page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
         page.goto(ATLAS.resolve().as_uri(), wait_until="networkidle")
         assert page.locator(".book").count() == 6
+        page.locator('[data-month="2"]').first.click()
+        assert page.locator(".book").count() == 1
+        page.get_by_role("button", name="全部", exact=True).click()
+        page.get_by_role("button", name="已读完", exact=True).click()
+        assert page.locator(".book").count() == 1
+        page.get_by_role("button", name="全部", exact=True).click()
         page.get_by_role("button", name="E2", exact=True).click()
         assert 1 <= page.locator(".book").count() < 6
         page.locator(".book").first.click()
