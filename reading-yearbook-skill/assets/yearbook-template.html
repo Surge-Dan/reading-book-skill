@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>__YEAR__ 年阅读图谱</title>
+  <style>
+    :root{--paper:#f1eadc;--paper-deep:#e3d7c3;--ink:#1d1c19;--muted:#6b645a;--accent:#245b59;--line:#b9ad9a;--white:#fbf8f1}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Avenir Next","PingFang SC","Microsoft YaHei",sans-serif}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.15;background-image:repeating-linear-gradient(92deg,transparent 0 4px,rgba(60,43,22,.08) 5px 6px)}
+    button{font:inherit;color:inherit}.shell{width:min(1180px,calc(100% - 36px));margin:auto}.mast{min-height:90vh;display:grid;grid-template-columns:1fr 1.15fr;align-items:center;gap:7vw;padding:54px 0}
+    .kicker{font-family:ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.18em;color:var(--accent)}h1{font-family:"Iowan Old Style","Songti SC","STSong",serif;font-size:clamp(48px,7vw,106px);line-height:.95;font-weight:500;margin:22px 0 28px;max-width:8em}
+    .lead{max-width:34em;line-height:1.9;color:var(--muted)}.ledger{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink);margin-top:42px}.metric{padding:15px 8px 0 0}.metric strong{display:block;font-family:"Iowan Old Style",serif;font-size:28px;font-weight:500}.metric span{font-size:12px;color:var(--muted)}
+    .wheel-wrap{aspect-ratio:1;display:grid;place-items:center;position:relative}.wheel-wrap svg{width:100%;height:100%;overflow:visible}.wheel-center{position:absolute;text-align:center}.wheel-center strong{font:500 clamp(42px,6vw,82px)/1 "Iowan Old Style",serif}.wheel-center span{display:block;margin-top:8px;font:11px ui-monospace,monospace;letter-spacing:.18em}.month-label{font:10px ui-monospace,monospace;fill:var(--muted)}
+    .section{border-top:1px solid var(--ink);padding:34px 0 64px}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:30px}.section h2{font:500 clamp(30px,4vw,54px)/1.1 "Iowan Old Style","Songti SC",serif;margin:0}.section-note{max-width:32em;color:var(--muted);line-height:1.7;font-size:14px}
+    .topics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}.topic{background:var(--paper);padding:24px;min-height:170px}.topic b{font:500 28px "Songti SC",serif}.topic small{display:block;margin-top:70px;color:var(--muted)}
+    .filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}.filters button{border:1px solid var(--line);background:transparent;padding:8px 13px;border-radius:0;cursor:pointer}.filters button[aria-pressed=true],.filters button:hover{background:var(--ink);color:var(--paper)}
+    .books{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}.book{background:transparent;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px;text-align:left;min-height:235px;cursor:pointer;position:relative}.book:hover,.book:focus-visible{background:var(--white);outline:2px solid var(--accent);outline-offset:-2px}.book .idx{font:11px ui-monospace,monospace;color:var(--accent)}.book h3{font:500 25px/1.15 "Songti SC",serif;margin:36px 0 8px}.book p{font-size:13px;color:var(--muted);margin:0}.book .bar{position:absolute;left:18px;right:18px;bottom:18px;height:2px;background:var(--line)}.book .bar i{display:block;height:100%;background:var(--accent)}
+    dialog{width:min(720px,calc(100% - 28px));border:1px solid var(--ink);background:var(--white);padding:0;color:var(--ink)}dialog::backdrop{background:rgba(25,23,18,.72)}.dialog-body{padding:34px}.dialog-body h3{font:500 38px "Songti SC",serif;margin:8px 0}.dialog-body h4{margin:30px 0 8px;font-size:13px;color:var(--accent)}.dialog-body p{line-height:1.8}.close{float:right;border:0;background:none;font-size:24px;cursor:pointer}
+    .source-state{position:fixed;right:14px;bottom:14px;background:var(--ink);color:var(--paper);padding:8px 11px;font:10px ui-monospace,monospace;letter-spacing:.08em}
+    @media(max-width:760px){.mast{grid-template-columns:1fr;min-height:auto;padding-top:70px}.wheel-wrap{order:-1}.topics,.books{grid-template-columns:1fr}.section-head{display:block}.section-note{margin-top:12px}.ledger{grid-template-columns:1fr 1fr 1fr}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="mast">
+      <div>
+        <div class="kicker">阅读档案 / __MODE__ / __STATUS__</div>
+        <h1>__THESIS__</h1>
+        <p class="lead">这不是人格判断，而是一份能回到书目、划线与想法的年度阅读档案。点击年轮月份或书籍，可以查看这一判断从哪里来。</p>
+        <div class="ledger">
+          <div class="metric"><strong>__BOOK_COUNT__</strong><span>本年度书籍</span></div>
+          <div class="metric"><strong>__HOURS__h</strong><span>阅读 / 收听</span></div>
+          <div class="metric"><strong>__NOTE_COUNT__</strong><span>划线、想法、书签</span></div>
+        </div>
+      </div>
+      <div class="wheel-wrap"><svg id="wheel" viewBox="0 0 520 520" aria-label="十二个月阅读投入年轮"></svg><div class="wheel-center"><strong>__YEAR__</strong><span>READING ORBIT</span></div></div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>反复出现的问题</h2><p class="section-note">主题只按书籍分类与明确笔记聚合，不把阅读偏好推断成人格。</p></div>
+      <div class="topics" id="topics"></div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>全部书籍档案</h2><p class="section-note">证据等级决定内容能说到哪里。E0 只保留记录；E3 需要用户提供完整合法文本。</p></div>
+      <div class="filters" id="filters"></div>
+      <div class="books" id="books"></div>
+    </section>
+  </main>
+  <dialog id="detail"><div class="dialog-body"><button class="close" aria-label="关闭">×</button><div id="detailContent"></div></div></dialog>
+  <div class="source-state">__MODE__ · __STATUS__</div>
+  <script id="yearbook-data" type="application/json">__DATA__</script>
+  <script>
+    const data=JSON.parse(document.querySelector('#yearbook-data').textContent);let filter='全部';
+    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function polar(cx,cy,r,a){const p=(a-90)*Math.PI/180;return{x:cx+r*Math.cos(p),y:cy+r*Math.sin(p)}}
+    function arc(cx,cy,r,a0,a1){const s=polar(cx,cy,r,a1),e=polar(cx,cy,r,a0);return `M ${s.x} ${s.y} A ${r} ${r} 0 ${a1-a0<=180?0:1} 0 ${e.x} ${e.y}`}
+    function drawWheel(){const svg=document.querySelector('#wheel'),months=data.summary.monthly_read_seconds,max=Math.max(...months,1);svg.innerHTML='';months.forEach((v,i)=>{const r=132+i%3*25,start=i*30+2,end=(i+1)*30-4,w=4+18*v/max;svg.insertAdjacentHTML('beforeend',`<path d="${arc(260,260,r,start,end)}" fill="none" stroke="${v?'var(--accent)':'var(--line)'}" stroke-width="${w}" opacity="${.35+.65*v/max}"/><text class="month-label" x="${polar(260,260,220,i*30+15).x}" y="${polar(260,260,220,i*30+15).y}" text-anchor="middle">${String(i+1).padStart(2,'0')}</text>`)});data.books.forEach((b,i)=>{const m=(b.months[0]||1)-1,p=polar(260,260,185,m*30+15+(i%3-1)*3);svg.insertAdjacentHTML('beforeend',`<circle cx="${p.x}" cy="${p.y}" r="${b.book_of_year_candidate?7:3}" fill="${b.book_of_year_candidate?'var(--ink)':'var(--accent)'}"><title>${esc(b.title)}</title></circle>`)});}
+    function drawTopics(){document.querySelector('#topics').innerHTML=(data.topics||[]).map(t=>`<article class="topic"><b>${esc(t.name)}</b><small>${t.book_count} 本书留下相关线索</small></article>`).join('')||'<article class="topic"><b>暂无主题</b><small>需要更多可追溯记录</small></article>'}
+    function drawFilters(){const vals=['全部',...new Set(data.books.flatMap(b=>[b.evidence_level,...b.topics]))];document.querySelector('#filters').innerHTML=vals.map(v=>`<button aria-pressed="${v===filter}" data-filter="${esc(v)}">${esc(v)}</button>`).join('');document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;drawFilters();drawBooks()})}
+    function drawBooks(){const rows=data.books.filter(b=>filter==='全部'||b.evidence_level===filter||b.topics.includes(filter));document.querySelector('#books').innerHTML=rows.map((b,i)=>`<button class="book" data-id="${esc(b.book_id)}"><span class="idx">${String(i+1).padStart(2,'0')} · ${esc(b.evidence_level)} · ${b.score}</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${b.progress}%</p><span class="bar"><i style="width:${Math.max(1,b.progress)}%"></i></span></button>`).join('');document.querySelectorAll('.book').forEach(el=>el.onclick=()=>openBook(el.dataset.id))}
+    function openBook(id){const b=data.books.find(x=>x.book_id===id),p=data.profiles.find(x=>x.book_id===id),d=document.querySelector('#detail');document.querySelector('#detailContent').innerHTML=`<div class="kicker">${esc(b.evidence_level)} / ${esc(b.evidence_reason)}</div><h3>${esc(b.title)}</h3><p>${esc(b.author)}</p><h4>这本书讲了啥</h4><p>${esc(p.about)}</p><h4>我的思考</h4><p>${esc(p.reflection)}</p><h4>证据索引</h4><p>${p.citations.map(c=>esc(c.source_id)).join(' · ')||'暂无可引用证据'}</p>`;d.showModal()}
+    document.querySelector('.close').onclick=()=>document.querySelector('#detail').close();drawWheel();drawTopics();drawFilters();drawBooks();
+  </script>
+</body>
+</html>

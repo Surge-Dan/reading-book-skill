@@ -1,0 +1,144 @@
+{
+  "source_mode": "sample",
+  "verification_status": "sample_verified",
+  "shelf": {
+    "books": [
+      {
+        "bookId": "sample-001",
+        "title": "看见选择",
+        "author": "林舟",
+        "category": "社会科学-决策",
+        "readUpdateTime": 1771372800,
+        "intro": "从日常选择出发，讨论事实、假设与判断之间的距离。",
+        "topics": ["决策", "事实"],
+        "reusabilityHint": 0.9
+      },
+      {
+        "bookId": "sample-002",
+        "title": "缓慢的城市",
+        "author": "周野",
+        "category": "文学-随笔",
+        "readUpdateTime": 1774051200,
+        "intro": "以步行和街区观察记录城市变化，关心人在空间里如何生活。",
+        "topics": ["城市", "生活"]
+      },
+      {
+        "bookId": "sample-003",
+        "title": "工作中的尺度",
+        "author": "陈屿",
+        "category": "商业-管理",
+        "readUpdateTime": 1779148800,
+        "intro": "讨论目标、反馈与协作尺度，强调先定义问题再配置资源。",
+        "topics": ["决策", "工作"],
+        "reusabilityHint": 0.8
+      },
+      {
+        "bookId": "sample-004",
+        "title": "植物知道时间",
+        "author": "苏禾",
+        "category": "自然科学-植物",
+        "readUpdateTime": 1783036800,
+        "intro": "通过植物节律解释生命如何感知光照、季节与环境变化。",
+        "topics": ["时间", "自然"]
+      },
+      {
+        "bookId": "sample-005",
+        "title": "重新学习提问",
+        "author": "顾言",
+        "category": "教育-思维",
+        "readUpdateTime": 1789084800,
+        "intro": "把提问看作澄清边界、寻找证据和暴露假设的工具。",
+        "topics": ["事实", "学习"],
+        "reusabilityHint": 0.85
+      },
+      {
+        "bookId": "sample-006",
+        "title": "冬日短篇集",
+        "author": "许川",
+        "category": "文学-小说",
+        "readUpdateTime": 1795305600,
+        "intro": "六个发生在冬天的短篇，写迟到的告别和没有说出口的话。",
+        "topics": ["生活", "告别"]
+      }
+    ]
+  },
+  "notebooks": {
+    "books": [
+      {"bookId": "sample-001", "reviewCount": 2, "noteCount": 3, "bookmarkCount": 1, "readingProgress": 100},
+      {"bookId": "sample-002", "reviewCount": 1, "noteCount": 2, "bookmarkCount": 0, "readingProgress": 80},
+      {"bookId": "sample-003", "reviewCount": 2, "noteCount": 3, "bookmarkCount": 2, "readingProgress": 92},
+      {"bookId": "sample-004", "reviewCount": 0, "noteCount": 1, "bookmarkCount": 0, "readingProgress": 35},
+      {"bookId": "sample-005", "reviewCount": 1, "noteCount": 2, "bookmarkCount": 1, "readingProgress": 74}
+    ]
+  },
+  "stats": {
+    "totalReadTime": 118800,
+    "readDays": 94,
+    "readTimes": {
+      "1767225600": 7200,
+      "1769904000": 10800,
+      "1772323200": 16200,
+      "1775001600": 9000,
+      "1777593600": 14400,
+      "1780272000": 5400,
+      "1782864000": 12600,
+      "1785542400": 3600,
+      "1788220800": 18000,
+      "1790812800": 4200,
+      "1793491200": 10800,
+      "1796083200": 6600
+    }
+  },
+  "book_details": {
+    "sample-001": {
+      "progress": {"book": {"progress": 100, "recordReadingTime": 28800, "updateTime": 1771372800, "finishTime": 1771372800}},
+      "bookmarks": {"updated": [
+        {"bookmarkId": "s1-h1", "markText": "事实不会替我们做决定，但会缩小自欺的空间。", "createTime": 1768176000},
+        {"bookmarkId": "s1-h2", "markText": "先写下你相信什么，再去寻找会推翻它的证据。", "createTime": 1771372800},
+        {"bookmarkId": "s1-h3", "markText": "好选择不是永远正确，而是允许被复盘。", "createTime": 1771372800}
+      ]},
+      "reviews": {"reviews": [
+        {"review": {"reviewId": "s1-r1", "content": "今年我真正需要的不是更多建议，而是一套能暴露假设的检查方式。", "abstract": "先写下你相信什么", "createTime": 1771372800}},
+        {"review": {"reviewId": "s1-r2", "content": "以后做重要决定时，先保留一次反方陈述。", "createTime": 1771372800}}
+      ]}
+    },
+    "sample-002": {
+      "progress": {"book": {"progress": 80, "recordReadingTime": 21600, "updateTime": 1774051200}},
+      "bookmarks": {"updated": [
+        {"bookmarkId": "s2-h1", "markText": "一座城市最诚实的部分，往往在步行速度里。", "createTime": 1774051200},
+        {"bookmarkId": "s2-h2", "markText": "街道不是通道，它也是停留发生的地方。", "createTime": 1774051200}
+      ]},
+      "reviews": {"reviews": [{"review": {"reviewId": "s2-r1", "content": "这本书让我重新注意每天经过却没有看见的路。", "createTime": 1774051200}}]}
+    },
+    "sample-003": {
+      "progress": {"book": {"progress": 92, "recordReadingTime": 25200, "updateTime": 1779148800}},
+      "bookmarks": {"updated": [
+        {"bookmarkId": "s3-h1", "markText": "目标如果不能改变资源分配，就只是墙上的句子。", "createTime": 1775606400},
+        {"bookmarkId": "s3-h2", "markText": "反馈要靠近行为发生的地方。", "createTime": 1779148800},
+        {"bookmarkId": "s3-h3", "markText": "复杂问题先找约束，不先堆功能。", "createTime": 1779148800}
+      ]},
+      "reviews": {"reviews": [
+        {"review": {"reviewId": "s3-r1", "content": "我过去常把方案完整当成可落地，现在更在意谁在什么节点改变什么。", "createTime": 1779148800}},
+        {"review": {"reviewId": "s3-r2", "content": "把评审问题改成可验证的假设，会议会短很多。", "createTime": 1779148800}}
+      ]}
+    },
+    "sample-004": {
+      "progress": {"book": {"progress": 35, "recordReadingTime": 9000, "updateTime": 1783036800}},
+      "bookmarks": {"updated": [{"bookmarkId": "s4-h1", "markText": "节律不是钟表，而是生命对环境变化的响应。", "createTime": 1783036800}]},
+      "reviews": {"reviews": []}
+    },
+    "sample-005": {
+      "progress": {"book": {"progress": 74, "recordReadingTime": 18000, "updateTime": 1789084800}},
+      "bookmarks": {"updated": [
+        {"bookmarkId": "s5-h1", "markText": "问题决定我们允许什么成为证据。", "createTime": 1789084800},
+        {"bookmarkId": "s5-h2", "markText": "先问边界，再问答案。", "createTime": 1789084800}
+      ]},
+      "reviews": {"reviews": [{"review": {"reviewId": "s5-r1", "content": "我想把需求讨论里的抽象争论改成三个具体问题。", "createTime": 1789084800}}]}
+    },
+    "sample-006": {
+      "progress": {"book": {"progress": 1, "recordReadingTime": 600, "updateTime": 1795305600}},
+      "bookmarks": {"updated": []},
+      "reviews": {"reviews": []}
+    }
+  }
+}
