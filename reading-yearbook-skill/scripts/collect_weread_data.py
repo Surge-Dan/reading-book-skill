@@ -53,6 +53,10 @@ def collection_status(errors: list, truncated: bool) -> str:
     return "partial_unverified" if errors or truncated else "implemented_unverified"
 
 
+def collection_exit_code(result: dict) -> int:
+    return 0 if result.get("collection_complete") else 3
+
+
 def _in_year(value, year: int) -> bool:
     try:
         numeric = int(value)
@@ -177,8 +181,9 @@ def main() -> int:
         return 2
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2), "utf-8")
-    print(json.dumps({"status": "ok", "output": str(args.output), "books": len(result["book_details"]), "errors": len(result["collection_errors"])}, ensure_ascii=False))
-    return 0 if not result["collection_errors"] else 3
+    status = "ok" if result["collection_complete"] else "partial_unverified"
+    print(json.dumps({"status": status, "verification_status": result["verification_status"], "output": str(args.output), "books": len(result["book_details"]), "errors": len(result["collection_errors"]), "truncated": result["truncated"]}, ensure_ascii=False))
+    return collection_exit_code(result)
 
 
 if __name__ == "__main__":

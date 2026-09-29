@@ -10,8 +10,14 @@ from pathlib import Path
 
 
 HEADING_RE = re.compile(r"^(?:第[一二三四五六七八九十百0-9]+[章节部篇]|[0-9]+[.、])\s*(.+)$")
-METHOD_MARKERS = ("方法", "步骤", "原则", "应该", "可以", "先", "再", "不要", "避免")
+METHOD_MARKERS = ("步骤", "先", "再", "列出", "设定", "写下", "记录")
+STEP_MARKERS = METHOD_MARKERS
+VERIFICATION_MARKERS = ("验证", "结果", "记录", "观察", "比较", "反例", "检查", "推翻", "预期")
 BOUNDARY_MARKERS = ("不适用", "不要", "避免", "停止", "风险", "边界", "除非", "不能")
+
+
+def _has_method_signal(text: str) -> bool:
+    return any(marker in text for marker in METHOD_MARKERS) or bool(re.search(r"方法[一二三四五六七八九十0-9]+\s*[:：]", text))
 
 
 def _clean_text(text: str) -> str:
@@ -65,16 +71,44 @@ def distill_text(text: str, title: str, source_name: str, full_text_confirmed: b
         sections.append({"heading": current["heading"], "content": " ".join(current["content"]), "source_ids": current["source_ids"]})
 
     sentence_rows = []
+    sentences_by_source = {}
     for paragraph in paragraphs:
+        rows = []
         for part in re.split(r"[。！？!?；;]\s*", paragraph["text"]):
             sentence = part.strip()
             if len(sentence) >= 8:
-                sentence_rows.append({"text": sentence, "source_id": paragraph["source_id"]})
-    methods = [row for row in sentence_rows if any(marker in row["text"] for marker in METHOD_MARKERS)][:12]
+                row = {"text": sentence, "source_id": paragraph["source_id"]}
+                sentence_rows.append(row)
+                rows.append(row)
+        sentences_by_source[paragraph["source_id"]] = rows
+
+    methods = []
+    for paragraph in paragraphs:
+        rows = sentences_by_source.get(paragraph["source_id"], [])
+        if not any(_has_method_signal(row["text"]) for row in rows):
+            continue
+        steps = [row["text"] for row in rows if any(marker in row["text"] for marker in STEP_MARKERS) or re.search(r"方法[一二三四五六七八九十0-9]+\s*[:：]", row["text"])]
+        verification = [row["text"] for row in rows if any(marker in row["text"] for marker in VERIFICATION_MARKERS)]
+        boundary = [row["text"] for row in rows if any(marker in row["text"] for marker in BOUNDARY_MARKERS)]
+        text_value = "。".join(row["text"] for row in rows)[:500]
+        eligible = bool(steps and verification and boundary)
+        methods.append(
+            {
+                "text": text_value,
+                "source_id": paragraph["source_id"],
+                "steps": steps,
+                "verification": verification,
+                "boundary": boundary,
+                "test": f"给出一个具体场景，按 {paragraph['source_id']} 的步骤执行，并检查预期结果与停止条件。",
+                "eligible": eligible,
+            }
+        )
+        if len(methods) >= 12:
+            break
     boundaries = [row for row in sentence_rows if any(marker in row["text"] for marker in BOUNDARY_MARKERS)][:8]
     words = re.findall(r"[\u4e00-\u9fff]{2,6}", clean)
     terms = [word for word, _ in Counter(words).most_common(12)]
-    skill_eligible = full_text_confirmed and len(methods) >= 2 and len(sections) >= 2 and bool(boundaries)
+    skill_eligible = full_text_confirmed and len(methods) >= 2 and len(sections) >= 2 and all(item["eligible"] for item in methods)
     return {
         "title": title,
         "source_name": source_name,
@@ -102,7 +136,17 @@ def _write_outputs(result: dict, output_dir: Path, create_skill: bool) -> None:
     for section in result["sections"]:
         lines.extend(["", f"### {section['heading']}", "", section["content"][:600]])
     lines.extend(["", "## 候选方法"])
-    lines.extend(f"- `{item['source_id']}` {item['text']}" for item in result["candidate_methods"])
+    for item in result["candidate_methods"]:
+        gate = "通过" if item["eligible"] else "未通过"
+        lines.extend(
+            [
+                f"- `{item['source_id']}` {item['text']}（门槛：{gate}）",
+                f"  - 步骤：{'；'.join(item['steps']) or '缺失'}",
+                f"  - 验证：{'；'.join(item['verification']) or '缺失'}",
+                f"  - 边界：{'；'.join(item['boundary']) or '缺失'}",
+                f"  - 测试：{item['test']}",
+            ]
+        )
     if not result["candidate_methods"]:
         lines.append("- 未识别到足够明确的方法句，暂不生成子 Skill。")
     lines.extend(["", "## 不适用场景与停止条件"])
@@ -113,14 +157,22 @@ def _write_outputs(result: dict, output_dir: Path, create_skill: bool) -> None:
     (output_dir / "profile.md").write_text("\n".join(lines) + "\n", "utf-8")
     if create_skill and result["skill_eligible"]:
         skill_dir = output_dir / "generated-skill"
-        skill_dir.mkdir(exist_ok=True)
-        method_lines = "\n".join(f"- [{item['source_id']}] {item['text']}" for item in result["candidate_methods"])
+        method_lines = "\n".join(
+            f"- [{item['source_id']}] {item['text']}\n  - Steps: {'; '.join(item['steps'])}\n  - Verify: {'; '.join(item['verification'])}\n  - Stop when: {'; '.join(item['boundary'])}\n  - Test: {item['test']}"
+            for item in result["candidate_methods"]
+        )
+        skill_name = re.sub(r"[^a-z0-9-]+", "-", result["source_name"].lower()).strip("-") or "book-method"
+        safe_title = re.sub(r"[\r\n]+", " ", str(result["title"])).strip()
+        description = json.dumps(
+            f"Apply the verified methods extracted from {safe_title} when the user explicitly asks to use this book's framework.",
+            ensure_ascii=False,
+        )
         skill = f"""---
-name: {re.sub(r'[^a-z0-9-]+', '-', result['source_name'].lower()).strip('-') or 'book-method'}
-description: Apply the verified methods extracted from {result['title']} when the user explicitly asks to use this book's framework.
+name: {skill_name}
+description: {description}
 ---
 
-# {result['title']}
+# {safe_title}
 
 Use only the methods supported by the user-provided source IDs. Distinguish source claims, user interpretation, and new inference.
 
@@ -130,7 +182,28 @@ Use only the methods supported by the user-provided source IDs. Distinguish sour
 
 Before relying on a method, state its applicable situation, steps, expected evidence, and when it should not be used.
 """
+        _validate_generated_skill(skill)
+        skill_dir.mkdir(exist_ok=True)
         (skill_dir / "SKILL.md").write_text(skill, "utf-8")
+
+
+def _validate_generated_skill(skill: str) -> None:
+    if not skill.startswith("---\n") or "\n---\n" not in skill[4:]:
+        raise ValueError("候选 Skill frontmatter 无效。")
+    frontmatter = skill.split("\n---\n", 1)[0].splitlines()[1:]
+    keys = [line.split(":", 1)[0].strip() for line in frontmatter if ":" in line]
+    if keys.count("name") != 1 or keys.count("description") != 1 or len(keys) != 2:
+        raise ValueError("候选 Skill frontmatter 字段重复或越界。")
+    name = next(line.split(":", 1)[1].strip() for line in frontmatter if line.startswith("name:"))
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name):
+        raise ValueError("候选 Skill name 无效。")
+    description = next(line.split(":", 1)[1].strip() for line in frontmatter if line.startswith("description:"))
+    try:
+        decoded = json.loads(description)
+    except json.JSONDecodeError as exc:
+        raise ValueError("候选 Skill description 未安全引用。") from exc
+    if not isinstance(decoded, str) or "\n" in decoded or "\r" in decoded:
+        raise ValueError("候选 Skill description 无效。")
 
 
 def main() -> int:

@@ -23,8 +23,8 @@ description: Turn one natural year of WeRead bookshelf, progress, reading statis
 3. 无 Key 时主动提供样例模式；任何样例产物都标记为 `sample_verified`，不得称为用户真实年报。
 4. 有 Key 时采集书架、年度统计、阅读进度、笔记本、划线与个人想法。接口部分失败时标记 `partial_unverified`，不要发布最终结论。
 5. 规范化并按 [证据规则](references/evidence-rules.md) 分为 E0–E3，再计算年度代表性分。
-6. 先生成 `selection-preview.md`，让用户确认前 20% 精选和 3 本年度之书候选。用户选择覆盖默认评分。
-7. 确认后生成全部书籍档案、`atlas.html`、卡片 HTML 和 PNG。
+6. 先生成 `selection-preview.md`，让用户确认前 20% 精选和 3 本年度之书候选。候选只是推荐；用户可以从任意已确认精选书中改选年度之书，系统记录 `user_override`。
+7. 确认后生成全部书籍档案、`atlas.html`、卡片 HTML 和 PNG。真实采集只要存在缺页、截断或单书失败，就必须停在预览阶段。
 8. 再让用户确认文案和直接引用；未确认时保留“草稿”状态。
 9. 运行验证并报告通过、降级、失败与未实测项。输出契约见 [交付与验收](references/output-contract.md)。
 

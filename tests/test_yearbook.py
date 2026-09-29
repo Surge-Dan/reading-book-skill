@@ -21,9 +21,9 @@ from yearbook_core import (  # noqa: E402
     score_books,
 )
 from run_yearbook import finalize_yearbook, generate_preview  # noqa: E402
-from build_deep_distill import distill_text, load_legal_text  # noqa: E402
+from build_deep_distill import _write_outputs, distill_text, load_legal_text  # noqa: E402
 from export_cards import find_browser_executable  # noqa: E402
-from collect_weread_data import collection_status, select_candidate_books  # noqa: E402
+from collect_weread_data import collection_exit_code, collection_status, select_candidate_books  # noqa: E402
 from validate_yearbook import validate_output  # noqa: E402
 
 
@@ -85,6 +85,8 @@ class CoreRulesTests(unittest.TestCase):
         self.assertEqual(collection_status(errors=[], truncated=False), "implemented_unverified")
         self.assertEqual(collection_status(errors=[], truncated=True), "partial_unverified")
         self.assertEqual(collection_status(errors=[{"error": "x"}], truncated=False), "partial_unverified")
+        self.assertEqual(collection_exit_code({"collection_complete": False}), 3)
+        self.assertEqual(collection_exit_code({"collection_complete": True}), 0)
 
     def test_live_collection_limits_detail_calls_to_year_candidates(self):
         ts_2026 = int(datetime(2026, 5, 1, tzinfo=timezone.utc).timestamp())
@@ -115,6 +117,12 @@ class CoreRulesTests(unittest.TestCase):
         self.assertEqual(sum(1 for book in scored if book["selected"]), 2)
         self.assertEqual(sum(1 for book in scored if book["book_of_year_candidate"]), 3)
         self.assertGreaterEqual(scored[0]["score"], scored[-1]["score"])
+
+    def test_scoring_ignores_lifetime_progress_and_bookmarks(self):
+        stale = {"book_id": "stale", "title": "旧书", "progress": 100, "annual_reading_seconds": 0, "months": [1], "highlights": [], "thoughts": [], "bookmark_count": 100, "topics": [], "finished_in_year": False}
+        active = {"book_id": "active", "title": "年内书", "progress": 5, "annual_reading_seconds": 3600, "months": [2, 3], "highlights": [], "thoughts": [], "bookmark_count": 0, "topics": [], "finished_in_year": False}
+        scored = {book["book_id"]: book for book in score_books([stale, active])}
+        self.assertGreater(scored["active"]["score"], scored["stale"]["score"])
 
     def test_profiles_cite_only_available_evidence(self):
         book = {
@@ -194,6 +202,23 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result["evidence_level"], "E2")
         self.assertFalse(result["skill_eligible"])
 
+    def test_deep_distill_rejects_keyword_only_methods_without_per_method_checks(self):
+        text = "第一章 想法\n我们可以多想一想。我们应该保持耐心。\n第二章 其他\n风险总是存在。"
+        result = distill_text(text, title="弱材料", source_name="weak.txt", full_text_confirmed=True)
+        self.assertFalse(result["skill_eligible"])
+
+    def test_deep_distill_writes_safe_frontmatter_only_after_all_method_gates(self):
+        text = (ROOT / "tests" / "fixtures" / "deep-sample.txt").read_text("utf-8")
+        result = distill_text(text, title='判断"\nextra: injected', source_name="book.txt", full_text_confirmed=True)
+        self.assertTrue(result["skill_eligible"])
+        self.assertTrue(all(method["steps"] and method["verification"] and method["boundary"] and method["test"] for method in result["candidate_methods"]))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            _write_outputs(result, Path(temp_dir), create_skill=True)
+            skill = (Path(temp_dir) / "generated-skill" / "SKILL.md").read_text("utf-8")
+            frontmatter = skill.split("\n---\n", 1)[0]
+            self.assertEqual(frontmatter.count("\ndescription:"), 1)
+            self.assertNotIn("\nextra:", frontmatter)
+
     def test_epub_text_is_extracted_without_network_access(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             epub = Path(temp_dir) / "book.epub"
@@ -211,6 +236,45 @@ class PipelineTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 finalize_yearbook(2026, sample, output, preview["selection"], export_png=False)
 
+    def test_finalize_blocks_partial_collection(self):
+        sample = json.loads((SKILL_ROOT / "assets" / "sample-data.json").read_text("utf-8"))
+        sample["source_mode"] = "live"
+        sample["verification_status"] = "partial_unverified"
+        sample["collection_complete"] = False
+        with tempfile.TemporaryDirectory() as temp_dir:
+            raw_path = Path(temp_dir) / "partial.json"
+            raw_path.write_text(json.dumps(sample, ensure_ascii=False), "utf-8")
+            output = Path(temp_dir) / "output"
+            preview = generate_preview(2026, raw_path, output)
+            selection = preview["selection"]
+            selection.update({"status": "confirmed", "confirmed_at": "2026-09-28T12:00:00+08:00", "book_of_year_id": selection["book_of_year_candidates"][0]})
+            with self.assertRaises(ValueError):
+                finalize_yearbook(2026, raw_path, output, selection, export_png=False)
+
+    def test_complete_live_collection_can_become_live_verified_after_validation(self):
+        sample = json.loads((SKILL_ROOT / "assets" / "sample-data.json").read_text("utf-8"))
+        sample.update({"source_mode": "live", "verification_status": "implemented_unverified", "collection_complete": True})
+        with tempfile.TemporaryDirectory() as temp_dir:
+            raw_path = Path(temp_dir) / "live.json"
+            raw_path.write_text(json.dumps(sample, ensure_ascii=False), "utf-8")
+            output = Path(temp_dir) / "output"
+            preview = generate_preview(2026, raw_path, output)
+            selection = preview["selection"]
+            selection.update({"status": "confirmed", "confirmed_at": "2026-09-28T12:00:00+08:00", "book_of_year_id": selection["book_of_year_candidates"][0]})
+            result = finalize_yearbook(2026, raw_path, output, selection, export_png=False)
+            self.assertEqual(result["validation"]["status"], "pass")
+            self.assertEqual(result["data"]["verification_status"], "live_verified")
+
+    def test_user_can_override_default_book_of_year_candidates(self):
+        sample = SKILL_ROOT / "assets" / "sample-data.json"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "2026"
+            preview = generate_preview(2026, sample, output)
+            selection = preview["selection"]
+            selection.update({"status": "confirmed", "confirmed_at": "2026-09-28T12:00:00+08:00", "selected_book_ids": ["sample-006"], "book_of_year_id": "sample-006"})
+            result = finalize_yearbook(2026, sample, output, selection, export_png=False)
+            self.assertTrue(result["data"]["selection"]["user_override"])
+
     def test_validation_fails_when_requested_png_export_failed(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir)
@@ -219,6 +283,19 @@ class PipelineTests(unittest.TestCase):
             (output / "selection-preview.md").write_text("# x", "utf-8")
             (output / "cards-html").mkdir()
             report = validate_output(output, require_png=True, png_result={"status": "failed", "exported": 0})
+            self.assertEqual(report["status"], "fail")
+
+    def test_validation_rejects_invalid_schema_and_manifest(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir)
+            invalid = {"schema_version": "1.0", "year": "bad", "source_mode": "sample", "verification_status": "live_verified", "publication_status": "final", "summary": {}, "books": [], "profiles": [], "topics": [], "selection": {}, "thesis": "x"}
+            (output / "yearbook-data.json").write_text(json.dumps(invalid), "utf-8")
+            (output / "atlas.html").write_text("<!doctype html><title>x</title>", "utf-8")
+            (output / "selection-preview.md").write_text("# x", "utf-8")
+            (output / "selection.json").write_text("{}", "utf-8")
+            (output / "cards-manifest.json").write_text("[]", "utf-8")
+            (output / "cards-html").mkdir()
+            report = validate_output(output)
             self.assertEqual(report["status"], "fail")
 
 

@@ -69,12 +69,12 @@ def _apply_selection(data: dict, selection: dict) -> None:
         raise ValueError(f"selection.json 包含未知书籍：{', '.join(unknown)}")
     book_of_year = str(selection.get("book_of_year_id") or "")
     candidates = {book["book_id"] for book in data["books"] if book["book_of_year_candidate"]}
-    if not selected or book_of_year not in selected or book_of_year not in candidates:
-        raise ValueError("年度之书必须同时属于系统候选和用户确认的精选书。")
+    if not selected or book_of_year not in selected:
+        raise ValueError("年度之书必须属于用户确认的精选书。")
     for book in data["books"]:
         book["selected"] = book["book_id"] in selected
         book["book_of_year"] = book["book_id"] == book_of_year
-    data["selection"] = {"selected_book_ids": selected, "book_of_year_id": book_of_year, "confirmed_at": selection["confirmed_at"]}
+    data["selection"] = {"selected_book_ids": selected, "book_of_year_id": book_of_year, "confirmed_at": selection["confirmed_at"], "user_override": book_of_year not in candidates}
     data["publication_status"] = "final"
 
 
@@ -114,7 +114,12 @@ def _write_final_artifacts(data: dict, selection: dict, output_dir: Path) -> tup
 
 def finalize_yearbook(year: int, input_path: Path, output_dir: Path, selection: dict, export_png: bool = False) -> dict:
     raw, data = _prepare_data(year, input_path)
+    if data["source_mode"] == "live" and (data["verification_status"] == "partial_unverified" or not raw.get("collection_complete", False)):
+        raise ValueError("真实数据采集不完整，只能保留预览，不能生成最终版。")
     _apply_selection(data, selection)
+    live_candidate = data["source_mode"] == "live" and raw.get("collection_complete", False)
+    if live_candidate:
+        data["verification_status"] = "live_verified"
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     html_cards, _ = _write_final_artifacts(data, selection, output_dir)
@@ -125,10 +130,10 @@ def finalize_yearbook(year: int, input_path: Path, output_dir: Path, selection: 
         _clear_generated(output_dir / "cards", ".png")
         export_result = export_cards(output_dir / "cards-html", output_dir / "cards")
     report = validate_output(output_dir, require_png=export_png, png_result=export_result)
-    if data["source_mode"] == "live" and raw.get("collection_complete") and report["status"] == "pass":
-        data["verification_status"] = "live_verified"
+    if live_candidate and report["status"] != "pass":
+        data["verification_status"] = "implemented_unverified"
+        data["publication_status"] = "draft"
         html_cards, _ = _write_final_artifacts(data, selection, output_dir)
-        report = validate_output(output_dir, require_png=export_png, png_result=export_result)
     report["png_export"] = export_result
     report["source_mode"] = data["source_mode"]
     report["verification_status"] = data["verification_status"]

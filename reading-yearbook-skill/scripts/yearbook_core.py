@@ -174,9 +174,9 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
         if not topics and category != "未分类":
             topics = [item.strip() for item in re.split(r"[-/·,，]", category) if item.strip()][:3]
         bookmark_count = int(note_summary.get("bookmarkCount", 0) or 0)
-        progress_signal = progress if any(_timestamp_parts(value)[0] == year for value in (progress_book.get("updateTime"), progress_book.get("finishTime"), shelf_book.get("readUpdateTime"))) else 0
-        if annual_seconds and progress_signal == 0:
-            progress_signal = 2
+        finished_in_year = progress == 100 and _timestamp_parts(progress_book.get("finishTime"))[0] == year
+        has_year_progress_event = any(_timestamp_parts(value)[0] == year for value in (progress_book.get("updateTime"), progress_book.get("finishTime"), shelf_book.get("readUpdateTime")))
+        progress_signal = 100 if finished_in_year else (2 if annual_seconds or has_year_progress_event else 0)
         evidence_level = classify_evidence(progress_signal, len(highlight_rows), len(thought_rows), False)
         normalized_books.append(
             {
@@ -196,6 +196,8 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
                 "highlights": highlight_rows,
                 "thoughts": thought_rows,
                 "bookmark_count": bookmark_count,
+                "lifetime_bookmark_count": bookmark_count,
+                "finished_in_year": finished_in_year,
                 "topics": topics,
                 "evidence_level": evidence_level,
                 "evidence_reason": f"{evidence_level}：年内进度信号 {progress_signal:g}%，年内划线 {len(highlight_rows)} 条，年内想法 {len(thought_rows)} 条。",
@@ -217,7 +219,7 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
             "book_count": len(normalized_books),
             "total_read_seconds": int(stats.get("totalReadTime", sum(monthly)) or 0),
             "read_days": int(stats.get("readDays", 0) or 0),
-            "note_count": sum(len(book["highlights"]) + len(book["thoughts"]) + book["bookmark_count"] for book in normalized_books),
+            "note_count": sum(len(book["highlights"]) + len(book["thoughts"]) for book in normalized_books),
             "monthly_read_seconds": monthly,
         },
         "books": normalized_books,
@@ -236,16 +238,14 @@ def score_books(books: list[dict]) -> list[dict]:
     scored = []
     for source in books:
         book = deepcopy(source)
-        progress = float(book.get("progress", 0) or 0)
         highlights = len(book.get("highlights", []))
         thoughts = len(book.get("thoughts", []))
-        bookmarks = int(book.get("bookmark_count", 0) or 0)
         annual_seconds = float(book.get("annual_reading_seconds", book.get("reading_seconds", 0)) or 0)
         active_months = len(book.get("months", []))
-        reading = 0.55 * _ratio(progress, 100) + 0.3 * _ratio(annual_seconds, max_seconds) + 0.15 * _ratio(active_months, 4)
-        personal = min(1.0, (highlights + thoughts * 2 + bookmarks * 0.25) / 10)
+        reading = 0.7 * _ratio(annual_seconds, max_seconds) + 0.2 * _ratio(active_months, 4) + (0.1 if book.get("finished_in_year") else 0.0)
+        personal = min(1.0, (highlights + thoughts * 2) / 8)
         annual = max((_ratio(topic_counts[topic], max(2, len(books) * 0.4)) for topic in book.get("topics", [])), default=0.0)
-        turning = min(1.0, (0.55 if thoughts else 0.0) + (0.25 if len(book.get("months", [])) > 1 else 0.0) + (0.2 if progress == 100 else 0.0))
+        turning = min(1.0, (0.55 if thoughts else 0.0) + (0.25 if len(book.get("months", [])) > 1 else 0.0) + (0.2 if book.get("finished_in_year") else 0.0))
         reusable = min(1.0, max(float(book.get("reusability_hint", 0) or 0), 0.15 * len(book.get("topics", [])) + 0.1 * thoughts))
         parts = {
             "reading_investment": round(reading * 100, 1),

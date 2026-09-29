@@ -9,6 +9,7 @@ from pathlib import Path
 
 SECRET_PATTERNS = (re.compile(r"wrk-[A-Za-z0-9_-]{8,}"), re.compile(r"WEREAD_API_KEY\s*[:=]\s*[^\s<]+"))
 VERIFICATION_STATES = {"sample_verified", "live_verified", "partial_unverified", "implemented_unverified"}
+REQUIRED_CARD_TYPES = {"cover", "reading-rhythm", "recurring-topics", "book-of-year", "final-question"}
 
 
 def _png_size(path: Path) -> tuple[int, int] | None:
@@ -35,9 +36,94 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
     data = None
     try:
         data = json.loads((output_dir / "yearbook-data.json").read_text("utf-8"))
-        required_keys = {"schema_version", "year", "source_mode", "verification_status", "summary", "books", "topics", "profiles", "publication_status"}
-        absent = sorted(required_keys - set(data))
-        add("data_contract", not absent and data.get("verification_status") in VERIFICATION_STATES and data.get("publication_status") == "final", "schema 与状态有效" if not absent else f"缺少字段：{', '.join(absent)}")
+        schema_errors = []
+        required_keys = {"schema_version", "year", "source_mode", "verification_status", "summary", "books", "topics", "profiles", "thesis", "selection", "publication_status"}
+        absent = sorted(required_keys - set(data)) if isinstance(data, dict) else sorted(required_keys)
+        if absent:
+            schema_errors.append(f"缺少字段：{', '.join(absent)}")
+        if not isinstance(data, dict):
+            schema_errors.append("顶层必须是对象")
+            data = {}
+        if not isinstance(data.get("year"), int) or isinstance(data.get("year"), bool):
+            schema_errors.append("year 必须是整数")
+        if data.get("publication_status") != "final":
+            schema_errors.append("publication_status 必须为 final")
+        source_mode = data.get("source_mode")
+        verification = data.get("verification_status")
+        if source_mode not in {"sample", "live"}:
+            schema_errors.append("source_mode 仅允许 sample 或 live")
+        if verification not in VERIFICATION_STATES:
+            schema_errors.append("verification_status 无效")
+        if source_mode == "sample" and verification != "sample_verified":
+            schema_errors.append("sample 数据必须标记为 sample_verified")
+        if source_mode == "live" and verification != "live_verified":
+            schema_errors.append("live 最终产物必须通过验证并标记为 live_verified")
+
+        summary = data.get("summary")
+        if not isinstance(summary, dict):
+            schema_errors.append("summary 必须是对象")
+            summary = {}
+        summary_keys = {"book_count", "total_read_seconds", "read_days", "note_count", "monthly_read_seconds"}
+        missing_summary = sorted(summary_keys - set(summary))
+        if missing_summary:
+            schema_errors.append(f"summary 缺少：{', '.join(missing_summary)}")
+        monthly = summary.get("monthly_read_seconds")
+        if not isinstance(monthly, list) or len(monthly) != 12 or any(not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0 for value in (monthly or [])):
+            schema_errors.append("monthly_read_seconds 必须是 12 个非负数")
+
+        books = data.get("books")
+        if not isinstance(books, list) or not books:
+            schema_errors.append("books 必须是非空数组")
+            books = []
+        book_keys = {"book_id", "title", "author", "evidence_level", "annual_reading_seconds", "months", "highlights", "thoughts", "score", "selected", "book_of_year_candidate"}
+        book_ids = []
+        for index, book in enumerate(books):
+            if not isinstance(book, dict):
+                schema_errors.append(f"books[{index}] 必须是对象")
+                continue
+            missing_book = sorted(book_keys - set(book))
+            if missing_book:
+                schema_errors.append(f"books[{index}] 缺少：{', '.join(missing_book)}")
+            book_id = book.get("book_id")
+            if not isinstance(book_id, str) or not book_id.strip():
+                schema_errors.append(f"books[{index}].book_id 无效")
+            else:
+                book_ids.append(book_id)
+            if book.get("evidence_level") not in {"E0", "E1", "E2", "E3"}:
+                schema_errors.append(f"books[{index}].evidence_level 无效")
+            if not isinstance(book.get("months"), list) or any(not isinstance(month, int) or isinstance(month, bool) or month < 1 or month > 12 for month in book.get("months", [])):
+                schema_errors.append(f"books[{index}].months 无效")
+            if not isinstance(book.get("highlights"), list) or not isinstance(book.get("thoughts"), list):
+                schema_errors.append(f"books[{index}] 的年度批注必须是数组")
+        if len(book_ids) != len(set(book_ids)):
+            schema_errors.append("book_id 必须唯一")
+        if summary.get("book_count") != len(books):
+            schema_errors.append("summary.book_count 与 books 数量不一致")
+
+        profiles = data.get("profiles")
+        if not isinstance(profiles, list):
+            schema_errors.append("profiles 必须是数组")
+            profiles = []
+        profile_ids = [profile.get("book_id") for profile in profiles if isinstance(profile, dict)]
+        if set(profile_ids) != set(book_ids) or len(profile_ids) != len(book_ids):
+            schema_errors.append("profiles 必须与 books 一一对应")
+
+        selection = data.get("selection")
+        if not isinstance(selection, dict):
+            schema_errors.append("selection 必须是对象")
+            selection = {}
+        selected_ids = selection.get("selected_book_ids")
+        book_of_year_id = selection.get("book_of_year_id")
+        if not isinstance(selected_ids, list) or not selected_ids or any(item not in book_ids for item in selected_ids):
+            schema_errors.append("selected_book_ids 必须是已知书籍的非空数组")
+            selected_ids = []
+        if not isinstance(book_of_year_id, str) or book_of_year_id not in selected_ids:
+            schema_errors.append("book_of_year_id 必须属于 selected_book_ids")
+        if not isinstance(selection.get("confirmed_at"), str) or not selection.get("confirmed_at", "").strip():
+            schema_errors.append("selection.confirmed_at 不能为空")
+        if not isinstance(data.get("thesis"), str) or not data.get("thesis", "").strip():
+            schema_errors.append("thesis 不能为空")
+        add("data_contract", not schema_errors, "schema、状态与选择关系有效" if not schema_errors else "；".join(schema_errors[:8]))
     except (OSError, json.JSONDecodeError) as exc:
         add("data_contract", False, f"无法读取数据：{exc}")
 
@@ -46,6 +132,35 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
     add("book_profiles", expected_book_count >= 0 and profile_count == expected_book_count, f"预期 {expected_book_count}，检测到 {profile_count}")
     html_cards = sorted((output_dir / "cards-html").glob("*.html")) if (output_dir / "cards-html").exists() else []
     add("editable_cards", len(html_cards) >= 5, f"检测到 {len(html_cards)} 张 HTML 卡片")
+    try:
+        manifest = json.loads((output_dir / "cards-manifest.json").read_text("utf-8"))
+        manifest_errors = []
+        if not isinstance(manifest, list):
+            manifest_errors.append("manifest 必须是数组")
+            manifest = []
+        entries = [item for item in manifest if isinstance(item, dict)]
+        if len(entries) != len(manifest):
+            manifest_errors.append("manifest 条目必须是对象")
+        files = [item.get("file") for item in entries]
+        type_values = [item.get("type") for item in entries]
+        types = {value for value in type_values if isinstance(value, str)}
+        actual_files = {path.name for path in html_cards}
+        valid_file_fields = all(isinstance(name, str) and name.endswith(".html") for name in files)
+        if not valid_file_fields:
+            manifest_errors.append("manifest file 字段无效")
+        if valid_file_fields and len(files) != len(set(files)):
+            manifest_errors.append("manifest file 不能重复")
+        if not valid_file_fields or set(files) != actual_files:
+            manifest_errors.append("manifest 与 cards-html 文件不一致")
+        missing_types = sorted(REQUIRED_CARD_TYPES - types)
+        if missing_types:
+            manifest_errors.append(f"缺少卡片类型：{', '.join(missing_types)}")
+        known_ids = {book.get("book_id") for book in (data or {}).get("books", []) if isinstance(book, dict)}
+        if any(item.get("type") in {"book-of-year", "selected-book"} and item.get("book_id") not in known_ids for item in entries):
+            manifest_errors.append("书籍卡片引用了未知 book_id")
+        add("cards_manifest", not manifest_errors, "manifest 与卡片文件及类型一致" if not manifest_errors else "；".join(manifest_errors))
+    except (OSError, json.JSONDecodeError) as exc:
+        add("cards_manifest", False, f"无法读取 manifest：{exc}")
     html_errors = [path.name for path in [output_dir / "atlas.html", *html_cards] if path.exists() and "<!doctype html>" not in path.read_text("utf-8", errors="ignore").lower()]
     add("html_documents", not html_errors, "HTML 文档可识别" if not html_errors else f"格式异常：{', '.join(html_errors)}")
 
