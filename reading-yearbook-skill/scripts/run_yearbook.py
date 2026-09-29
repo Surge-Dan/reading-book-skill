@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import shutil
+import tempfile
+import uuid
+from copy import deepcopy
 from pathlib import Path
 
 from render_yearbook import render_atlas, render_cards
@@ -94,6 +99,31 @@ def _clear_generated(folder: Path, suffix: str) -> None:
             path.unlink()
 
 
+def _clear_profile_files(output_dir: Path) -> None:
+    books_dir = output_dir / "books"
+    if not books_dir.exists():
+        return
+    for filename in ("profile.md", "evidence.json"):
+        for path in books_dir.glob(f"*/{filename}"):
+            if path.is_file():
+                path.unlink()
+
+
+def _publish_staging(staging_dir: Path, output_dir: Path) -> None:
+    backup_dir = output_dir.parent / f".{output_dir.name}.backup-{uuid.uuid4().hex}"
+    had_output = output_dir.exists()
+    if had_output:
+        os.replace(output_dir, backup_dir)
+    try:
+        os.replace(staging_dir, output_dir)
+    except Exception:
+        if had_output and backup_dir.exists() and not output_dir.exists():
+            os.replace(backup_dir, output_dir)
+        raise
+    if backup_dir.exists():
+        shutil.rmtree(backup_dir)
+
+
 def _write_final_artifacts(data: dict, selection: dict, output_dir: Path) -> tuple[list[Path], list[dict]]:
     (output_dir / "yearbook-data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), "utf-8")
     (output_dir / "selection.json").write_text(json.dumps(selection, ensure_ascii=False, indent=2), "utf-8")
@@ -116,29 +146,44 @@ def finalize_yearbook(year: int, input_path: Path, output_dir: Path, selection: 
     raw, data = _prepare_data(year, input_path)
     if data["source_mode"] == "live" and (data["verification_status"] == "partial_unverified" or not raw.get("collection_complete", False)):
         raise ValueError("真实数据采集不完整，只能保留预览，不能生成最终版。")
+    draft_data = deepcopy(data)
     _apply_selection(data, selection)
     live_candidate = data["source_mode"] == "live" and raw.get("collection_complete", False)
     if live_candidate:
         data["verification_status"] = "live_verified"
     output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    html_cards, _ = _write_final_artifacts(data, selection, output_dir)
-    export_result = {"status": "skipped", "reason": "未请求 PNG 导出", "exported": 0}
-    if export_png:
-        from export_cards import export_cards
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    staging_dir = Path(tempfile.mkdtemp(prefix=f".{output_dir.name}.staging-", dir=output_dir.parent))
+    try:
+        if output_dir.exists():
+            shutil.copytree(output_dir, staging_dir, dirs_exist_ok=True)
+        (staging_dir / "yearbook-data.draft.json").write_text(json.dumps(draft_data, ensure_ascii=False, indent=2), "utf-8")
+        (staging_dir / "selection-preview.md").write_text(_selection_markdown(draft_data, selection), "utf-8")
+        _clear_profile_files(staging_dir)
+        html_cards, _ = _write_final_artifacts(data, selection, staging_dir)
+        export_result = {"status": "skipped", "reason": "未请求 PNG 导出", "exported": 0}
+        if export_png:
+            from export_cards import export_cards
 
-        _clear_generated(output_dir / "cards", ".png")
-        export_result = export_cards(output_dir / "cards-html", output_dir / "cards")
-    report = validate_output(output_dir, require_png=export_png, png_result=export_result)
-    if live_candidate and report["status"] != "pass":
-        data["verification_status"] = "implemented_unverified"
-        data["publication_status"] = "draft"
-        html_cards, _ = _write_final_artifacts(data, selection, output_dir)
-    report["png_export"] = export_result
-    report["source_mode"] = data["source_mode"]
-    report["verification_status"] = data["verification_status"]
-    (output_dir / "validation-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), "utf-8")
-    return {"data": data, "output": str(output_dir), "card_html_count": len(html_cards), "validation": report}
+            _clear_generated(staging_dir / "cards", ".png")
+            export_result = export_cards(staging_dir / "cards-html", staging_dir / "cards")
+        report = validate_output(staging_dir, require_png=export_png, png_result=export_result)
+        report["png_export"] = export_result
+        report["source_mode"] = data["source_mode"]
+        report["verification_status"] = data["verification_status"]
+        (staging_dir / "validation-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), "utf-8")
+        if report["status"] != "pass":
+            if live_candidate:
+                data["verification_status"] = "implemented_unverified"
+                data["publication_status"] = "draft"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            (output_dir / "validation-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), "utf-8")
+            return {"data": data, "output": str(output_dir), "card_html_count": len(html_cards), "validation": report}
+        _publish_staging(staging_dir, output_dir)
+        return {"data": data, "output": str(output_dir), "card_html_count": len(html_cards), "validation": report}
+    finally:
+        if staging_dir.exists():
+            shutil.rmtree(staging_dir)
 
 
 def main() -> int:

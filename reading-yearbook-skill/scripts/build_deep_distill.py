@@ -108,7 +108,8 @@ def distill_text(text: str, title: str, source_name: str, full_text_confirmed: b
     boundaries = [row for row in sentence_rows if any(marker in row["text"] for marker in BOUNDARY_MARKERS)][:8]
     words = re.findall(r"[\u4e00-\u9fff]{2,6}", clean)
     terms = [word for word, _ in Counter(words).most_common(12)]
-    skill_eligible = full_text_confirmed and len(methods) >= 2 and len(sections) >= 2 and all(item["eligible"] for item in methods)
+    eligible_methods = [item for item in methods if item["eligible"]]
+    skill_eligible = full_text_confirmed and len(eligible_methods) >= 2 and len(sections) >= 2
     return {
         "title": title,
         "source_name": source_name,
@@ -117,6 +118,7 @@ def distill_text(text: str, title: str, source_name: str, full_text_confirmed: b
         "character_count": len(clean),
         "sections": sections,
         "candidate_methods": methods,
+        "eligible_method_count": len(eligible_methods),
         "boundaries": boundaries,
         "candidate_terms": terms,
         "test_questions": [
@@ -160,11 +162,12 @@ def _write_outputs(result: dict, output_dir: Path, create_skill: bool) -> None:
         method_lines = "\n".join(
             f"- [{item['source_id']}] {item['text']}\n  - Steps: {'; '.join(item['steps'])}\n  - Verify: {'; '.join(item['verification'])}\n  - Stop when: {'; '.join(item['boundary'])}\n  - Test: {item['test']}"
             for item in result["candidate_methods"]
+            if item["eligible"]
         )
         skill_name = re.sub(r"[^a-z0-9-]+", "-", result["source_name"].lower()).strip("-") or "book-method"
         safe_title = re.sub(r"[\r\n]+", " ", str(result["title"])).strip()
         description = json.dumps(
-            f"Apply the verified methods extracted from {safe_title} when the user explicitly asks to use this book's framework.",
+            f"Review and apply candidate methods extracted from {safe_title} when the user explicitly asks to use this book's framework; human verification is required.",
             ensure_ascii=False,
         )
         skill = f"""---
@@ -174,7 +177,7 @@ description: {description}
 
 # {safe_title}
 
-Use only the methods supported by the user-provided source IDs. Distinguish source claims, user interpretation, and new inference.
+Use only the candidate methods supported by the user-provided source IDs. They remain pending human review. Distinguish source claims, user interpretation, and new inference.
 
 ## Candidate methods requiring human review
 

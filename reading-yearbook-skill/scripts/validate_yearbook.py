@@ -75,7 +75,7 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
         if not isinstance(books, list) or not books:
             schema_errors.append("books 必须是非空数组")
             books = []
-        book_keys = {"book_id", "title", "author", "evidence_level", "annual_reading_seconds", "months", "highlights", "thoughts", "score", "selected", "book_of_year_candidate"}
+        book_keys = {"book_id", "title", "author", "evidence_level", "annual_reading_seconds", "months", "highlights", "thoughts", "score", "selected", "book_of_year_candidate", "book_of_year"}
         book_ids = []
         for index, book in enumerate(books):
             if not isinstance(book, dict):
@@ -91,6 +91,12 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
                 book_ids.append(book_id)
             if book.get("evidence_level") not in {"E0", "E1", "E2", "E3"}:
                 schema_errors.append(f"books[{index}].evidence_level 无效")
+            for numeric_key in ("annual_reading_seconds", "score"):
+                value = book.get(numeric_key)
+                if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+                    schema_errors.append(f"books[{index}].{numeric_key} 必须是非负数")
+            if not isinstance(book.get("selected"), bool) or not isinstance(book.get("book_of_year_candidate"), bool) or not isinstance(book.get("book_of_year"), bool):
+                schema_errors.append(f"books[{index}] 的选择标记必须是布尔值")
             if not isinstance(book.get("months"), list) or any(not isinstance(month, int) or isinstance(month, bool) or month < 1 or month > 12 for month in book.get("months", [])):
                 schema_errors.append(f"books[{index}].months 无效")
             if not isinstance(book.get("highlights"), list) or not isinstance(book.get("thoughts"), list):
@@ -117,12 +123,20 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
         if not isinstance(selected_ids, list) or not selected_ids or any(item not in book_ids for item in selected_ids):
             schema_errors.append("selected_book_ids 必须是已知书籍的非空数组")
             selected_ids = []
+        elif len(selected_ids) != len(set(selected_ids)):
+            schema_errors.append("selected_book_ids 不能重复")
         if not isinstance(book_of_year_id, str) or book_of_year_id not in selected_ids:
             schema_errors.append("book_of_year_id 必须属于 selected_book_ids")
         if not isinstance(selection.get("confirmed_at"), str) or not selection.get("confirmed_at", "").strip():
             schema_errors.append("selection.confirmed_at 不能为空")
         if not isinstance(data.get("thesis"), str) or not data.get("thesis", "").strip():
             schema_errors.append("thesis 不能为空")
+        selected_from_books = {book.get("book_id") for book in books if isinstance(book, dict) and book.get("selected") is True}
+        year_books = [book.get("book_id") for book in books if isinstance(book, dict) and book.get("book_of_year") is True]
+        if set(selected_ids) != selected_from_books:
+            schema_errors.append("selection 与 books.selected 不一致")
+        if year_books != [book_of_year_id]:
+            schema_errors.append("selection 与 books.book_of_year 不一致")
         add("data_contract", not schema_errors, "schema、状态与选择关系有效" if not schema_errors else "；".join(schema_errors[:8]))
     except (OSError, json.JSONDecodeError) as exc:
         add("data_contract", False, f"无法读取数据：{exc}")
@@ -132,6 +146,23 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
     add("book_profiles", expected_book_count >= 0 and profile_count == expected_book_count, f"预期 {expected_book_count}，检测到 {profile_count}")
     html_cards = sorted((output_dir / "cards-html").glob("*.html")) if (output_dir / "cards-html").exists() else []
     add("editable_cards", len(html_cards) >= 5, f"检测到 {len(html_cards)} 张 HTML 卡片")
+    try:
+        selection_file = json.loads((output_dir / "selection.json").read_text("utf-8"))
+        final_selection = (data or {}).get("selection", {})
+        selection_errors = []
+        if not isinstance(selection_file, dict):
+            selection_errors.append("selection.json 必须是对象")
+            selection_file = {}
+        if selection_file.get("status") != "confirmed":
+            selection_errors.append("selection.json 尚未确认")
+        if selection_file.get("year") != (data or {}).get("year"):
+            selection_errors.append("selection.json 年份不一致")
+        for key in ("selected_book_ids", "book_of_year_id", "confirmed_at"):
+            if selection_file.get(key) != final_selection.get(key):
+                selection_errors.append(f"selection.json 的 {key} 与最终数据不一致")
+        add("selection_confirmation", not selection_errors, "确认文件与最终数据一致" if not selection_errors else "；".join(selection_errors))
+    except (OSError, json.JSONDecodeError) as exc:
+        add("selection_confirmation", False, f"无法读取 selection.json：{exc}")
     try:
         manifest = json.loads((output_dir / "cards-manifest.json").read_text("utf-8"))
         manifest_errors = []
@@ -158,6 +189,16 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
         known_ids = {book.get("book_id") for book in (data or {}).get("books", []) if isinstance(book, dict)}
         if any(item.get("type") in {"book-of-year", "selected-book"} and item.get("book_id") not in known_ids for item in entries):
             manifest_errors.append("书籍卡片引用了未知 book_id")
+        final_selection = (data or {}).get("selection", {})
+        selected_ids = set(final_selection.get("selected_book_ids", []))
+        book_of_year_id = final_selection.get("book_of_year_id")
+        year_cards = [item for item in entries if item.get("type") == "book-of-year"]
+        if len(year_cards) != 1 or year_cards[0].get("book_id") != book_of_year_id:
+            manifest_errors.append("年度之书卡必须唯一并匹配用户选择")
+        selected_cards = [item for item in entries if item.get("type") == "selected-book"]
+        selected_card_ids = [item.get("book_id") for item in selected_cards]
+        if len(selected_card_ids) != len(set(selected_card_ids)) or set(selected_card_ids) != selected_ids - {book_of_year_id}:
+            manifest_errors.append("精选单书卡必须与用户选择一一对应")
         add("cards_manifest", not manifest_errors, "manifest 与卡片文件及类型一致" if not manifest_errors else "；".join(manifest_errors))
     except (OSError, json.JSONDecodeError) as exc:
         add("cards_manifest", False, f"无法读取 manifest：{exc}")
@@ -179,7 +220,8 @@ def validate_output(output_dir: Path, require_png: bool = False, png_result: dic
         bad_sizes = [path.name for path in png_files if _png_size(path) != (900, 1200)]
         export_ok = bool(png_result and png_result.get("status") == "pass")
         count_ok = len(png_files) == len(html_cards)
-        add("png_export", export_ok and count_ok and not bad_sizes, f"HTML {len(html_cards)} / PNG {len(png_files)}；尺寸异常 {len(bad_sizes)}")
+        stem_match = {path.stem for path in png_files} == {path.stem for path in html_cards}
+        add("png_export", export_ok and count_ok and stem_match and not bad_sizes, f"HTML {len(html_cards)} / PNG {len(png_files)}；文件映射 {'一致' if stem_match else '不一致'}；尺寸异常 {len(bad_sizes)}")
     else:
         add("png_export", True, "本次未要求 PNG")
 

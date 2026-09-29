@@ -6,6 +6,7 @@ import unittest
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -219,6 +220,14 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(frontmatter.count("\ndescription:"), 1)
             self.assertNotIn("\nextra:", frontmatter)
 
+    def test_two_eligible_methods_are_not_blocked_by_a_third_weak_candidate(self):
+        text = (ROOT / "tests" / "fixtures" / "deep-sample.txt").read_text("utf-8")
+        text += "\n\n第四章 补充\n步骤三：先整理资料，具体如何判断效果以后再说。"
+        result = distill_text(text, title="判断与行动", source_name="book.txt", full_text_confirmed=True)
+        self.assertTrue(result["skill_eligible"])
+        self.assertGreaterEqual(sum(1 for method in result["candidate_methods"] if method["eligible"]), 2)
+        self.assertTrue(any(not method["eligible"] for method in result["candidate_methods"]))
+
     def test_epub_text_is_extracted_without_network_access(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             epub = Path(temp_dir) / "book.epub"
@@ -265,6 +274,24 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(result["validation"]["status"], "pass")
             self.assertEqual(result["data"]["verification_status"], "live_verified")
 
+    def test_live_render_failure_never_leaves_unverified_final_state_in_output(self):
+        sample = json.loads((SKILL_ROOT / "assets" / "sample-data.json").read_text("utf-8"))
+        sample.update({"source_mode": "live", "verification_status": "implemented_unverified", "collection_complete": True})
+        with tempfile.TemporaryDirectory() as temp_dir:
+            raw_path = Path(temp_dir) / "live.json"
+            raw_path.write_text(json.dumps(sample, ensure_ascii=False), "utf-8")
+            output = Path(temp_dir) / "output"
+            preview = generate_preview(2026, raw_path, output)
+            selection = preview["selection"]
+            selection.update({"status": "confirmed", "confirmed_at": "2026-09-28T12:00:00+08:00", "book_of_year_id": selection["book_of_year_candidates"][0]})
+            with patch("run_yearbook.render_atlas", side_effect=RuntimeError("render failed")):
+                with self.assertRaises(RuntimeError):
+                    finalize_yearbook(2026, raw_path, output, selection, export_png=False)
+            final_data = output / "yearbook-data.json"
+            if final_data.exists():
+                remaining = json.loads(final_data.read_text("utf-8"))
+                self.assertFalse(remaining.get("verification_status") == "live_verified" and remaining.get("publication_status") == "final")
+
     def test_user_can_override_default_book_of_year_candidates(self):
         sample = SKILL_ROOT / "assets" / "sample-data.json"
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -295,6 +322,23 @@ class PipelineTests(unittest.TestCase):
             (output / "selection.json").write_text("{}", "utf-8")
             (output / "cards-manifest.json").write_text("[]", "utf-8")
             (output / "cards-html").mkdir()
+            report = validate_output(output)
+            self.assertEqual(report["status"], "fail")
+
+    def test_validation_rejects_selection_and_manifest_mismatch(self):
+        sample = SKILL_ROOT / "assets" / "sample-data.json"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "2026"
+            preview = generate_preview(2026, sample, output)
+            selection = preview["selection"]
+            selection.update({"status": "confirmed", "confirmed_at": "2026-09-28T12:00:00+08:00", "book_of_year_id": selection["book_of_year_candidates"][0]})
+            finalize_yearbook(2026, sample, output, selection, export_png=False)
+            selection["status"] = "pending_user_confirmation"
+            (output / "selection.json").write_text(json.dumps(selection, ensure_ascii=False), "utf-8")
+            manifest = json.loads((output / "cards-manifest.json").read_text("utf-8"))
+            year_card = next(item for item in manifest if item["type"] == "book-of-year")
+            year_card["book_id"] = next(book["book_id"] for book in preview["data"]["books"] if book["book_id"] != selection["book_of_year_id"])
+            (output / "cards-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False), "utf-8")
             report = validate_output(output)
             self.assertEqual(report["status"], "fail")
 
