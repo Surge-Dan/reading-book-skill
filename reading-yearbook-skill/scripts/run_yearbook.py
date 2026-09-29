@@ -168,17 +168,22 @@ def finalize_yearbook(year: int, input_path: Path, output_dir: Path, selection: 
             _clear_generated(staging_dir / "cards", ".png")
             export_result = export_cards(staging_dir / "cards-html", staging_dir / "cards")
         report = validate_output(staging_dir, require_png=export_png, png_result=export_result)
-        report["png_export"] = export_result
-        report["source_mode"] = data["source_mode"]
-        report["verification_status"] = data["verification_status"]
-        (staging_dir / "validation-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), "utf-8")
         if report["status"] != "pass":
             if live_candidate:
                 data["verification_status"] = "implemented_unverified"
                 data["publication_status"] = "draft"
+            report["png_export"] = export_result
+            report["source_mode"] = data["source_mode"]
+            report["verification_status"] = data["verification_status"]
+            report["publication_status"] = data["publication_status"]
             output_dir.mkdir(parents=True, exist_ok=True)
             (output_dir / "validation-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), "utf-8")
             return {"data": data, "output": str(output_dir), "card_html_count": len(html_cards), "validation": report}
+        report["png_export"] = export_result
+        report["source_mode"] = data["source_mode"]
+        report["verification_status"] = data["verification_status"]
+        report["publication_status"] = data["publication_status"]
+        (staging_dir / "validation-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), "utf-8")
         _publish_staging(staging_dir, output_dir)
         return {"data": data, "output": str(output_dir), "card_html_count": len(html_cards), "validation": report}
     finally:

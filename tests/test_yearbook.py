@@ -292,6 +292,24 @@ class PipelineTests(unittest.TestCase):
                 remaining = json.loads(final_data.read_text("utf-8"))
                 self.assertFalse(remaining.get("verification_status") == "live_verified" and remaining.get("publication_status") == "final")
 
+    def test_live_validation_failure_report_uses_downgraded_status(self):
+        sample = json.loads((SKILL_ROOT / "assets" / "sample-data.json").read_text("utf-8"))
+        sample.update({"source_mode": "live", "verification_status": "implemented_unverified", "collection_complete": True})
+        with tempfile.TemporaryDirectory() as temp_dir:
+            raw_path = Path(temp_dir) / "live.json"
+            raw_path.write_text(json.dumps(sample, ensure_ascii=False), "utf-8")
+            output = Path(temp_dir) / "output"
+            preview = generate_preview(2026, raw_path, output)
+            selection = preview["selection"]
+            selection.update({"status": "confirmed", "confirmed_at": "2026-09-28T12:00:00+08:00", "book_of_year_id": selection["book_of_year_candidates"][0]})
+            failed_report = {"status": "fail", "checks": [{"name": "forced", "status": "fail", "detail": "test"}]}
+            with patch("run_yearbook.validate_output", return_value=failed_report):
+                result = finalize_yearbook(2026, raw_path, output, selection, export_png=False)
+            report = json.loads((output / "validation-report.json").read_text("utf-8"))
+            self.assertEqual(result["data"]["verification_status"], "implemented_unverified")
+            self.assertEqual(report["verification_status"], "implemented_unverified")
+            self.assertEqual(report["publication_status"], "draft")
+
     def test_user_can_override_default_book_of_year_candidates(self):
         sample = SKILL_ROOT / "assets" / "sample-data.json"
         with tempfile.TemporaryDirectory() as temp_dir:
