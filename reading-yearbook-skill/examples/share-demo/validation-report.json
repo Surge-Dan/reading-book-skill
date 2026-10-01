@@ -1,0 +1,836 @@
+{
+  "status": "pass",
+  "stage": "final",
+  "art_hash": "bd2ef9fe5b677e516bde031f7db01951967ab30b7296064c3694f411c06e7be4",
+  "pages": [
+    {
+      "id": "cover",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅",
+          "x": 54,
+          "y": 40,
+          "width": 75,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "25px",
+            "400",
+            "37.5px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "样例 · 虚构书目与笔记",
+          "x": 605.69,
+          "y": 40,
+          "width": 240.31,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "今年的书，\n挑几本\n聊聊。",
+          "x": 50,
+          "y": 117,
+          "width": 600,
+          "height": 370,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "94px",
+            "850",
+            "112.8px",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "20\n26",
+          "x": 46,
+          "y": 707,
+          "width": 122,
+          "height": 217.59,
+          "font": [
+            "\"Times New Roman\", serif",
+            "136px",
+            "400",
+            "108.8px",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "书单 / 阅读笔记",
+          "x": 54,
+          "y": 963,
+          "width": 171,
+          "height": 36,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "25px",
+            "400",
+            "normal",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "缓慢的城市",
+          "x": 54,
+          "y": 1032,
+          "width": 182,
+          "height": 40,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "28px",
+            "400",
+            "44.8px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "看见选择",
+          "x": 264,
+          "y": 1032,
+          "width": 154,
+          "height": 40,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "28px",
+            "400",
+            "44.8px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "重新学习提问",
+          "x": 54,
+          "y": 1076.8,
+          "width": 224,
+          "height": 40,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "28px",
+            "400",
+            "44.8px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "配图：Atget / 芝加哥艺术博物馆",
+          "x": 54,
+          "y": 1131.81,
+          "width": 327.89,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "年度阅读",
+          "x": 754,
+          "y": 1131.81,
+          "width": 92,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        }
+      ],
+      "overlaps": [],
+      "blocks": [
+        {
+          "id": "cover-title",
+          "text": "今年的书，\n挑几本\n聊聊。"
+        },
+        {
+          "id": "cover-year",
+          "text": "20\n26"
+        },
+        {
+          "id": "cover-book-b-sample-002",
+          "text": "缓慢的城市"
+        },
+        {
+          "id": "cover-book-b-sample-001",
+          "text": "看见选择"
+        },
+        {
+          "id": "cover-book-b-sample-005",
+          "text": "重新学习提问"
+        }
+      ],
+      "statusLabels": [
+        "样例 · 虚构书目与笔记"
+      ],
+      "images": [
+        "file:///C:/Users/22585/Documents/ChatGPT/%E5%B9%B4%E5%B9%B4%E9%98%85Skill/reading-yearbook-skill/examples/share-demo/assets/atget-organ-player.jpg"
+      ],
+      "fingerprint": "7fc2e544afbc220da0c05c0ea97cc855ddd8c10b2d2b873ccd7d45f4535f4cec"
+    },
+    {
+      "id": "book-b-sample-002",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 01",
+          "x": 54,
+          "y": 40,
+          "width": 123.75,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "25px",
+            "400",
+            "37.5px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "样例 · 虚构书目与笔记",
+          "x": 605.69,
+          "y": 40,
+          "width": 240.31,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "缓慢的城市",
+          "x": 54,
+          "y": 136,
+          "width": 330,
+          "height": 88.39,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "68px",
+            "750",
+            "88.4px",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "周野 · 随笔",
+          "x": 56,
+          "y": 242,
+          "width": 147.11,
+          "height": 39,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "27px",
+            "400",
+            "normal",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "同一张照片，走近一点看。",
+          "x": 578,
+          "y": 425,
+          "width": 276,
+          "height": 34,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "normal",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "一条读书笔记",
+          "x": 578,
+          "y": 528,
+          "width": 156,
+          "height": 37,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "26px",
+            "400",
+            "normal",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "这本书让我\n重新注意\n每天经过\n却没有看见的路。",
+          "x": 574,
+          "y": 584,
+          "width": 288,
+          "height": 230.38,
+          "font": [
+            "KaiTi, \"Noto Serif SC\", serif",
+            "36px",
+            "400",
+            "57.6px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "配图：Atget，1898/99 · 非书中插图",
+          "x": 54,
+          "y": 928,
+          "width": 381.48,
+          "height": 34.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "写的是步行和街区，以及人在城市里怎么生活。",
+          "x": 54,
+          "y": 1016,
+          "width": 775,
+          "height": 56.09,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "34px",
+            "400",
+            "56.1px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "书目与笔记来自仓库样例",
+          "x": 54,
+          "y": 1131.81,
+          "width": 253,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "01 / 缓慢的城市",
+          "x": 686.14,
+          "y": 1131.81,
+          "width": 159.86,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        }
+      ],
+      "overlaps": [],
+      "blocks": [
+        {
+          "id": "b-sample-002-title",
+          "text": "缓慢的城市"
+        },
+        {
+          "id": "b-sample-002-author",
+          "text": "周野"
+        },
+        {
+          "id": "b-sample-002-note",
+          "text": "这本书让我\n重新注意\n每天经过\n却没有看见的路。"
+        },
+        {
+          "id": "b-sample-002-about",
+          "text": "写的是步行和街区，以及人在城市里怎么生活。"
+        }
+      ],
+      "statusLabels": [
+        "样例 · 虚构书目与笔记"
+      ],
+      "images": [
+        "file:///C:/Users/22585/Documents/ChatGPT/%E5%B9%B4%E5%B9%B4%E9%98%85Skill/reading-yearbook-skill/examples/share-demo/assets/atget-organ-player.jpg"
+      ],
+      "fingerprint": "ce3bd6c6cdc02634b68507aeab962172e1b01d56fcfc23b425334325a1248b18"
+    },
+    {
+      "id": "book-b-sample-001",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 02",
+          "x": 54,
+          "y": 40,
+          "width": 123.75,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "25px",
+            "400",
+            "37.5px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "样例 · 虚构书目与笔记",
+          "x": 605.69,
+          "y": 40,
+          "width": 240.31,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "看见选择",
+          "x": 54,
+          "y": 136,
+          "width": 264,
+          "height": 88.39,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "68px",
+            "750",
+            "88.4px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "林舟",
+          "x": 56,
+          "y": 242,
+          "width": 54,
+          "height": 39,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "27px",
+            "400",
+            "normal",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "以后做重要决定时，\n先保留一次\n反方陈述。",
+          "x": 54,
+          "y": 418,
+          "width": 792,
+          "height": 365.77,
+          "font": [
+            "\"Noto Serif SC\", SimSun, serif",
+            "62px",
+            "400",
+            "99.2px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "书里写什么",
+          "x": 54,
+          "y": 975,
+          "width": 135,
+          "height": 44.55,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "27px",
+            "400",
+            "44.55px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "从日常选择出发，聊事实、假设和判断之间的距离。",
+          "x": 230,
+          "y": 970,
+          "width": 614,
+          "height": 112.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "34px",
+            "400",
+            "56.1px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "书目与笔记来自仓库样例",
+          "x": 54,
+          "y": 1131.81,
+          "width": 253,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "02 / 看见选择",
+          "x": 709.14,
+          "y": 1131.81,
+          "width": 136.86,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(245, 244, 239)"
+          ],
+          "clipped": false,
+          "hidden": false
+        }
+      ],
+      "overlaps": [],
+      "blocks": [
+        {
+          "id": "b-sample-001-title",
+          "text": "看见选择"
+        },
+        {
+          "id": "b-sample-001-author",
+          "text": "林舟"
+        },
+        {
+          "id": "b-sample-001-note",
+          "text": "以后做重要决定时，\n先保留一次\n反方陈述。"
+        },
+        {
+          "id": "b-sample-001-about",
+          "text": "从日常选择出发，聊事实、假设和判断之间的距离。"
+        }
+      ],
+      "statusLabels": [
+        "样例 · 虚构书目与笔记"
+      ],
+      "images": [],
+      "fingerprint": "4bbe0af9ef3afebd36004a4ae58a4294cb0f648bb61d734e7050c2ff3b241321"
+    },
+    {
+      "id": "book-b-sample-005",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 03",
+          "x": 54,
+          "y": 40,
+          "width": 123.75,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "25px",
+            "400",
+            "37.5px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "样例 · 虚构书目与笔记",
+          "x": 605.69,
+          "y": 40,
+          "width": 240.31,
+          "height": 37.5,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "重新学习提问",
+          "x": 54,
+          "y": 136,
+          "width": 348,
+          "height": 78,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "60px",
+            "750",
+            "78px",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "顾言",
+          "x": 56,
+          "y": 242,
+          "width": 54,
+          "height": 39,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "27px",
+            "400",
+            "normal",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "先问边界，\n再问答案。",
+          "x": 54,
+          "y": 443,
+          "width": 320,
+          "height": 204.78,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "64px",
+            "700",
+            "102.4px",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "写提问，也写怎么澄清边界、寻找证据。",
+          "x": 54,
+          "y": 724,
+          "width": 792,
+          "height": 52.8,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "32px",
+            "400",
+            "52.8px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "一条笔记",
+          "x": 54,
+          "y": 909,
+          "width": 108,
+          "height": 44.55,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "27px",
+            "400",
+            "44.55px",
+            "rgb(37, 79, 198)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "我想把需求讨论里的抽象争论\n改成三个具体问题。",
+          "x": 232,
+          "y": 900,
+          "width": 614,
+          "height": 115.59,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "34px",
+            "400",
+            "57.8px",
+            "rgb(37, 38, 34)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "书目与笔记来自仓库样例",
+          "x": 54,
+          "y": 1131.81,
+          "width": 253,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "03 / 重新学习提问",
+          "x": 663.14,
+          "y": 1131.81,
+          "width": 182.86,
+          "height": 32.19,
+          "font": [
+            "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "32.2px",
+            "rgb(98, 99, 95)"
+          ],
+          "clipped": false,
+          "hidden": false
+        }
+      ],
+      "overlaps": [],
+      "blocks": [
+        {
+          "id": "b-sample-005-title",
+          "text": "重新学习提问"
+        },
+        {
+          "id": "b-sample-005-author",
+          "text": "顾言"
+        },
+        {
+          "id": "b-sample-005-quote",
+          "text": "先问边界，\n再问答案。"
+        },
+        {
+          "id": "b-sample-005-about",
+          "text": "写提问，也写怎么澄清边界、寻找证据。"
+        },
+        {
+          "id": "b-sample-005-note",
+          "text": "我想把需求讨论里的抽象争论\n改成三个具体问题。"
+        }
+      ],
+      "statusLabels": [
+        "样例 · 虚构书目与笔记"
+      ],
+      "images": [],
+      "fingerprint": "8374440da3f793152c21fb8eaf7563921193fb8895054bdd0e80d90585444ecf"
+    }
+  ],
+  "requested_ids": [
+    "cover",
+    "book-b-sample-002",
+    "book-b-sample-001",
+    "book-b-sample-005"
+  ],
+  "images": [
+    {
+      "id": "cover",
+      "file": "01-cover.png",
+      "width": 900,
+      "height": 1200,
+      "fingerprint": "7fc2e544afbc220da0c05c0ea97cc855ddd8c10b2d2b873ccd7d45f4535f4cec",
+      "sha256": "c3306cc013e5480425eed4793b546bfb6e98aec8ee8a91ae21ea75104f04c781",
+      "reused": true
+    },
+    {
+      "id": "book-b-sample-002",
+      "file": "02-book-b-sample-002.png",
+      "width": 900,
+      "height": 1200,
+      "fingerprint": "ce3bd6c6cdc02634b68507aeab962172e1b01d56fcfc23b425334325a1248b18",
+      "sha256": "189888c02cb7e7c9826573dd91170daa1889a9ad48e3115c2c107f1ee90e0ce3",
+      "reused": true
+    },
+    {
+      "id": "book-b-sample-001",
+      "file": "03-book-b-sample-001.png",
+      "width": 900,
+      "height": 1200,
+      "fingerprint": "4bbe0af9ef3afebd36004a4ae58a4294cb0f648bb61d734e7050c2ff3b241321",
+      "sha256": "a31f582091cac281c03032872004badcfec2e6713d6922fb9f06e72964ddd1a5",
+      "reused": false
+    },
+    {
+      "id": "book-b-sample-005",
+      "file": "04-book-b-sample-005.png",
+      "width": 900,
+      "height": 1200,
+      "fingerprint": "8374440da3f793152c21fb8eaf7563921193fb8895054bdd0e80d90585444ecf",
+      "sha256": "f054f178a96d81ef1c82bbbcd8fe4259f9878d3a47123277b70486bd57732235",
+      "reused": false
+    }
+  ],
+  "rendered": 2,
+  "reused": 2,
+  "elapsed_seconds": 1.72,
+  "visual_review": "pending",
+  "coverage": "text boxes and registered assets; aesthetic judgment and editorial grounding remain human reviews",
+  "content_hash": "9b3046153ab5a883db858af208599930a0a377c272bab3bab1957579adb4c503",
+  "source_sha256": "3994a7473d5c44850e4759047c4bf10e478654268a9f820850718fb6e220e2f8",
+  "source_mode": "sample",
+  "verification_status": "sample_verified"
+}

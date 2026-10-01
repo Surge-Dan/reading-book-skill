@@ -1,0 +1,471 @@
+{
+  "schema_version": "share-1",
+  "year": 2026,
+  "source_mode": "sample",
+  "source_sha256": "672293b2a4f5216d3ee6e6f30bd904efaf44fcdb3e2202e6ad5c527778eb39f0",
+  "coverage": {
+    "collection_complete": true,
+    "verification_status": "sample_verified",
+    "scope": "selected-books",
+    "annual_book_candidates": 6
+  },
+  "period": {
+    "year": 2026,
+    "as_of": "2026-10-01",
+    "complete": false
+  },
+  "books": [
+    {
+      "book_id": "sample-002",
+      "title": "缓慢的城市",
+      "author": "周野",
+      "evidence_level": "E1",
+      "excerpt_refs": [
+        "sample-002/highlight/s2-h1",
+        "sample-002/highlight/s2-h2",
+        "sample-002/thought/s2-r1"
+      ],
+      "available_highlights": 2,
+      "available_thoughts": 1
+    },
+    {
+      "book_id": "sample-001",
+      "title": "看见选择",
+      "author": "林舟",
+      "evidence_level": "E2",
+      "excerpt_refs": [
+        "sample-001/highlight/s1-h1",
+        "sample-001/highlight/s1-h2",
+        "sample-001/thought/s1-r1",
+        "sample-001/thought/s1-r2"
+      ],
+      "available_highlights": 3,
+      "available_thoughts": 2
+    },
+    {
+      "book_id": "sample-005",
+      "title": "重新学习提问",
+      "author": "顾言",
+      "evidence_level": "E1",
+      "excerpt_refs": [
+        "sample-005/highlight/s5-h1",
+        "sample-005/highlight/s5-h2",
+        "sample-005/thought/s5-r1"
+      ],
+      "available_highlights": 2,
+      "available_thoughts": 1
+    }
+  ],
+  "sources": {
+    "period/year": {
+      "kind": "fact",
+      "text": "2026"
+    },
+    "sample-002/title": {
+      "kind": "fact",
+      "text": "缓慢的城市",
+      "truncated": false,
+      "original_characters": 5
+    },
+    "sample-002/author": {
+      "kind": "fact",
+      "text": "周野",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-002/intro": {
+      "kind": "fact",
+      "text": "以步行和街区观察记录城市变化，关心人在空间里如何生活。",
+      "truncated": false,
+      "original_characters": 27
+    },
+    "sample-002/highlight/s2-h1": {
+      "kind": "highlight",
+      "source_id": "s2-h1",
+      "text": "一座城市最诚实的部分，往往在步行速度里。",
+      "truncated": false,
+      "original_characters": 20
+    },
+    "sample-002/highlight/s2-h2": {
+      "kind": "highlight",
+      "source_id": "s2-h2",
+      "text": "街道不是通道，它也是停留发生的地方。",
+      "truncated": false,
+      "original_characters": 18
+    },
+    "sample-002/thought/s2-r1": {
+      "kind": "thought",
+      "source_id": "s2-r1",
+      "text": "这本书让我重新注意每天经过却没有看见的路。",
+      "truncated": false,
+      "original_characters": 21
+    },
+    "sample-001/title": {
+      "kind": "fact",
+      "text": "看见选择",
+      "truncated": false,
+      "original_characters": 4
+    },
+    "sample-001/author": {
+      "kind": "fact",
+      "text": "林舟",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-001/intro": {
+      "kind": "fact",
+      "text": "从日常选择出发，讨论事实、假设与判断之间的距离。",
+      "truncated": false,
+      "original_characters": 24
+    },
+    "sample-001/highlight/s1-h1": {
+      "kind": "highlight",
+      "source_id": "s1-h1",
+      "text": "事实不会替我们做决定，但会缩小自欺的空间。",
+      "truncated": false,
+      "original_characters": 21
+    },
+    "sample-001/highlight/s1-h2": {
+      "kind": "highlight",
+      "source_id": "s1-h2",
+      "text": "先写下你相信什么，再去寻找会推翻它的证据。",
+      "truncated": false,
+      "original_characters": 21
+    },
+    "sample-001/thought/s1-r1": {
+      "kind": "thought",
+      "source_id": "s1-r1",
+      "text": "今年我真正需要的不是更多建议，而是一套能暴露假设的检查方式。",
+      "truncated": false,
+      "original_characters": 30
+    },
+    "sample-001/thought/s1-r2": {
+      "kind": "thought",
+      "source_id": "s1-r2",
+      "text": "以后做重要决定时，先保留一次反方陈述。",
+      "truncated": false,
+      "original_characters": 19
+    },
+    "sample-005/title": {
+      "kind": "fact",
+      "text": "重新学习提问",
+      "truncated": false,
+      "original_characters": 6
+    },
+    "sample-005/author": {
+      "kind": "fact",
+      "text": "顾言",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-005/intro": {
+      "kind": "fact",
+      "text": "把提问看作澄清边界、寻找证据和暴露假设的工具。",
+      "truncated": false,
+      "original_characters": 23
+    },
+    "sample-005/highlight/s5-h1": {
+      "kind": "highlight",
+      "source_id": "s5-h1",
+      "text": "问题决定我们允许什么成为证据。",
+      "truncated": false,
+      "original_characters": 15
+    },
+    "sample-005/highlight/s5-h2": {
+      "kind": "highlight",
+      "source_id": "s5-h2",
+      "text": "先问边界，再问答案。",
+      "truncated": false,
+      "original_characters": 10
+    },
+    "sample-005/thought/s5-r1": {
+      "kind": "thought",
+      "source_id": "s5-r1",
+      "text": "我想把需求讨论里的抽象争论改成三个具体问题。",
+      "truncated": false,
+      "original_characters": 22
+    }
+  },
+  "pages": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "book_ids": [
+        "sample-002",
+        "sample-001",
+        "sample-005"
+      ],
+      "blocks": [
+        {
+          "id": "cover-title",
+          "kind": "editorial",
+          "text": "今年的书，挑几本聊聊。",
+          "source_refs": []
+        },
+        {
+          "id": "cover-year",
+          "kind": "fact",
+          "text": "2026",
+          "source_refs": [
+            "period/year"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-002",
+          "kind": "fact",
+          "text": "缓慢的城市",
+          "source_refs": [
+            "sample-002/title"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-001",
+          "kind": "fact",
+          "text": "看见选择",
+          "source_refs": [
+            "sample-001/title"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-005",
+          "kind": "fact",
+          "text": "重新学习提问",
+          "source_refs": [
+            "sample-005/title"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-002",
+      "role": "book",
+      "book_ids": [
+        "sample-002"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-002-title",
+          "kind": "fact",
+          "text": "缓慢的城市",
+          "source_refs": [
+            "sample-002/title"
+          ]
+        },
+        {
+          "id": "b-sample-002-author",
+          "kind": "fact",
+          "text": "周野",
+          "source_refs": [
+            "sample-002/author"
+          ]
+        },
+        {
+          "id": "b-sample-002-about",
+          "kind": "editorial",
+          "text": "写的是步行和街区，以及人在城市里怎么生活。",
+          "source_refs": [
+            "sample-002/intro"
+          ]
+        },
+        {
+          "id": "b-sample-002-note",
+          "kind": "thought",
+          "text": "这本书让我重新注意每天经过却没有看见的路。",
+          "source_refs": [
+            "sample-002/thought/s2-r1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-001",
+      "role": "book",
+      "book_ids": [
+        "sample-001"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-001-title",
+          "kind": "fact",
+          "text": "看见选择",
+          "source_refs": [
+            "sample-001/title"
+          ]
+        },
+        {
+          "id": "b-sample-001-author",
+          "kind": "fact",
+          "text": "林舟",
+          "source_refs": [
+            "sample-001/author"
+          ]
+        },
+        {
+          "id": "b-sample-001-about",
+          "kind": "editorial",
+          "text": "从日常选择出发，聊事实、假设和判断之间的距离。",
+          "source_refs": [
+            "sample-001/intro"
+          ]
+        },
+        {
+          "id": "b-sample-001-note",
+          "kind": "thought",
+          "text": "以后做重要决定时，先保留一次反方陈述。",
+          "source_refs": [
+            "sample-001/thought/s1-r2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-005",
+      "role": "book",
+      "book_ids": [
+        "sample-005"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-005-title",
+          "kind": "fact",
+          "text": "重新学习提问",
+          "source_refs": [
+            "sample-005/title"
+          ]
+        },
+        {
+          "id": "b-sample-005-author",
+          "kind": "fact",
+          "text": "顾言",
+          "source_refs": [
+            "sample-005/author"
+          ]
+        },
+        {
+          "id": "b-sample-005-about",
+          "kind": "editorial",
+          "text": "写提问，也写怎么澄清边界、寻找证据。",
+          "source_refs": [
+            "sample-005/intro"
+          ]
+        },
+        {
+          "id": "b-sample-005-note",
+          "kind": "thought",
+          "text": "我想把需求讨论里的抽象争论改成三个具体问题。",
+          "source_refs": [
+            "sample-005/thought/s5-r1"
+          ]
+        },
+        {
+          "id": "b-sample-005-quote",
+          "kind": "quote",
+          "text": "先问边界，再问答案。",
+          "source_refs": [
+            "sample-005/highlight/s5-h2"
+          ]
+        }
+      ]
+    }
+  ],
+  "art_brief": {
+    "audience": "小红书陌生读者",
+    "focus": "精选书单与原始笔记，城市观察是这次的图像入口",
+    "visual": "照片全景与局部；蓝色文字与黑白照片相处；讨论选择时换成文字主导",
+    "sequence": "封面、街道观察、反方陈述、提问",
+    "omit": "不加年度总量、年轮、装饰纹理；不是其他书单的固定风格"
+  },
+  "assets": [
+    {
+      "path": "assets/atget-organ-player.jpg",
+      "source": "https://www.artic.edu/artworks/55394",
+      "rights": "public-domain; museum API is_public_domain=true",
+      "sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf",
+      "role": "visual illustration, not a book cover or illustration"
+    }
+  ],
+  "caption": "2026 年的书，挑几本聊聊。\n\n- 《缓慢的城市》\n- 《看见选择》\n- 《重新学习提问》\n\n样例：虚构书籍与笔记，仅作设计演示。",
+  "approvals": {
+    "content": {
+      "hash": "9b3046153ab5a883db858af208599930a0a377c272bab3bab1957579adb4c503",
+      "actor": "sample-test",
+      "at": "2026-10-01T03:50:04.356657+00:00"
+    },
+    "visual": {
+      "actor": "sample-test",
+      "at": "2026-10-01T04:19:35.451022+00:00",
+      "art_hash": "bd2ef9fe5b677e516bde031f7db01951967ab30b7296064c3694f411c06e7be4",
+      "brief_hash": "48c06aab7de49f8f77418927df68132d1d6a3e86f9977e28f10c3f3e1b94399b",
+      "anchors": {
+        "cover": "7fc2e544afbc220da0c05c0ea97cc855ddd8c10b2d2b873ccd7d45f4535f4cec",
+        "book-b-sample-002": "ce3bd6c6cdc02634b68507aeab962172e1b01d56fcfc23b425334325a1248b18"
+      }
+    }
+  },
+  "status": "ready_sample",
+  "runs": [
+    {
+      "stage": "preview",
+      "at": "2026-10-01T03:52:37.468162+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 3.94
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T03:54:28.163701+00:00",
+      "rendered": 2,
+      "reused": 2,
+      "elapsed_seconds": 2.14
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:03:30.049914+00:00",
+      "rendered": 1,
+      "reused": 3,
+      "elapsed_seconds": 1.79
+    },
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:08:39.712335+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 1.7
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:08:42.152920+00:00",
+      "rendered": 2,
+      "reused": 2,
+      "elapsed_seconds": 1.64
+    },
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:14:35.409807+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 1.67
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:14:38.099141+00:00",
+      "rendered": 2,
+      "reused": 2,
+      "elapsed_seconds": 1.73
+    },
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:19:35.440137+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 2.09
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:19:37.583929+00:00",
+      "rendered": 2,
+      "reused": 2,
+      "elapsed_seconds": 1.72
+    }
+  ]
+}

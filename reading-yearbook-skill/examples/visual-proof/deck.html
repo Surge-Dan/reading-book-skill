@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>年年阅 · 视觉试稿 · 给判断留一点空白</title>
+  <style>
+    /* This is one content-specific study, not the Skill's default template. */
+    :root { --ink: #183b37; --light: #f0f1e9; --accent: #dce49a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 40px; background: #d3d5d0; }
+    .page {
+      width: 900px; height: 1200px; position: relative; overflow: hidden;
+      margin: 0 auto 40px; color: var(--ink); background: var(--light);
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      font-synthesis: none;
+    }
+    h1, h2, p, blockquote { margin: 0; }
+    .serif { font-family: "Noto Serif SC", "SimSun", serif; font-weight: 400; }
+    .masthead {
+      position: absolute; top: 64px; left: 80px; right: 80px;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 28px; letter-spacing: 2px;
+    }
+    .folio {
+      position: absolute; bottom: 54px; left: 80px; right: 80px;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 24px;
+    }
+    .cover { background: var(--ink); color: var(--light); }
+    .cover h1 { font-size: 134px; line-height: 1.25; letter-spacing: -3px; }
+    .cover .line { position: absolute; white-space: nowrap; }
+    .cover .first { left: 80px; top: 235px; }
+    .cover .second { left: 224px; top: 416px; }
+    .cover .last { left: 80px; right: 80px; top: 597px; display: flex; justify-content: space-between; color: var(--accent); }
+    .cover .subtitle { position: absolute; left: 80px; top: 878px; font-size: 34px; line-height: 1.7; }
+    .cover .books { position: absolute; left: 80px; top: 990px; font-size: 27px; line-height: 1.7; }
+    .cover .books .break { display: block; }
+    .interior .book-heading { position: absolute; left: 80px; top: 156px; display: flex; gap: 32px; align-items: baseline; }
+    .interior .number { font-size: 56px; line-height: 1; }
+    .interior h2 { font-size: 42px; font-weight: 500; letter-spacing: 1px; }
+    .interior .author { font-size: 27px; }
+    .interior blockquote { font-size: 64px; line-height: 1.56; letter-spacing: -1px; }
+    .interior .quote-start { position: absolute; left: 80px; top: 297px; }
+    .interior .quote-turn { position: absolute; left: 256px; top: 515px; }
+    .interior mark { background: transparent; color: inherit; box-shadow: inset 0 -0.22em var(--accent); }
+    .interior .reason-label { position: absolute; left: 80px; top: 835px; font-size: 27px; line-height: 1.7; }
+    .interior .reason { position: absolute; left: 256px; top: 825px; width: 564px; font-size: 34px; line-height: 1.7; font-weight: 400; }
+    .interior .rule { position: absolute; left: 256px; top: 787px; width: 564px; height: 1px; background: #aebdb5; }
+    @media (max-width: 980px) {
+      body { padding: 20px 0; }
+      .page { margin-bottom: 20px; }
+    }
+    @media print {
+      body { padding: 0; background: none; }
+      .page { margin: 0; break-after: page; }
+      @page { size: 900px 1200px; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <article class="page cover" id="01-cover" aria-label="封面：给判断留一点空白">
+    <header class="masthead"><span data-ink>年年阅 / 阅读札记</span><span data-ink>2026 · 样例</span></header>
+    <h1 class="serif" aria-label="给判断留一点空白">
+      <span class="line first" data-ink>给判断</span>
+      <span class="line second" data-ink>留一点</span>
+      <span class="line last"><span data-ink>空</span><span data-ink>白</span></span>
+    </h1>
+    <p class="subtitle" data-ink>关于选择、工作与提问的阅读札记</p>
+    <p class="books" data-ink>《看见选择》 · 《工作中的尺度》<span class="break">《重新学习提问》</span></p>
+    <footer class="folio"><span data-ink>虚构书籍与笔记，仅作设计演示</span><span data-ink>精选书单</span></footer>
+  </article>
+  <article class="page interior" id="02-choice" aria-label="内页：看见选择，划线与我的理由">
+    <header class="masthead"><span data-ink>年年阅 / 精选书单</span><span data-ink>2026 · 样例</span></header>
+    <div class="book-heading"><span class="number serif" data-ink>01</span><h2 data-ink>看见选择</h2><span class="author" data-ink>林舟</span></div>
+    <blockquote class="serif" cite="../../assets/sample-data.json">
+      <p class="quote-start" data-ink>事实不会替我们<br>做决定，</p>
+      <p class="quote-turn" data-ink>但会缩小<br><mark>自欺</mark>的空间。</p>
+    </blockquote>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="reason-label" data-ink>我的理由</p>
+    <p class="reason" data-ink>今年我真正需要的不是更多建议，而是一套能暴露假设的检查方式。</p>
+    <footer class="folio"><span data-ink>虚构书籍与笔记，仅作设计演示</span><span data-ink>摘录 / 笔记</span></footer>
+  </article>
+</body>
+</html>

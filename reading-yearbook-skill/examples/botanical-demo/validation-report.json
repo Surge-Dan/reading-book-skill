@@ -1,0 +1,342 @@
+{
+  "status": "pass",
+  "stage": "final",
+  "art_hash": "12f215ba55c518a3f9e252eabe3280d884aa287eebc3ff43549a5f771d77b23d",
+  "pages": [
+    {
+      "id": "cover",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 · 单书",
+          "x": 52,
+          "y": 42,
+          "width": 134.16,
+          "height": 34.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(112, 41, 54)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "样例 · 虚构书目与划线",
+          "x": 621.84,
+          "y": 42,
+          "width": 226.16,
+          "height": 34.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(112, 41, 54)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "植物\n知道时间",
+          "x": 52,
+          "y": 164,
+          "width": 556,
+          "height": 412.38,
+          "font": [
+            "SimSun, serif",
+            "124px",
+            "400",
+            "161.2px",
+            "rgb(112, 41, 54)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "这次聊一本\n关于植物的书。",
+          "x": 54,
+          "y": 938,
+          "width": 540,
+          "height": 108.78,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "34px",
+            "400",
+            "54.4px",
+            "rgb(112, 41, 54)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "配图：原创植物形态示意",
+          "x": 52,
+          "y": 1130.5,
+          "width": 231,
+          "height": 31.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "21px",
+            "400",
+            "31.5px",
+            "rgb(112, 41, 54)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "2026",
+          "x": 798.73,
+          "y": 1130.5,
+          "width": 49.27,
+          "height": 31.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "21px",
+            "400",
+            "31.5px",
+            "rgb(112, 41, 54)"
+          ],
+          "clipped": false,
+          "hidden": false
+        }
+      ],
+      "overlaps": [],
+      "blocks": [
+        {
+          "id": "cover-book-b-sample-004",
+          "text": "植物\n知道时间"
+        },
+        {
+          "id": "cover-title",
+          "text": "这次聊一本\n关于植物的书。"
+        },
+        {
+          "id": "cover-year",
+          "text": "2026"
+        }
+      ],
+      "statusLabels": [
+        "样例 · 虚构书目与划线"
+      ],
+      "images": [
+        "file:///C:/Users/22585/Documents/ChatGPT/%E5%B9%B4%E5%B9%B4%E9%98%85Skill/reading-yearbook-skill/examples/botanical-demo/assets/plant-shape.svg"
+      ],
+      "fingerprint": "0ffe80aeba073ef8cd57eb7f822b0161095f9e23e65243e9dedc79cd992f8db6"
+    },
+    {
+      "id": "book-b-sample-004",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 01",
+          "x": 52,
+          "y": 42,
+          "width": 119.42,
+          "height": 34.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "样例 · 虚构书目与划线",
+          "x": 621.84,
+          "y": 42,
+          "width": 226.16,
+          "height": 34.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "植物知道时间",
+          "x": 52,
+          "y": 135,
+          "width": 318,
+          "height": 74.19,
+          "font": [
+            "SimSun, serif",
+            "53px",
+            "400",
+            "74.2px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "苏禾",
+          "x": 57,
+          "y": 224,
+          "width": 50,
+          "height": 37.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "25px",
+            "400",
+            "37.5px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "通过植物节律解释生命如何感知光照、季节与环境变化。",
+          "x": 55,
+          "y": 389,
+          "width": 343,
+          "height": 183.56,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "34px",
+            "400",
+            "61.2px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "节律不是钟表，\n而是生命对\n环境变化的响应。",
+          "x": 54,
+          "y": 765,
+          "width": 790,
+          "height": 246.42,
+          "font": [
+            "SimSun, serif",
+            "53px",
+            "400",
+            "82.15px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "一条划线",
+          "x": 55,
+          "y": 1055,
+          "width": 92,
+          "height": 34.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "23px",
+            "400",
+            "34.5px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "书目与划线来自仓库样例",
+          "x": 52,
+          "y": 1130.5,
+          "width": 231,
+          "height": 31.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "21px",
+            "400",
+            "31.5px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        },
+        {
+          "text": "01 / 植物知道时间",
+          "x": 675.97,
+          "y": 1130.5,
+          "width": 172.03,
+          "height": 31.5,
+          "font": [
+            "\"Microsoft YaHei\", sans-serif",
+            "21px",
+            "400",
+            "31.5px",
+            "rgb(237, 197, 171)"
+          ],
+          "clipped": false,
+          "hidden": false
+        }
+      ],
+      "overlaps": [],
+      "blocks": [
+        {
+          "id": "b-sample-004-title",
+          "text": "植物知道时间"
+        },
+        {
+          "id": "b-sample-004-author",
+          "text": "苏禾"
+        },
+        {
+          "id": "b-sample-004-about",
+          "text": "通过植物节律解释生命如何感知光照、季节与环境变化。"
+        },
+        {
+          "id": "b-sample-004-note",
+          "text": "节律不是钟表，\n而是生命对\n环境变化的响应。"
+        }
+      ],
+      "statusLabels": [
+        "样例 · 虚构书目与划线"
+      ],
+      "images": [
+        "file:///C:/Users/22585/Documents/ChatGPT/%E5%B9%B4%E5%B9%B4%E9%98%85Skill/reading-yearbook-skill/examples/botanical-demo/assets/plant-shape.svg"
+      ],
+      "fingerprint": "d0f05592333d316b967176e8cd19b524f905bcbcca957cf59243fc8745769243"
+    }
+  ],
+  "requested_ids": [
+    "cover",
+    "book-b-sample-004"
+  ],
+  "images": [
+    {
+      "id": "cover",
+      "file": "01-cover.png",
+      "width": 900,
+      "height": 1200,
+      "fingerprint": "0ffe80aeba073ef8cd57eb7f822b0161095f9e23e65243e9dedc79cd992f8db6",
+      "sha256": "df479c58513934066671494085c7bc5a91d15f66ef319f9989d7a50db94c4ba4",
+      "reused": true
+    },
+    {
+      "id": "book-b-sample-004",
+      "file": "02-book-b-sample-004.png",
+      "width": 900,
+      "height": 1200,
+      "fingerprint": "d0f05592333d316b967176e8cd19b524f905bcbcca957cf59243fc8745769243",
+      "sha256": "f30756dd6787a90e22b454f5133e2c8ad58b7737fdc16fadd099ea3f2db05105",
+      "reused": true
+    }
+  ],
+  "rendered": 0,
+  "reused": 2,
+  "elapsed_seconds": 1.36,
+  "visual_review": "pending",
+  "coverage": "text boxes and registered assets; aesthetic judgment and editorial grounding remain human reviews",
+  "content_hash": "c2a51a5d15b822644efab961c34f09bde7786bd8f1fd24f7cfb573d9f2686512",
+  "source_sha256": "574b722d6db861cce400eeadd2b2999f15185fd541c6e0ecca9f29edd05dd337",
+  "source_mode": "sample",
+  "verification_status": "sample_verified"
+}

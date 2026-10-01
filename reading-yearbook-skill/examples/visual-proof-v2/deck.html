@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>年年阅 · 第二轮试稿 · 今年的书</title>
+  <style>
+    /* A photographic study for these particular notes, not a preset style. */
+    :root { --blue: #254fc6; --ink: #252622; --paper: #f5f4ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 40px; background: #d6d6d3; }
+    h1, h2, p, figure, blockquote { margin: 0; }
+    .page { position: relative; width: 900px; height: 1200px; overflow: hidden; margin: 0 auto 40px; background: var(--paper); color: var(--ink); font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; font-synthesis: none; }
+    .top { position: absolute; top: 40px; left: 54px; right: 54px; display: flex; justify-content: space-between; font-size: 25px; line-height: 1.5; z-index: 3; }
+    .sample { font-size: 23px; color: #62635f; }
+    .footer { position: absolute; left: 54px; right: 54px; bottom: 36px; display: flex; justify-content: space-between; gap: 16px; font-size: 23px; line-height: 1.4; color: #62635f; }
+    .photo { filter: grayscale(1) contrast(1.17); }
+    .cover-photo { position: absolute; left: 250px; top: 152px; width: 610px; height: 850px; object-fit: cover; object-position: 50% 50%; }
+    .cover h1 { color: var(--blue); font-size: 94px; line-height: 1.2; font-weight: 850; letter-spacing: -5px; }
+    .cover h1 span { position: absolute; z-index: 2; white-space: nowrap; }
+    .cover .title-one { left: 50px; top: 117px; }
+    .cover .title-two { left: 50px; top: 242px; }
+    .cover .title-three { left: 99px; top: 367px; }
+    .year { position: absolute; left: 46px; top: 707px; color: var(--blue); font-family: "Times New Roman", serif; font-size: 136px; font-weight: 400; letter-spacing: -7px; line-height: .8; }
+    .year span { display: block; }
+    .cover .booklist { position: absolute; left: 54px; top: 1030px; font-size: 28px; line-height: 1.6; }
+    .booklist .more { display: block; }
+    .cover .small-tag { position: absolute; left: 54px; top: 963px; color: var(--blue); font-size: 25px; }
+    .city h2 { position: absolute; left: 54px; top: 136px; font-size: 68px; font-weight: 750; letter-spacing: -2px; line-height: 1.3; color: var(--blue); }
+    .city .author { position: absolute; left: 56px; top: 242px; font-size: 27px; }
+    .city .whole { position: absolute; left: 54px; top: 320px; width: 455px; height: 587px; }
+    .whole img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .detail { position: absolute; left: 578px; top: 136px; width: 268px; height: 269px; overflow: hidden; }
+    .detail img { position: absolute; width: 700px; height: auto; max-width: none; left: -432px; top: -244px; }
+    .detail-note { position: absolute; left: 578px; top: 425px; font-size: 23px; color: #62635f; }
+    .note-label { position: absolute; left: 578px; top: 528px; font-size: 26px; color: var(--blue); }
+    .note { position: absolute; left: 574px; top: 584px; width: 288px; font-family: "KaiTi", "Noto Serif SC", serif; font-size: 36px; line-height: 1.6; font-weight: 400; }
+    .city .photo-credit { position: absolute; left: 54px; top: 928px; font-size: 23px; line-height: 1.5; color: #62635f; }
+    .city .about { position: absolute; left: 54px; top: 1016px; width: 775px; font-size: 34px; line-height: 1.65; }
+    @media (max-width: 980px) { body { padding: 20px 0; } .page { margin-bottom: 20px; } }
+    @media print { body { padding: 0; } .page { margin: 0; break-after: page; } @page { size: 900px 1200px; margin: 0; } }
+  </style>
+</head>
+<body>
+  <article class="page cover" id="01-cover" aria-label="封面：今年的书，挑几本聊聊">
+    <header class="top"><span data-ink>年年阅</span><span class="sample" data-ink>样例 · 虚构书目与笔记</span></header>
+    <img class="photo cover-photo" src="assets/atget-organ-player.jpg" alt="Atget 拍摄的巴黎街头艺人与孩子，1898/99；公有领域视觉配图">
+    <h1 aria-label="今年的书，挑几本聊聊。"><span class="title-one" data-ink>今年的书，</span><span class="title-two" data-ink>挑几本</span><span class="title-three" data-ink>聊聊。</span></h1>
+    <p class="year" aria-label="2026" data-ink><span>20</span><span>26</span></p>
+    <p class="small-tag" data-ink>书单 / 阅读笔记</p>
+    <p class="booklist" data-ink>《缓慢的城市》　《看见选择》<span class="more">《重新学习提问》</span></p>
+    <footer class="footer"><span data-ink>配图：Atget / 芝加哥艺术博物馆</span><span data-ink>年度阅读</span></footer>
+  </article>
+  <article class="page city" id="02-city" aria-label="内页：缓慢的城市">
+    <header class="top"><span data-ink>年年阅 / 01</span><span class="sample" data-ink>样例 · 虚构书目与笔记</span></header>
+    <h2 data-ink>缓慢的城市</h2>
+    <p class="author" data-ink>周野 · 随笔</p>
+    <figure class="whole"><img class="photo" src="assets/atget-organ-player.jpg" alt="Atget 街头摄影的全景，包含艺人、孩子与手推车"></figure>
+    <figure class="detail"><img class="photo" src="assets/atget-organ-player.jpg" alt="同一照片的孩子面部局部，呼应笔记里的观察"></figure>
+    <p class="detail-note" data-ink>同一张照片，走近一点看。</p>
+    <p class="note-label" data-ink>一条读书笔记</p>
+    <blockquote class="note" cite="../../assets/sample-data.json" data-ink>这本书让我<br>重新注意<br>每天经过<br>却没有看见的路。</blockquote>
+    <p class="photo-credit" data-ink>配图：Atget，1898/99 · 非书中插图</p>
+    <p class="about" data-ink>写的是步行和街区，以及人在城市里怎么生活。</p>
+    <footer class="footer"><span data-ink>书目与笔记来自仓库样例</span><span data-ink>01 / 缓慢的城市</span></footer>
+  </article>
+</body>
+</html>

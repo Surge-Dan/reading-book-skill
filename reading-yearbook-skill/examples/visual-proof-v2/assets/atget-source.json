@@ -1,0 +1,19 @@
+{
+  "source_api": "https://api.artic.edu/api/v1/artworks/search?q=Eugene%20Atget&limit=6&fields=id,title,image_id,is_public_domain,artist_title,date_display,credit_line,copyright_notice",
+  "source_page": "https://www.artic.edu/artworks/55394",
+  "data": {
+    "_score": 675.5516,
+    "id": 55394,
+    "title": "Joueur d'orgue (Organ Player)",
+    "date_display": "1898/99",
+    "credit_line": "Julien Levy Collection, Special Photography Acquisition Fund",
+    "is_public_domain": true,
+    "artist_title": "Jean-Eugène-Auguste Atget",
+    "image_id": "b0bbd380-e176-e2ee-41c8-5f5a6957e365",
+    "copyright_notice": null
+  },
+  "image_url": "https://www.artic.edu/iiif/2/b0bbd380-e176-e2ee-41c8-5f5a6957e365/full/1686,/0/default.jpg",
+  "sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf",
+  "use": "visual illustration, not a book image",
+  "retrieved": "2026-10-01"
+}

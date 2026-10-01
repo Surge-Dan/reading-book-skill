@@ -1,0 +1,222 @@
+{
+  "status": "pass",
+  "scope": "sample-only",
+  "sourceSha256": "476ea7916a6572c2a40735574b3fa2ee88ca06bba2287f53daf628f7cd113fcf",
+  "fonts": {
+    "serif": true,
+    "sans": true
+  },
+  "pages": [
+    {
+      "id": "01-cover",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 阅读札记",
+          "x": 80,
+          "y": 64,
+          "width": 239.53125,
+          "height": 40,
+          "clipped": false
+        },
+        {
+          "text": "2026 · 样例",
+          "x": 643.28125,
+          "y": 64,
+          "width": 176.71875,
+          "height": 40,
+          "clipped": false
+        },
+        {
+          "text": "给判断",
+          "x": 80,
+          "y": 235,
+          "width": 393,
+          "height": 167.5,
+          "clipped": false
+        },
+        {
+          "text": "留一点",
+          "x": 224,
+          "y": 416,
+          "width": 393,
+          "height": 167.5,
+          "clipped": false
+        },
+        {
+          "text": "空",
+          "x": 80,
+          "y": 597,
+          "width": 131,
+          "height": 167.5,
+          "clipped": false
+        },
+        {
+          "text": "白",
+          "x": 689,
+          "y": 597,
+          "width": 131,
+          "height": 167.5,
+          "clipped": false
+        },
+        {
+          "text": "关于选择、工作与提问的阅读札记",
+          "x": 80,
+          "y": 878,
+          "width": 510,
+          "height": 57.796875,
+          "clipped": false
+        },
+        {
+          "text": "《看见选择》 · 《工作中的尺度》\n《重新学习提问》",
+          "x": 80,
+          "y": 990,
+          "width": 417.109375,
+          "height": 91.78125,
+          "clipped": false
+        },
+        {
+          "text": "虚构书籍与笔记，仅作设计演示",
+          "x": 80,
+          "y": 1111,
+          "width": 336,
+          "height": 35,
+          "clipped": false
+        },
+        {
+          "text": "精选书单",
+          "x": 724,
+          "y": 1111,
+          "width": 96,
+          "height": 35,
+          "clipped": false
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "id": "02-choice",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 精选书单",
+          "x": 80,
+          "y": 64,
+          "width": 239.53125,
+          "height": 40,
+          "clipped": false
+        },
+        {
+          "text": "2026 · 样例",
+          "x": 643.28125,
+          "y": 64,
+          "width": 176.71875,
+          "height": 40,
+          "clipped": false
+        },
+        {
+          "text": "01",
+          "x": 80,
+          "y": 156,
+          "width": 57.578125,
+          "height": 56,
+          "clipped": false
+        },
+        {
+          "text": "看见选择",
+          "x": 169.578125,
+          "y": 159,
+          "width": 172,
+          "height": 61,
+          "clipped": false
+        },
+        {
+          "text": "林舟",
+          "x": 373.578125,
+          "y": 177,
+          "width": 54,
+          "height": 39,
+          "clipped": false
+        },
+        {
+          "text": "事实不会替我们\n做决定，",
+          "x": 80,
+          "y": 297,
+          "width": 441,
+          "height": 199.65625,
+          "clipped": false
+        },
+        {
+          "text": "但会缩小\n自欺的空间。",
+          "x": 256,
+          "y": 515,
+          "width": 378,
+          "height": 199.65625,
+          "clipped": false
+        },
+        {
+          "text": "我的理由",
+          "x": 80,
+          "y": 835,
+          "width": 108,
+          "height": 45.890625,
+          "clipped": false
+        },
+        {
+          "text": "今年我真正需要的不是更多建议，而是一套能暴露假设的检查方式。",
+          "x": 256,
+          "y": 825,
+          "width": 564,
+          "height": 115.59375,
+          "clipped": false
+        },
+        {
+          "text": "虚构书籍与笔记，仅作设计演示",
+          "x": 80,
+          "y": 1111,
+          "width": 336,
+          "height": 35,
+          "clipped": false
+        },
+        {
+          "text": "摘录 / 笔记",
+          "x": 703.828125,
+          "y": 1111,
+          "width": 116.171875,
+          "height": 35,
+          "clipped": false
+        }
+      ],
+      "overlaps": []
+    }
+  ],
+  "visualReview": {
+    "reviewer": "authoring-agent",
+    "views": [
+      "900x1200 original",
+      "375px preview"
+    ],
+    "observations": [
+      "No visible text clipping or collisions",
+      "Title is readable at mobile scale; book list and sample labels are secondary",
+      "Recommendation body is approximately 14px at 375px scale"
+    ],
+    "userApproval": "pending"
+  },
+  "images": [
+    {
+      "file": "01-cover.png",
+      "width": 900,
+      "height": 1200,
+      "sha256": "6168235ffb71a5f431586824dadd5a32a86d1e428776f081d145aca7e20888f0"
+    },
+    {
+      "file": "02-choice.png",
+      "width": 900,
+      "height": 1200,
+      "sha256": "91d3a35d65b5e25c93322b56e2dc4de78b7dcc316be7334dd9fc607ed431a1d6"
+    }
+  ]
+}

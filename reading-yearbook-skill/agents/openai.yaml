@@ -1,7 +1,7 @@
 interface:
   display_name: "年年阅"
-  short_description: "把微信读书记录做成可追溯的年度阅读图谱与卡片"
+  short_description: "把阅读记录做成适合分享的书单图文与年度卡组"
   brand_color: "#245B59"
-  default_prompt: "Use $reading-yearbook-skill to turn my 2026 WeRead records into an evidence-backed reading yearbook."
+  default_prompt: "Use $reading-yearbook-skill to design shareable images from my reading records, choosing an art direction from the material and previewing the cover and one interior page first."
 policy:
   allow_implicit_invocation: true

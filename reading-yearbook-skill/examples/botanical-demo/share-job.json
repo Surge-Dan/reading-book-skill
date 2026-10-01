@@ -1,0 +1,220 @@
+{
+  "schema_version": "share-1",
+  "year": 2026,
+  "source_mode": "sample",
+  "source_sha256": "672293b2a4f5216d3ee6e6f30bd904efaf44fcdb3e2202e6ad5c527778eb39f0",
+  "coverage": {
+    "collection_complete": true,
+    "verification_status": "sample_verified",
+    "scope": "selected-books",
+    "annual_book_candidates": 6
+  },
+  "period": {
+    "year": 2026,
+    "as_of": "2026-10-01",
+    "complete": false
+  },
+  "books": [
+    {
+      "book_id": "sample-004",
+      "title": "植物知道时间",
+      "author": "苏禾",
+      "evidence_level": "E1",
+      "excerpt_refs": [
+        "sample-004/highlight/s4-h1"
+      ],
+      "available_highlights": 1,
+      "available_thoughts": 0
+    }
+  ],
+  "sources": {
+    "period/year": {
+      "kind": "fact",
+      "text": "2026"
+    },
+    "sample-004/title": {
+      "kind": "fact",
+      "text": "植物知道时间",
+      "truncated": false,
+      "original_characters": 6
+    },
+    "sample-004/author": {
+      "kind": "fact",
+      "text": "苏禾",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-004/intro": {
+      "kind": "fact",
+      "text": "通过植物节律解释生命如何感知光照、季节与环境变化。",
+      "truncated": false,
+      "original_characters": 25
+    },
+    "sample-004/highlight/s4-h1": {
+      "kind": "highlight",
+      "source_id": "s4-h1",
+      "text": "节律不是钟表，而是生命对环境变化的响应。",
+      "truncated": false,
+      "original_characters": 20
+    }
+  },
+  "pages": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "book_ids": [
+        "sample-004"
+      ],
+      "blocks": [
+        {
+          "id": "cover-title",
+          "kind": "editorial",
+          "text": "这次聊一本关于植物的书。",
+          "source_refs": []
+        },
+        {
+          "id": "cover-year",
+          "kind": "fact",
+          "text": "2026",
+          "source_refs": [
+            "period/year"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-004",
+          "kind": "fact",
+          "text": "植物知道时间",
+          "source_refs": [
+            "sample-004/title"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-004",
+      "role": "book",
+      "book_ids": [
+        "sample-004"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-004-title",
+          "kind": "fact",
+          "text": "植物知道时间",
+          "source_refs": [
+            "sample-004/title"
+          ]
+        },
+        {
+          "id": "b-sample-004-author",
+          "kind": "fact",
+          "text": "苏禾",
+          "source_refs": [
+            "sample-004/author"
+          ]
+        },
+        {
+          "id": "b-sample-004-about",
+          "kind": "editorial",
+          "text": "通过植物节律解释生命如何感知光照、季节与环境变化。",
+          "source_refs": [
+            "sample-004/intro"
+          ]
+        },
+        {
+          "id": "b-sample-004-note",
+          "kind": "quote",
+          "text": "节律不是钟表，而是生命对环境变化的响应。",
+          "source_refs": [
+            "sample-004/highlight/s4-h1"
+          ]
+        }
+      ]
+    }
+  ],
+  "art_brief": {
+    "focus": "植物如何感知光照与季节；只用简介和划线，没有个人感受就不补写",
+    "visual": "原创植物形态作为大面积剪影；浅杏与暗红互换，宋体顺着枝叶的方向排列",
+    "sequence": "一本书的封面与一条划线；不沿用城市书单的照片、蓝色或数字构图",
+    "audience": "小红书读者"
+  },
+  "assets": [
+    {
+      "path": "assets/plant-shape.svg",
+      "sha256": "49b96bd67469eddf71eef0d54abd78e11e929976da20bb59d05f575ac97d6ab6",
+      "source": "original: examples/build_botanical_demo.py",
+      "rights": "original geometric SVG; repository license",
+      "role": "decorative plant shape; not a botanical specimen or book illustration"
+    }
+  ],
+  "caption": "这次聊《植物知道时间》。关于光照、季节，还有植物怎么感知环境变化。\n\n样例：虚构书目与划线，仅作设计演示。",
+  "approvals": {
+    "content": {
+      "hash": "c2a51a5d15b822644efab961c34f09bde7786bd8f1fd24f7cfb573d9f2686512",
+      "actor": "sample-test",
+      "at": "2026-10-01T04:05:47.369831+00:00"
+    },
+    "visual": {
+      "actor": "sample-test",
+      "at": "2026-10-01T04:19:39.337320+00:00",
+      "art_hash": "12f215ba55c518a3f9e252eabe3280d884aa287eebc3ff43549a5f771d77b23d",
+      "brief_hash": "9f2fa1b97499a5378cf19a5d8c6b6636a966c110221f293a095df25fd3995d4c",
+      "anchors": {
+        "cover": "0ffe80aeba073ef8cd57eb7f822b0161095f9e23e65243e9dedc79cd992f8db6",
+        "book-b-sample-004": "d0f05592333d316b967176e8cd19b524f905bcbcca957cf59243fc8745769243"
+      }
+    }
+  },
+  "status": "ready_sample",
+  "runs": [
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:05:50.615512+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 1.75
+    },
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:08:44.335771+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 1.4
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:08:46.359223+00:00",
+      "rendered": 0,
+      "reused": 2,
+      "elapsed_seconds": 1.25
+    },
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:14:40.411746+00:00",
+      "rendered": 2,
+      "reused": 0,
+      "elapsed_seconds": 1.54
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:14:42.584019+00:00",
+      "rendered": 0,
+      "reused": 2,
+      "elapsed_seconds": 1.38
+    },
+    {
+      "stage": "preview",
+      "at": "2026-10-01T04:19:39.329278+00:00",
+      "rendered": 0,
+      "reused": 2,
+      "elapsed_seconds": 1.31
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-01T04:19:41.088002+00:00",
+      "rendered": 0,
+      "reused": 2,
+      "elapsed_seconds": 1.36
+    }
+  ]
+}

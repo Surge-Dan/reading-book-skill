@@ -1,0 +1,232 @@
+{
+  "status": "pass",
+  "scope": "sample-only",
+  "sourceSha256": "4bf6f043c0a2a185576331a29a87d435060fd89373939418a9461140917f4537",
+  "fonts": {
+    "serif": true,
+    "sans": true
+  },
+  "pages": [
+    {
+      "id": "01-cover",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅",
+          "x": 54,
+          "y": 40,
+          "width": 75,
+          "height": 37.5,
+          "clipped": false
+        },
+        {
+          "text": "样例 · 虚构书目与笔记",
+          "x": 605.6875,
+          "y": 40,
+          "width": 240.3125,
+          "height": 37.5,
+          "clipped": false
+        },
+        {
+          "text": "今年的书，",
+          "x": 50,
+          "y": 117,
+          "width": 445,
+          "height": 112.796875,
+          "clipped": false
+        },
+        {
+          "text": "挑几本",
+          "x": 50,
+          "y": 242,
+          "width": 267,
+          "height": 112.796875,
+          "clipped": false
+        },
+        {
+          "text": "聊聊。",
+          "x": 99,
+          "y": 367,
+          "width": 267,
+          "height": 112.796875,
+          "clipped": false
+        },
+        {
+          "text": "20\n26",
+          "x": 46,
+          "y": 707,
+          "width": 122,
+          "height": 217.59375,
+          "clipped": false
+        },
+        {
+          "text": "书单 / 阅读笔记",
+          "x": 54,
+          "y": 963,
+          "width": 171,
+          "height": 36,
+          "clipped": false
+        },
+        {
+          "text": "《缓慢的城市》　《看见选择》\n《重新学习提问》",
+          "x": 54,
+          "y": 1030,
+          "width": 364,
+          "height": 89.59375,
+          "clipped": false
+        },
+        {
+          "text": "配图：Atget / 芝加哥艺术博物馆",
+          "x": 54,
+          "y": 1131.8125,
+          "width": 327.890625,
+          "height": 32.1875,
+          "clipped": false
+        },
+        {
+          "text": "年度阅读",
+          "x": 754,
+          "y": 1131.8125,
+          "width": 92,
+          "height": 32.1875,
+          "clipped": false
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "id": "02-city",
+      "width": 900,
+      "height": 1200,
+      "text": [
+        {
+          "text": "年年阅 / 01",
+          "x": 54,
+          "y": 40,
+          "width": 123.75,
+          "height": 37.5,
+          "clipped": false
+        },
+        {
+          "text": "样例 · 虚构书目与笔记",
+          "x": 605.6875,
+          "y": 40,
+          "width": 240.3125,
+          "height": 37.5,
+          "clipped": false
+        },
+        {
+          "text": "缓慢的城市",
+          "x": 54,
+          "y": 136,
+          "width": 330,
+          "height": 88.390625,
+          "clipped": false
+        },
+        {
+          "text": "周野 · 随笔",
+          "x": 56,
+          "y": 242,
+          "width": 147.109375,
+          "height": 39,
+          "clipped": false
+        },
+        {
+          "text": "同一张照片，走近一点看。",
+          "x": 578,
+          "y": 425,
+          "width": 276,
+          "height": 34,
+          "clipped": false
+        },
+        {
+          "text": "一条读书笔记",
+          "x": 578,
+          "y": 528,
+          "width": 156,
+          "height": 37,
+          "clipped": false
+        },
+        {
+          "text": "这本书让我\n重新注意\n每天经过\n却没有看见的路。",
+          "x": 574,
+          "y": 584,
+          "width": 288,
+          "height": 230.375,
+          "clipped": false
+        },
+        {
+          "text": "配图：Atget，1898/99 · 非书中插图",
+          "x": 54,
+          "y": 928,
+          "width": 381.484375,
+          "height": 34.5,
+          "clipped": false
+        },
+        {
+          "text": "写的是步行和街区，以及人在城市里怎么生活。",
+          "x": 54,
+          "y": 1016,
+          "width": 775,
+          "height": 56.09375,
+          "clipped": false
+        },
+        {
+          "text": "书目与笔记来自仓库样例",
+          "x": 54,
+          "y": 1131.8125,
+          "width": 253,
+          "height": 32.1875,
+          "clipped": false
+        },
+        {
+          "text": "01 / 缓慢的城市",
+          "x": 686.140625,
+          "y": 1131.8125,
+          "width": 159.859375,
+          "height": 32.1875,
+          "clipped": false
+        }
+      ],
+      "overlaps": []
+    }
+  ],
+  "visualReview": {
+    "reviewer": "authoring-agent",
+    "views": [
+      "originals",
+      "375px preview"
+    ],
+    "observations": [
+      "No visible text clipping or collisions",
+      "Chinese note line breaks repaired without changing wording"
+    ],
+    "userApproval": "pending"
+  },
+  "images": [
+    {
+      "file": "01-cover.png",
+      "width": 900,
+      "height": 1200,
+      "sha256": "c3306cc013e5480425eed4793b546bfb6e98aec8ee8a91ae21ea75104f04c781"
+    },
+    {
+      "file": "02-city.png",
+      "width": 900,
+      "height": 1200,
+      "sha256": "189888c02cb7e7c9826573dd91170daa1889a9ad48e3115c2c107f1ee90e0ce3"
+    }
+  ],
+  "provenance": {
+    "sample_note": "exact match after line breaks",
+    "asset_public_domain": true,
+    "asset_sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf"
+  },
+  "execution": {
+    "directions": 1,
+    "pages": 2,
+    "image_generation_calls": 0,
+    "targeted_layout_repair_rounds": 1
+  }
+}

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>年年阅 · 第二轮试稿 · 今年的书</title>
+  <style>
+    /* A photographic study for these particular notes, not a preset style. */
+    :root { --blue: #254fc6; --ink: #252622; --paper: #f5f4ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 40px; background: #d6d6d3; }
+    h1, h2, p, figure, blockquote { margin: 0; }
+    .page { position: relative; width: 900px; height: 1200px; overflow: hidden; margin: 0 auto 40px; background: var(--paper); color: var(--ink); font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; font-synthesis: none; }
+    .top { position: absolute; top: 40px; left: 54px; right: 54px; display: flex; justify-content: space-between; font-size: 25px; line-height: 1.5; z-index: 3; }
+    .sample { font-size: 23px; color: #62635f; }
+    .footer { position: absolute; left: 54px; right: 54px; bottom: 36px; display: flex; justify-content: space-between; gap: 16px; font-size: 23px; line-height: 1.4; color: #62635f; }
+    .photo { filter: grayscale(1) contrast(1.17); }
+    .cover-photo { position: absolute; left: 250px; top: 152px; width: 610px; height: 850px; object-fit: cover; object-position: 50% 50%; }
+    .cover h1 { color: var(--blue); font-size: 94px; line-height: 1.2; font-weight: 850; letter-spacing: -5px; }
+    .cover h1 span { position: absolute; z-index: 2; white-space: nowrap; }
+    .cover .title-one { left: 50px; top: 117px; }
+    .cover .title-two { left: 50px; top: 242px; }
+    .cover .title-three { left: 99px; top: 367px; }
+    .year { position: absolute; left: 46px; top: 707px; color: var(--blue); font-family: "Times New Roman", serif; font-size: 136px; font-weight: 400; letter-spacing: -7px; line-height: .8; }
+    .year span { display: block; }
+    .cover .booklist { position: absolute; left: 54px; top: 1030px; font-size: 28px; line-height: 1.6; }
+    .booklist .more { display: block; }
+    .cover .small-tag { position: absolute; left: 54px; top: 963px; color: var(--blue); font-size: 25px; }
+    .city h2 { position: absolute; left: 54px; top: 136px; font-size: 68px; font-weight: 750; letter-spacing: -2px; line-height: 1.3; color: var(--blue); }
+    .city .author { position: absolute; left: 56px; top: 242px; font-size: 27px; }
+    .city .whole { position: absolute; left: 54px; top: 320px; width: 455px; height: 587px; }
+    .whole img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .detail { position: absolute; left: 578px; top: 136px; width: 268px; height: 269px; overflow: hidden; }
+    .detail img { position: absolute; width: 700px; height: auto; max-width: none; left: -432px; top: -244px; }
+    .detail-note { position: absolute; left: 578px; top: 425px; font-size: 23px; color: #62635f; }
+    .note-label { position: absolute; left: 578px; top: 528px; font-size: 26px; color: var(--blue); }
+    .note { position: absolute; left: 574px; top: 584px; width: 288px; font-family: "KaiTi", "Noto Serif SC", serif; font-size: 36px; line-height: 1.6; font-weight: 400; }
+    .city .photo-credit { position: absolute; left: 54px; top: 928px; font-size: 23px; line-height: 1.5; color: #62635f; }
+    .city .about { position: absolute; left: 54px; top: 1016px; width: 775px; font-size: 34px; line-height: 1.65; }
+    @media (max-width: 980px) { body { padding: 20px 0; } .page { margin-bottom: 20px; } }
+    @media print { body { padding: 0; } .page { margin: 0; break-after: page; } @page { size: 900px 1200px; margin: 0; } }
+
+    .cover h1 {position:absolute;left:50px;top:117px;width:600px;height:370px}
+    .cover .title-one {left:0;top:0}.cover .title-two {left:0;top:125px}.cover .title-three {left:49px;top:250px}
+    .booklist [data-block]::before {content:'《'}.booklist [data-block]::after {content:'》'}
+    .decision {background:var(--blue);color:var(--paper)}
+    .decision .sample,.decision .footer {color:var(--paper)}
+    .decision h2,.questions h2 {position:absolute;left:54px;top:136px;font-size:68px;font-weight:750;line-height:1.3;letter-spacing:-2px}
+    .decision .author,.questions .author {position:absolute;left:56px;top:242px;font-size:27px}
+    .decision .thought {position:absolute;left:54px;top:418px;width:792px;font-size:62px;line-height:1.6;font-family:'Noto Serif SC','SimSun',serif}
+    .decision .thought .large {display:block;margin-left:174px;font-size:108px;line-height:1.55}
+    .decision .about-label {position:absolute;left:54px;top:975px;font-size:27px;line-height:1.65}
+    .decision .about {position:absolute;left:230px;top:970px;width:614px;font-size:34px;line-height:1.65}
+    .questions h2 {font-size:60px;color:var(--blue)}
+    .questions .punctuation {position:absolute;left:468px;top:290px;font-family:'Times New Roman',serif;font-size:370px;line-height:1;color:var(--blue)}
+    .questions .quote {position:absolute;left:54px;top:443px;font-size:64px;line-height:1.6;font-weight:700;color:var(--blue)}
+    .questions .about {position:absolute;left:54px;top:724px;width:792px;font-size:32px;line-height:1.65}
+    .questions .note-label {position:absolute;left:54px;top:909px;font-size:27px;line-height:1.65;color:var(--blue)}
+    .questions .personal {position:absolute;left:232px;top:900px;width:614px;font-size:34px;line-height:1.7}
+
+  </style>
+</head>
+<body>
+  <article class="page cover" id="cover" aria-label="封面：今年的书，挑几本聊聊">
+    <header class="top"><span data-label>年年阅</span><span class="sample" data-status>样例 · 虚构书目与笔记</span></header>
+    <img class="photo cover-photo" src="assets/atget-organ-player.jpg" alt="Atget 拍摄的巴黎街头艺人与孩子，1898/99；公有领域视觉配图">
+    <h1 data-block="cover-title" aria-label="今年的书，挑几本聊聊。"><span class="title-one" data-label>今年的书，</span><span class="title-two" data-label>挑几本</span><span class="title-three" data-label>聊聊。</span></h1>
+    <p class="year" aria-label="2026" data-block="cover-year"><span>20</span><span>26</span></p>
+    <p class="small-tag" data-label>书单 / 阅读笔记</p>
+    <p class="booklist"><span data-block="cover-book-b-sample-002">缓慢的城市</span>　<span data-block="cover-book-b-sample-001">看见选择</span><span class="more"><span data-block="cover-book-b-sample-005">重新学习提问</span></span></p>
+    <footer class="footer"><span data-label>配图：Atget / 芝加哥艺术博物馆</span><span data-label>年度阅读</span></footer>
+  </article>
+  <article class="page city" id="book-b-sample-002" aria-label="内页：缓慢的城市">
+    <header class="top"><span data-label>年年阅 / 01</span><span class="sample" data-status>样例 · 虚构书目与笔记</span></header>
+    <h2 data-block="b-sample-002-title">缓慢的城市</h2>
+    <p class="author" data-label><span data-block="b-sample-002-author">周野</span> · 随笔</p>
+    <figure class="whole"><img class="photo" src="assets/atget-organ-player.jpg" alt="Atget 街头摄影的全景，包含艺人、孩子与手推车"></figure>
+    <figure class="detail"><img class="photo" src="assets/atget-organ-player.jpg" alt="同一照片的孩子面部局部，呼应笔记里的观察"></figure>
+    <p class="detail-note" data-label>同一张照片，走近一点看。</p>
+    <p class="note-label" data-label>一条读书笔记</p>
+    <blockquote class="note" data-block="b-sample-002-note">这本书让我<br>重新注意<br>每天经过<br>却没有看见的路。</blockquote>
+    <p class="photo-credit" data-label>配图：Atget，1898/99 · 非书中插图</p>
+    <p class="about" data-block="b-sample-002-about">写的是步行和街区，以及人在城市里怎么生活。</p>
+    <footer class="footer"><span data-label>书目与笔记来自仓库样例</span><span data-label>01 / 缓慢的城市</span></footer>
+  </article>
+
+  <article class="page decision" id="book-b-sample-001">
+    <header class="top"><span data-label>年年阅 / 02</span><span class="sample" data-status>样例 · 虚构书目与笔记</span></header>
+    <h2 data-block="b-sample-001-title">看见选择</h2>
+    <p class="author" data-block="b-sample-001-author">林舟</p>
+    <blockquote class="thought" data-block="b-sample-001-note">以后做重要决定时，<br>先保留一次<span class="large">反方陈述。</span></blockquote>
+    <p class="about-label" data-label>书里写什么</p>
+    <p class="about" data-block="b-sample-001-about">从日常选择出发，聊事实、假设和判断之间的距离。</p>
+    <footer class="footer"><span data-label>书目与笔记来自仓库样例</span><span data-label>02 / 看见选择</span></footer>
+  </article>
+  <article class="page questions" id="book-b-sample-005">
+    <header class="top"><span data-label>年年阅 / 03</span><span class="sample" data-status>样例 · 虚构书目与笔记</span></header>
+    <h2 data-block="b-sample-005-title">重新学习提问</h2>
+    <p class="author" data-block="b-sample-005-author">顾言</p>
+    <span class="punctuation" aria-hidden="true">?</span>
+    <blockquote class="quote" data-block="b-sample-005-quote">先问边界，<br>再问答案。</blockquote>
+    <p class="about" data-block="b-sample-005-about">写提问，也写怎么澄清边界、寻找证据。</p>
+    <p class="note-label" data-label>一条笔记</p>
+    <blockquote class="personal" data-block="b-sample-005-note">我想把需求讨论里的抽象争论<br>改成三个具体问题。</blockquote>
+    <footer class="footer"><span data-label>书目与笔记来自仓库样例</span><span data-label>03 / 重新学习提问</span></footer>
+  </article>
+
+</body>
+</html>
