@@ -206,10 +206,12 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
         )
 
     monthly = [0] * 12
+    observed = [False] * 12
     for key, seconds in (stats.get("readTimes") or {}).items():
         event_year, month = _timestamp_parts(key)
         if month and event_year == year:
             monthly[month - 1] += int(seconds or 0)
+            observed[month - 1] = True
     return {
         "schema_version": "1.0",
         "year": int(year),
@@ -221,6 +223,7 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
             "read_days": int(stats.get("readDays", 0) or 0),
             "note_count": sum(len(book["highlights"]) + len(book["thoughts"]) for book in normalized_books),
             "monthly_read_seconds": monthly,
+            "monthly_observed": observed,
         },
         "books": normalized_books,
     }

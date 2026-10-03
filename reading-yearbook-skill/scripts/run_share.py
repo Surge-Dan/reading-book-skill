@@ -13,6 +13,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from yearbook_core import normalize_yearbook
+from static_graphics import validate_graphics
+from share_contract import (FORMATS, confirmation_record, make_canvas, preview_ids,
+                            require_confirmation, require_scope, scope_payload,
+                            validate_creation, validate_scope)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ID_PATTERN = re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]{0,79}$")
@@ -52,11 +56,11 @@ def local_asset(folder: Path, relative: str) -> Path:
 
 
 def content_hash(job: dict) -> str:
-    return digest({key: job[key] for key in ("year", "source_mode", "coverage", "period", "sources", "books", "pages", "art_brief", "assets", "caption")})
+    return digest({key: job.get(key) for key in ("schema_version", "year", "source_mode", "coverage", "period", "sources", "books", "pages", "art_brief", "assets", "caption", "brief", "canvas", "directions", "selected_direction", "annual_summary", "preview_page_ids")})
 
 
 def validate_job(job: dict, folder: Path) -> None:
-    if job.get("schema_version") != "share-1" or job.get("source_mode") not in ("sample", "live"):
+    if job.get("schema_version") not in ("share-1", "share-2", "share-3") or job.get("source_mode") not in ("sample", "live"):
         raise ValueError("不支持的分享数据模式或版本。")
     if not job.get("pages"):
         raise ValueError("没有可分享的书籍；不要为了凑页数生成卡组。")
@@ -97,8 +101,6 @@ def validate_job(job: dict, folder: Path) -> None:
     covers = [page for page in job["pages"] if page["role"] == "cover"]
     if len(covers) != 1 or job["pages"][0]["role"] != "cover":
         raise ValueError("分享任务需要恰好一张开头封面，其他页由内容决定。")
-    if not job.get("art_brief"):
-        raise ValueError("先填写简短艺术判断，不从模板列表随机选择。")
     asset_paths = set()
     for asset in job["assets"]:
         path = local_asset(folder, asset["path"])
@@ -111,12 +113,15 @@ def validate_job(job: dict, folder: Path) -> None:
             raise ValueError("素材文件缺失或版本变化；核对来源并更新素材记录后重新确认。")
     if re.search(r"\bwrk-[a-zA-Z0-9_-]{12,}|WEREAD_API_KEY\s*[:=]", json.dumps(job, ensure_ascii=False)):
         raise ValueError("分享文件疑似包含密钥，不可导出。")
+    validate_graphics(job)
 
 
-def prepare_share(year: int, input_path: Path, folder: Path, selected_ids: list[str] | None = None) -> dict:
+def prepare_share(year: int, input_path: Path, folder: Path, selected_ids: list[str] | None = None, share_format: str = "annual") -> dict:
     folder = Path(folder)
     if (folder / "share-job.json").exists():
         raise ValueError("分享任务已存在；局部修改复用它，不重新采集或覆盖确认。")
+    if share_format not in FORMATS:
+        raise ValueError("未知分享类型。")
     raw = json.loads(Path(input_path).read_text("utf-8"))
     if "books" in raw and "summary" in raw and "year" in raw:
         if int(raw["year"]) != year:
@@ -128,12 +133,13 @@ def prepare_share(year: int, input_path: Path, folder: Path, selected_ids: list[
         raise ValueError("先确认数据是样例还是来自真实采集。")
     known = {book["book_id"]: book for book in data["books"]}
     if selected_ids is None:
-        selected_ids = [book["book_id"] for book in sorted(data["books"], key=lambda b: b.get("annual_reading_seconds", 0), reverse=True)[:3]]
+        # This is a candidate list, not a preference ranking or final user choice.
+        selected_ids = [book["book_id"] for book in sorted(data["books"], key=lambda b: (bool(b.get("thoughts")), len(b.get("thoughts", [])), b.get("annual_reading_seconds", 0)), reverse=True)[:3]]
     if len(selected_ids) != len(set(selected_ids)) or set(selected_ids) - known.keys():
         raise ValueError("精选书 ID 重复或不存在。")
     sources = {"period/year": {"kind": "fact", "text": str(year)}}
     books, pages = [], []
-    cover_blocks = [{"id": "cover-title", "kind": "editorial", "text": f"{year} 年读过的几本书", "source_refs": []},
+    cover_blocks = [{"id": "cover-title", "kind": "editorial", "text": f"{year}年读过的几本书", "source_refs": []},
                     {"id": "cover-year", "kind": "fact", "text": str(year), "source_refs": ["period/year"]}]
     for book_id in selected_ids:
         book = known[book_id]
@@ -149,10 +155,11 @@ def prepare_share(year: int, input_path: Path, folder: Path, selected_ids: list[
             for item in book.get(field, [])[:2]:
                 ref = f"{book_id}/{kind}/{item['source_id']}"
                 text = item["text"]
-                sources[ref] = {"kind": kind, "source_id": item["source_id"], "text": text[:800], "truncated": len(text) > 800, "original_characters": len(text)}
+                sources[ref] = {"kind": kind, "source_id": item["source_id"], "text": text[:800], "truncated": len(text) > 800, "original_characters": len(text), "created_at": item.get("created_at")}
                 excerpts.append(ref)
         books.append({"book_id": book_id, "title": book["title"], "author": book["author"], "evidence_level": book["evidence_level"],
-                      "excerpt_refs": excerpts, "available_highlights": len(book.get("highlights", [])), "available_thoughts": len(book.get("thoughts", []))})
+                      "excerpt_refs": excerpts, "available_highlights": len(book.get("highlights", [])), "available_thoughts": len(book.get("thoughts", [])),
+                      "candidate_reason": "有个人笔记，可先讨论阅读所得" if any(sources[ref]["kind"] == "thought" for ref in excerpts) else "有书目或划线，尚需补充个人想法"})
         cover_blocks.append({"id": f"cover-book-{slug}", "kind": "fact", "text": book["title"], "source_refs": [title_ref]})
         blocks = [{"id": f"{slug}-title", "kind": "fact", "text": book["title"], "source_refs": [title_ref]},
                   {"id": f"{slug}-author", "kind": "fact", "text": book["author"], "source_refs": [author_ref]}]
@@ -167,37 +174,76 @@ def prepare_share(year: int, input_path: Path, folder: Path, selected_ids: list[
     today = date.today()
     period = {"year": year, "as_of": min(today, date(year, 12, 31)).isoformat(), "complete": today > date(year, 12, 31)}
     complete = bool(raw.get("collection_complete") or data.get("verification_status") == "live_verified" or data["source_mode"] == "sample")
-    caption = f"{year} 年的书，挑几本聊聊。\n\n" + "\n".join(f"- 《{book['title']}》" for book in books)
+    caption = f"{year}年的书，挑几本聊聊。\n\n" + "\n".join(f"- 《{book['title']}》" for book in books)
     if data["source_mode"] == "sample":
         caption += "\n\n样例：虚构书籍与笔记，仅作设计演示。"
     elif not period["complete"]:
-        caption += f"\n\n记录截至 {period['as_of']}。"
-    job = {"schema_version": "share-1", "year": year, "source_mode": data["source_mode"], "source_sha256": file_digest(Path(input_path)),
+        caption += f"\n\n记录截至{period['as_of']}。"
+    summary = {key: data["summary"][key] for key in ("total_read_seconds", "read_days", "monthly_read_seconds", "monthly_observed") if key in data["summary"]}
+    overview_blocks = [{"id": "overview-title", "kind": "editorial", "text": "这一年的阅读记录", "source_refs": []}]
+    if "monthly_observed" in summary:
+        sources["summary/monthly-records"] = {"kind": "fact", "text": "按月汇总已提供的时长记录",
+                                             "value": {"seconds": summary["monthly_read_seconds"], "observed": summary["monthly_observed"]},
+                                             "basis": "provided dated records; absence is unknown, not zero; not proof of complete monthly coverage"}
+    for key, text in (("total_read_seconds", f"{int(summary.get('total_read_seconds', 0)) // 3600}小时{int(summary.get('total_read_seconds', 0)) % 3600 // 60}分钟"),
+                      ("read_days", f"{summary.get('read_days', 0)}天阅读")):
+        if key in summary:
+            ref = f"summary/{key}"
+            sources[ref] = {"kind": "fact", "text": text, "value": summary[key], "basis": "normalized annual statistics; not selected-book totals"}
+            overview_blocks.append({"id": f"overview-{key.replace('_', '-')}", "kind": "fact", "text": text, "source_refs": [ref]})
+    cover = {"id": "cover", "role": "cover", "book_ids": selected_ids, "blocks": cover_blocks}
+    overview = {"id": "overview", "role": "overview", "book_ids": [], "blocks": overview_blocks}
+    planned = [cover] + ([overview] if share_format == "annual" else []) + ([] if share_format == "single-image" else pages)
+    job = {"schema_version": "share-3", "year": year, "source_mode": data["source_mode"], "source_sha256": file_digest(Path(input_path)),
            "coverage": {"collection_complete": complete, "verification_status": data["verification_status"], "scope": "selected-books", "annual_book_candidates": len(known)},
            "period": period, "books": books, "sources": sources,
-           "pages": ([{"id": "cover", "role": "cover", "book_ids": selected_ids, "blocks": cover_blocks}] + pages) if books else [],
-           "art_brief": {}, "assets": [], "caption": caption, "approvals": {}, "status": "content_draft", "runs": []}
+           "pages": planned if books else [], "annual_summary": summary,
+           "brief": {"platform": "", "format": share_format, "focus": "reading-takeaways"}, "canvas": None,
+           "directions": [], "selected_direction": None,
+           "art_brief": {"workflow": "material-led"}, "assets": [], "caption": caption, "approvals": {}, "status": "scope_draft", "runs": []}
     write_json(folder / "share-job.json", job)
     return job
 
 
-def approve_content(folder: Path, sample_test: bool = False) -> dict:
+def approve_scope(folder: Path, sample_test: bool = False, confirmation: dict | None = None) -> dict:
+    job = load_job(folder)
+    validate_job(job, folder)
+    validate_scope(job)
+    payload = scope_payload(job)
+    job["approvals"]["scope"] = confirmation_record(job, "scope", digest(payload), confirmation, sample_test)
+    job["approvals"]["scope"]["presented_scope"] = payload
+    job["status"] = "awaiting_creation_plan"
+    write_json(Path(folder) / "share-job.json", job)
+    return job
+
+
+def approve_content(folder: Path, sample_test: bool = False, confirmation: dict | None = None) -> dict:
     job = load_job(folder)
     validate_job(job, folder)
     if sample_test and job["source_mode"] != "sample":
         raise ValueError("技术测试确认不能用于真实数据。")
-    job["approvals"]["content"] = {"hash": content_hash(job), "actor": "sample-test" if sample_test else "user", "at": datetime.now(timezone.utc).isoformat()}
+    require_scope(job)
+    validate_creation(job)
+    job["approvals"]["content"] = confirmation_record(job, "content", content_hash(job), confirmation, sample_test)
     job["status"] = "awaiting_visual_preview"
     write_json(Path(folder) / "share-job.json", job)
     return job
 
 
 def require_content(job: dict) -> None:
-    approval = job.get("approvals", {}).get("content", {})
-    if approval.get("hash") != content_hash(job) or approval.get("actor") not in ("user", "sample-test"):
-        raise ValueError("内容或艺术简报变化，当前版本未确认。")
-    if job["source_mode"] == "live" and approval.get("actor") != "user":
-        raise ValueError("真实数据需要用户的内容确认。")
+    require_scope(job)
+    validate_creation(job)
+    require_confirmation(job, "content", content_hash(job))
+
+
+def visual_version(job: dict, report: dict) -> str:
+    ids = preview_ids(job)
+    pages = {page["id"]: page for page in report["pages"]}
+    if any(page_id not in pages for page_id in ids):
+        raise ValueError("缺少封面、年度概览或代表书卡的实际样张。")
+    return digest({"art_hash": report["art_hash"], "brief_hash": digest(job["art_brief"]),
+                   "scope_hash": digest(scope_payload(job)), "selected_direction": job["selected_direction"],
+                   "anchors": {page_id: pages[page_id]["fingerprint"] for page_id in ids}})
 
 
 def status(folder: Path) -> dict:
@@ -214,6 +260,7 @@ def status(folder: Path) -> dict:
                 raise ValueError("图片缺失或变化。")
         if report["stage"] != "final" or report["status"] != "pass":
             return {"status": "awaiting_visual_confirmation", "source_mode": job["source_mode"], "pages": len(job["pages"])}
+        require_confirmation(job, "visual", visual_version(job, report))
         visual = job.get("approvals", {}).get("visual", {})
         fingerprints = {page["id"]: page["fingerprint"] for page in report["pages"]}
         if visual.get("art_hash") != report["art_hash"] or visual.get("brief_hash") != digest(job["art_brief"]) or any(fingerprints.get(key) != value for key, value in visual.get("anchors", {}).items()) or not visual.get("anchors"):
@@ -230,22 +277,24 @@ def status(folder: Path) -> dict:
         return {"status": "draft", "reason": str(exc), "source_mode": job["source_mode"], "pages": len(job["pages"])}
 
 
-def approve_visual(folder: Path, sample_test: bool = False) -> dict:
+def approve_visual(folder: Path, sample_test: bool = False, confirmation: dict | None = None) -> dict:
     folder = Path(folder)
     job = load_job(folder)
     validate_job(job, folder)
-    require_content(job)
     if sample_test and job["source_mode"] != "sample":
         raise ValueError("技术测试确认不能用于真实数据。")
+    require_content(job)
     report = json.loads((folder / "validation-report.json").read_text("utf-8"))
     if report.get("stage") != "preview" or report.get("status") != "pass" or report.get("content_hash") != content_hash(job) or report.get("source_sha256") != file_digest(folder / "deck.html"):
-        raise ValueError("先导出当前版本的封面和代表内页，再记录视觉确认。")
+        raise ValueError("先导出当前版本的封面、年度概览和代表书卡，再记录视觉确认。")
+    if set(report["requested_ids"]) != set(preview_ids(job)):
+        raise ValueError("预览没有覆盖当前任务要求的页面角色。")
     for image in report["images"]:
         if file_digest(folder / "images" / image["file"]) != image["sha256"]:
             raise ValueError("预览图片缺失或已变化。")
     anchors = {page["id"]: page["fingerprint"] for page in report["pages"] if page["id"] in report["requested_ids"]}
-    job["approvals"]["visual"] = {"actor": "sample-test" if sample_test else "user", "at": datetime.now(timezone.utc).isoformat(),
-                                 "art_hash": report["art_hash"], "brief_hash": digest(job["art_brief"]), "anchors": anchors}
+    job["approvals"]["visual"] = confirmation_record(job, "visual", visual_version(job, report), confirmation, sample_test)
+    job["approvals"]["visual"].update(art_hash=report["art_hash"], brief_hash=digest(job["art_brief"]), anchors=anchors)
     job["status"] = "visual_approved"
     write_json(folder / "share-job.json", job)
     return job
@@ -260,6 +309,8 @@ def _safe_remove_staging(staging: Path, parent: Path, prefix: str) -> None:
 
 
 def export_share(folder: Path, stage: str, node: str | None = None, playwright_package: str | None = None, browser: str | None = None) -> dict:
+    if stage not in ("preview", "final"):
+        raise ValueError("导出阶段只能为preview或final。")
     folder = Path(folder).resolve()
     job = load_job(folder)
     validate_job(job, folder)
@@ -272,6 +323,8 @@ def export_share(folder: Path, stage: str, node: str | None = None, playwright_p
             raise ValueError("先确认封面和代表内页的实际图片。")
         if job["source_mode"] == "live" and visual.get("actor") != "user":
             raise ValueError("真实数据需要用户的视觉确认。")
+        previous = json.loads((folder / "validation-report.json").read_text("utf-8"))
+        require_confirmation(job, "visual", visual_version(job, previous))
     executable = shutil.which(node or "node")
     if not executable:
         return {"status": "unavailable", "reason": "没有可用 Node；保留 HTML，不安装依赖，也不宣称 PNG 完成。"}
@@ -281,6 +334,8 @@ def export_share(folder: Path, stage: str, node: str | None = None, playwright_p
     staging = folder.parent / f"{prefix}{uuid.uuid4().hex}"
     staging.mkdir()
     command = [executable, str(SCRIPT_DIR / "export_deck.cjs"), "--folder", str(folder), "--output", str(staging), "--stage", stage]
+    if stage == "preview":
+        command += ["--page-ids", json.dumps(preview_ids(job))]
     if playwright_package:
         command += ["--playwright-package", playwright_package]
     if browser:
@@ -341,18 +396,25 @@ def export_share(folder: Path, stage: str, node: str | None = None, playwright_p
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="精简阅读分享：准备、内容确认、两页预览、视觉确认、完整导出。由助手维护文件，用户无需编辑 JSON。")
+    parser = argparse.ArgumentParser(description="阅读分享：范围确认、内容与方向确认、真实样张确认、整组导出。助手维护文件。")
     sub = parser.add_subparsers(dest="command", required=True)
     prep = sub.add_parser("prepare")
     prep.add_argument("--year", type=int, required=True)
     prep.add_argument("--input", type=Path, required=True)
     prep.add_argument("--output", type=Path, required=True)
     prep.add_argument("--books", nargs="*")
-    for name in ("status", "approve-content", "approve-visual", "preview", "finalize"):
+    prep.add_argument("--format", choices=sorted(FORMATS), default="annual")
+    for name in ("status", "configure", "approve-scope", "approve-content", "approve-visual", "preview", "finalize"):
         cmd = sub.add_parser(name)
         cmd.add_argument("folder", type=Path)
         if name.startswith("approve-"):
             cmd.add_argument("--sample-test", action="store_true", help="仅样例技术测试；不冒称用户确认。真实任务只在用户已确认时记录。")
+            cmd.add_argument("--confirmation-file", type=Path, help="助手记录的当前回复与会话位置JSON，不让用户编辑。")
+        if name == "configure":
+            cmd.add_argument("--ratio", required=True, choices=["1:1", "3:4", "4:5", "custom"])
+            cmd.add_argument("--width", type=int)
+            cmd.add_argument("--height", type=int)
+            cmd.add_argument("--platform", required=True)
         if name in ("preview", "finalize"):
             cmd.add_argument("--node")
             cmd.add_argument("--playwright-package")
@@ -360,14 +422,25 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if args.command == "prepare":
-            job = prepare_share(args.year, args.input, args.output, args.books)
-            result = {"status": "content_draft" if job["books"] else "empty", "books": len(job["books"]), "pages": len(job["pages"]), "job": str(args.output / "share-job.json")}
+            job = prepare_share(args.year, args.input, args.output, args.books, args.format)
+            result = {"status": "scope_draft" if job["books"] else "empty", "books": len(job["books"]), "pages": len(job["pages"]), "job": str(args.output / "share-job.json")}
+        elif args.command == "configure":
+            job = load_job(args.folder)
+            if job.get("schema_version") != "share-3":
+                raise ValueError("旧任务须先重新确认简报，保留旧文件，不直接覆盖历史。")
+            job["canvas"] = make_canvas(args.ratio, args.width, args.height)
+            job["brief"]["platform"] = args.platform
+            job["status"] = "scope_draft"
+            write_json(args.folder / "share-job.json", job)
+            result = {"status": job["status"], "canvas": job["canvas"]}
         elif args.command == "status":
             result = status(args.folder)
-        elif args.command == "approve-content":
-            result = {"status": approve_content(args.folder, args.sample_test)["status"]}
-        elif args.command == "approve-visual":
-            result = {"status": approve_visual(args.folder, args.sample_test)["status"]}
+        elif args.command.startswith("approve-"):
+            if args.sample_test and args.confirmation_file:
+                raise ValueError("样例技术测试不能同时记录用户确认。")
+            confirmation = json.loads(args.confirmation_file.read_text("utf-8")) if args.confirmation_file else None
+            approve = {"approve-scope": approve_scope, "approve-content": approve_content, "approve-visual": approve_visual}[args.command]
+            result = {"status": approve(args.folder, args.sample_test, confirmation)["status"]}
         else:
             result = export_share(args.folder, "preview" if args.command == "preview" else "final", args.node, args.playwright_package, args.browser)
         print(json.dumps(result, ensure_ascii=False))

@@ -9,6 +9,7 @@ from pathlib import Path
 SKILL = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL / "scripts"))
 from run_share import file_digest, load_job, prepare_share, write_json
+from workflow_fixture import sample_decisions
 
 EXTRA_CSS = """
     .cover h1 {position:absolute;left:50px;top:117px;width:600px;height:370px}
@@ -55,8 +56,9 @@ EXTRA_PAGES = """
 
 
 def build(output: Path) -> None:
-    prepare_share(2026, SKILL / "assets/sample-data.json", output, ["sample-002", "sample-001", "sample-005"])
+    prepare_share(2026, SKILL / "assets/sample-data.json", output, ["sample-002", "sample-001", "sample-005"], "book-list")
     job = load_job(output)
+    sample_decisions(job)
     job["art_brief"] = {"audience": "小红书陌生读者", "focus": "精选书单与原始笔记，城市观察是这次的图像入口", "visual": "照片全景与局部；蓝色文字与黑白照片相处；讨论选择时换成文字主导", "sequence": "封面、街道观察、反方陈述、提问", "omit": "不加年度总量、年轮、装饰纹理；不是其他书单的固定风格"}
     blocks = {block["id"]: block for page in job["pages"] for block in page["blocks"]}
     blocks["cover-title"]["text"] = "今年的书，挑几本聊聊。"
@@ -82,7 +84,8 @@ def build(output: Path) -> None:
     html = html.replace('<p class="about" data-label>', '<p class="about" data-block="b-sample-002-about">')
     html = html.replace('</style>', EXTRA_CSS + '\n  </style>').replace('</body>', EXTRA_PAGES + '\n</body>')
     html = "\n".join(line.rstrip() for line in html.splitlines()) + "\n"
-    (output / "deck.html").write_text(html, "utf-8", newline="\n")
+    with (output / "deck.html").open("w", encoding="utf-8", newline="\n") as stream:
+        stream.write(html)
 
 
 if __name__ == "__main__":

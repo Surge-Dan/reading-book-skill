@@ -8,6 +8,7 @@ from pathlib import Path
 SKILL = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL / "scripts"))
 from run_share import file_digest, load_job, prepare_share, write_json
+from workflow_fixture import sample_decisions
 
 LEAF = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 850">
 <g fill="#702936">
@@ -59,8 +60,9 @@ header{top:42px}footer{bottom:38px;font-size:21px} .serif{font-family:'SimSun',s
 
 
 def build(output: Path) -> None:
-    prepare_share(2026, SKILL / "assets/sample-data.json", output, ["sample-004"])
+    prepare_share(2026, SKILL / "assets/sample-data.json", output, ["sample-004"], "single-book")
     job = load_job(output)
+    sample_decisions(job, focus="excerpts")
     job["art_brief"] = {
         "focus": "植物如何感知光照与季节；只用简介和划线，没有个人感受就不补写",
         "visual": "原创植物形态作为大面积剪影；浅杏与暗红互换，宋体顺着枝叶的方向排列",
@@ -77,7 +79,8 @@ def build(output: Path) -> None:
                       "source": "original: examples/build_botanical_demo.py", "rights": "original geometric SVG; repository license",
                       "role": "decorative plant shape; not a botanical specimen or book illustration"}]
     write_json(output / "share-job.json", job)
-    (output / "deck.html").write_text(HTML, "utf-8", newline="\n")
+    with (output / "deck.html").open("w", encoding="utf-8", newline="\n") as stream:
+        stream.write(HTML)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1126 @@
+{
+  "schema_version": "share-3",
+  "year": 2026,
+  "source_mode": "sample",
+  "source_sha256": "672293b2a4f5216d3ee6e6f30bd904efaf44fcdb3e2202e6ad5c527778eb39f0",
+  "coverage": {
+    "collection_complete": true,
+    "verification_status": "sample_verified",
+    "scope": "selected-books",
+    "annual_book_candidates": 6
+  },
+  "period": {
+    "year": 2026,
+    "as_of": "2026-12-31",
+    "complete": true
+  },
+  "books": [
+    {
+      "book_id": "sample-002",
+      "title": "缓慢的城市",
+      "author": "周野",
+      "evidence_level": "E1",
+      "excerpt_refs": [
+        "sample-002/highlight/s2-h1",
+        "sample-002/highlight/s2-h2",
+        "sample-002/thought/s2-r1"
+      ],
+      "available_highlights": 2,
+      "available_thoughts": 1,
+      "candidate_reason": "有个人笔记，可先讨论阅读所得"
+    },
+    {
+      "book_id": "sample-001",
+      "title": "看见选择",
+      "author": "林舟",
+      "evidence_level": "E2",
+      "excerpt_refs": [
+        "sample-001/highlight/s1-h1",
+        "sample-001/highlight/s1-h2",
+        "sample-001/thought/s1-r1",
+        "sample-001/thought/s1-r2"
+      ],
+      "available_highlights": 3,
+      "available_thoughts": 2,
+      "candidate_reason": "有个人笔记，可先讨论阅读所得"
+    },
+    {
+      "book_id": "sample-005",
+      "title": "重新学习提问",
+      "author": "顾言",
+      "evidence_level": "E1",
+      "excerpt_refs": [
+        "sample-005/highlight/s5-h1",
+        "sample-005/highlight/s5-h2",
+        "sample-005/thought/s5-r1"
+      ],
+      "available_highlights": 2,
+      "available_thoughts": 1,
+      "candidate_reason": "有个人笔记，可先讨论阅读所得"
+    },
+    {
+      "book_id": "sample-004",
+      "title": "植物知道时间",
+      "author": "苏禾",
+      "evidence_level": "E1",
+      "excerpt_refs": [
+        "sample-004/highlight/s4-h1"
+      ],
+      "available_highlights": 1,
+      "available_thoughts": 0,
+      "candidate_reason": "有书目或划线，尚需补充个人想法"
+    }
+  ],
+  "sources": {
+    "period/year": {
+      "kind": "fact",
+      "text": "2026"
+    },
+    "sample-002/title": {
+      "kind": "fact",
+      "text": "缓慢的城市",
+      "truncated": false,
+      "original_characters": 5
+    },
+    "sample-002/author": {
+      "kind": "fact",
+      "text": "周野",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-002/intro": {
+      "kind": "fact",
+      "text": "以步行和街区观察记录城市变化，关心人在空间里如何生活。",
+      "truncated": false,
+      "original_characters": 27
+    },
+    "sample-002/highlight/s2-h1": {
+      "kind": "highlight",
+      "source_id": "s2-h1",
+      "text": "一座城市最诚实的部分，往往在步行速度里。",
+      "truncated": false,
+      "original_characters": 20,
+      "created_at": 1774051200
+    },
+    "sample-002/highlight/s2-h2": {
+      "kind": "highlight",
+      "source_id": "s2-h2",
+      "text": "街道不是通道，它也是停留发生的地方。",
+      "truncated": false,
+      "original_characters": 18,
+      "created_at": 1774051200
+    },
+    "sample-002/thought/s2-r1": {
+      "kind": "thought",
+      "source_id": "s2-r1",
+      "text": "这本书让我重新注意每天经过却没有看见的路。",
+      "truncated": false,
+      "original_characters": 21,
+      "created_at": 1774051200
+    },
+    "sample-001/title": {
+      "kind": "fact",
+      "text": "看见选择",
+      "truncated": false,
+      "original_characters": 4
+    },
+    "sample-001/author": {
+      "kind": "fact",
+      "text": "林舟",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-001/intro": {
+      "kind": "fact",
+      "text": "从日常选择出发，讨论事实、假设与判断之间的距离。",
+      "truncated": false,
+      "original_characters": 24
+    },
+    "sample-001/highlight/s1-h1": {
+      "kind": "highlight",
+      "source_id": "s1-h1",
+      "text": "事实不会替我们做决定，但会缩小自欺的空间。",
+      "truncated": false,
+      "original_characters": 21,
+      "created_at": 1768176000
+    },
+    "sample-001/highlight/s1-h2": {
+      "kind": "highlight",
+      "source_id": "s1-h2",
+      "text": "先写下你相信什么，再去寻找会推翻它的证据。",
+      "truncated": false,
+      "original_characters": 21,
+      "created_at": 1771372800
+    },
+    "sample-001/thought/s1-r1": {
+      "kind": "thought",
+      "source_id": "s1-r1",
+      "text": "今年我真正需要的不是更多建议，而是一套能暴露假设的检查方式。",
+      "truncated": false,
+      "original_characters": 30,
+      "created_at": 1771372800
+    },
+    "sample-001/thought/s1-r2": {
+      "kind": "thought",
+      "source_id": "s1-r2",
+      "text": "以后做重要决定时，先保留一次反方陈述。",
+      "truncated": false,
+      "original_characters": 19,
+      "created_at": 1771372800
+    },
+    "sample-005/title": {
+      "kind": "fact",
+      "text": "重新学习提问",
+      "truncated": false,
+      "original_characters": 6
+    },
+    "sample-005/author": {
+      "kind": "fact",
+      "text": "顾言",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-005/intro": {
+      "kind": "fact",
+      "text": "把提问看作澄清边界、寻找证据和暴露假设的工具。",
+      "truncated": false,
+      "original_characters": 23
+    },
+    "sample-005/highlight/s5-h1": {
+      "kind": "highlight",
+      "source_id": "s5-h1",
+      "text": "问题决定我们允许什么成为证据。",
+      "truncated": false,
+      "original_characters": 15,
+      "created_at": 1789084800
+    },
+    "sample-005/highlight/s5-h2": {
+      "kind": "highlight",
+      "source_id": "s5-h2",
+      "text": "先问边界，再问答案。",
+      "truncated": false,
+      "original_characters": 10,
+      "created_at": 1789084800
+    },
+    "sample-005/thought/s5-r1": {
+      "kind": "thought",
+      "source_id": "s5-r1",
+      "text": "我想把需求讨论里的抽象争论改成三个具体问题。",
+      "truncated": false,
+      "original_characters": 22,
+      "created_at": 1789084800
+    },
+    "sample-004/title": {
+      "kind": "fact",
+      "text": "植物知道时间",
+      "truncated": false,
+      "original_characters": 6
+    },
+    "sample-004/author": {
+      "kind": "fact",
+      "text": "苏禾",
+      "truncated": false,
+      "original_characters": 2
+    },
+    "sample-004/intro": {
+      "kind": "fact",
+      "text": "通过植物节律解释生命如何感知光照、季节与环境变化。",
+      "truncated": false,
+      "original_characters": 25
+    },
+    "sample-004/highlight/s4-h1": {
+      "kind": "highlight",
+      "source_id": "s4-h1",
+      "text": "节律不是钟表，而是生命对环境变化的响应。",
+      "truncated": false,
+      "original_characters": 20,
+      "created_at": 1783036800
+    },
+    "summary/monthly-records": {
+      "kind": "fact",
+      "text": "按月汇总已提供的时长记录",
+      "value": {
+        "seconds": [
+          7200,
+          10800,
+          16200,
+          9000,
+          14400,
+          5400,
+          12600,
+          3600,
+          18000,
+          4200,
+          10800,
+          6600
+        ],
+        "observed": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "basis": "provided dated records; absence is unknown, not zero; not proof of complete monthly coverage"
+    },
+    "summary/total_read_seconds": {
+      "kind": "fact",
+      "text": "33小时0分钟",
+      "value": 118800,
+      "basis": "normalized annual statistics; not selected-book totals"
+    },
+    "summary/read_days": {
+      "kind": "fact",
+      "text": "94天阅读",
+      "value": 94,
+      "basis": "normalized annual statistics; not selected-book totals"
+    }
+  },
+  "pages": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "book_ids": [
+        "sample-002",
+        "sample-001",
+        "sample-005",
+        "sample-004"
+      ],
+      "blocks": [
+        {
+          "id": "cover-title",
+          "kind": "editorial",
+          "text": "读过的书，\n留下的几件事",
+          "source_refs": []
+        },
+        {
+          "id": "cover-year",
+          "kind": "fact",
+          "text": "2026",
+          "source_refs": [
+            "period/year"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-002",
+          "kind": "fact",
+          "text": "缓慢的城市",
+          "source_refs": [
+            "sample-002/title"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-001",
+          "kind": "fact",
+          "text": "看见选择",
+          "source_refs": [
+            "sample-001/title"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-005",
+          "kind": "fact",
+          "text": "重新学习提问",
+          "source_refs": [
+            "sample-005/title"
+          ]
+        },
+        {
+          "id": "cover-book-b-sample-004",
+          "kind": "fact",
+          "text": "植物知道时间",
+          "source_refs": [
+            "sample-004/title"
+          ]
+        }
+      ],
+      "storyboard": {
+        "reading_task": "看到精选书目以及本组内容的入口。",
+        "evidence_refs": [
+          "period/year",
+          "sample-002/title",
+          "sample-001/title",
+          "sample-005/title",
+          "sample-004/title"
+        ],
+        "main_visual": {
+          "structure": "book-objects",
+          "description": "四本示意书册与年度标题共同构图。"
+        },
+        "supporting_blocks": [
+          "cover-title",
+          "cover-year",
+          "cover-book-b-sample-002",
+          "cover-book-b-sample-001",
+          "cover-book-b-sample-005",
+          "cover-book-b-sample-004"
+        ],
+        "omit": "不把模拟书册厚度当作阅读量。"
+      }
+    },
+    {
+      "id": "overview",
+      "role": "overview",
+      "book_ids": [],
+      "blocks": [
+        {
+          "id": "overview-title",
+          "kind": "editorial",
+          "text": "这一年的阅读记录",
+          "source_refs": []
+        },
+        {
+          "id": "overview-total-read-seconds",
+          "kind": "fact",
+          "text": "33小时0分钟",
+          "source_refs": [
+            "summary/total_read_seconds"
+          ]
+        },
+        {
+          "id": "overview-read-days",
+          "kind": "fact",
+          "text": "94天阅读",
+          "source_refs": [
+            "summary/read_days"
+          ]
+        },
+        {
+          "id": "monthly-basis",
+          "kind": "fact",
+          "text": "按月汇总已提供的时长记录",
+          "source_refs": [
+            "summary/monthly-records"
+          ]
+        },
+        {
+          "id": "overview-book-0",
+          "kind": "fact",
+          "text": "缓慢的城市",
+          "source_refs": [
+            "sample-002/title"
+          ]
+        },
+        {
+          "id": "overview-book-1",
+          "kind": "fact",
+          "text": "看见选择",
+          "source_refs": [
+            "sample-001/title"
+          ]
+        },
+        {
+          "id": "overview-book-2",
+          "kind": "fact",
+          "text": "重新学习提问",
+          "source_refs": [
+            "sample-005/title"
+          ]
+        },
+        {
+          "id": "overview-book-3",
+          "kind": "fact",
+          "text": "植物知道时间",
+          "source_refs": [
+            "sample-004/title"
+          ]
+        }
+      ],
+      "storyboard": {
+        "reading_task": "看年度时长记录及本组精选书目，理解它们是不同统计范围。",
+        "evidence_refs": [
+          "summary/total_read_seconds",
+          "summary/read_days",
+          "summary/monthly-records",
+          "sample-002/title",
+          "sample-001/title",
+          "sample-005/title",
+          "sample-004/title"
+        ],
+        "main_visual": {
+          "structure": "record-trace",
+          "description": "精确月度轨迹与精选索引交替展开。"
+        },
+        "supporting_blocks": [
+          "overview-title",
+          "overview-total-read-seconds",
+          "overview-read-days",
+          "monthly-basis",
+          "overview-book-0",
+          "overview-book-1",
+          "overview-book-2",
+          "overview-book-3"
+        ],
+        "omit": "没有日明细，不生成日历；精选不是全年书数。"
+      },
+      "graphics": [
+        {
+          "id": "monthly-track",
+          "kind": "monthly-trace",
+          "source_ref": "summary/monthly-records"
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-002",
+      "role": "book",
+      "book_ids": [
+        "sample-002"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-002-title",
+          "kind": "fact",
+          "text": "缓慢的城市",
+          "source_refs": [
+            "sample-002/title"
+          ]
+        },
+        {
+          "id": "b-sample-002-author",
+          "kind": "fact",
+          "text": "周野",
+          "source_refs": [
+            "sample-002/author"
+          ]
+        },
+        {
+          "id": "b-sample-002-about",
+          "kind": "editorial",
+          "text": "以步行和街区观察记录城市变化，关心人在空间里如何生活。",
+          "source_refs": [
+            "sample-002/intro"
+          ]
+        },
+        {
+          "id": "b-sample-002-note",
+          "kind": "thought",
+          "text": "这本书让我重新注意每天经过却没有看见的路。",
+          "source_refs": [
+            "sample-002/thought/s2-r1"
+          ]
+        },
+        {
+          "id": "city-excerpt",
+          "kind": "quote",
+          "text": "街道不是通道，它也是停留发生的地方。",
+          "source_refs": [
+            "sample-002/highlight/s2-h2"
+          ]
+        }
+      ],
+      "storyboard": {
+        "reading_task": "一段关于街道的划线，与个人的日常观察放在一起读。",
+        "evidence_refs": [
+          "sample-002/title",
+          "sample-002/author",
+          "sample-002/intro",
+          "sample-002/thought/s2-r1",
+          "sample-002/highlight/s2-h2"
+        ],
+        "main_visual": {
+          "structure": "photo-observation",
+          "description": "全景和细节并置，划线与笔记各有位置。"
+        },
+        "supporting_blocks": [
+          "b-sample-002-title",
+          "b-sample-002-author",
+          "b-sample-002-about",
+          "b-sample-002-note",
+          "city-excerpt"
+        ],
+        "omit": "照片只作视觉联想，不冒充书中插图或用户拍摄。"
+      }
+    },
+    {
+      "id": "book-b-sample-001",
+      "role": "book",
+      "book_ids": [
+        "sample-001"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-001-title",
+          "kind": "fact",
+          "text": "看见选择",
+          "source_refs": [
+            "sample-001/title"
+          ]
+        },
+        {
+          "id": "b-sample-001-author",
+          "kind": "fact",
+          "text": "林舟",
+          "source_refs": [
+            "sample-001/author"
+          ]
+        },
+        {
+          "id": "b-sample-001-note",
+          "kind": "thought",
+          "text": "以后做重要决定时，先保留一次反方陈述。",
+          "source_refs": [
+            "sample-001/thought/s1-r2"
+          ]
+        },
+        {
+          "id": "write-hypothesis",
+          "kind": "editorial",
+          "text": "写下你相信什么",
+          "source_refs": [
+            "sample-001/highlight/s1-h2"
+          ]
+        },
+        {
+          "id": "counter-evidence",
+          "kind": "editorial",
+          "text": "寻找推翻它的证据",
+          "source_refs": [
+            "sample-001/highlight/s1-h2"
+          ]
+        },
+        {
+          "id": "counter-statement",
+          "kind": "editorial",
+          "text": "保留一次反方陈述",
+          "source_refs": [
+            "sample-001/thought/s1-r2"
+          ]
+        },
+        {
+          "id": "decision-excerpt",
+          "kind": "quote",
+          "text": "先写下你相信什么，再去寻找会推翻它的证据。",
+          "source_refs": [
+            "sample-001/highlight/s1-h2"
+          ]
+        }
+      ],
+      "storyboard": {
+        "reading_task": "把一条划线和反方陈述笔记整理成可以读的检查路径。",
+        "evidence_refs": [
+          "sample-001/title",
+          "sample-001/author",
+          "sample-001/thought/s1-r2",
+          "sample-001/highlight/s1-h2"
+        ],
+        "main_visual": {
+          "structure": "decision-relations",
+          "description": "错落的节点和连接形成主图，下方保留原文与笔记。"
+        },
+        "supporting_blocks": [
+          "b-sample-001-title",
+          "b-sample-001-author",
+          "b-sample-001-note",
+          "write-hypothesis",
+          "counter-evidence",
+          "counter-statement",
+          "decision-excerpt"
+        ],
+        "omit": "关系按精选片段整理；不用假分数或全书结论。"
+      },
+      "graphics": [
+        {
+          "id": "decision-path",
+          "kind": "relations",
+          "font_size": 38,
+          "nodes": [
+            {
+              "id": "hypothesis",
+              "block_id": "write-hypothesis",
+              "x": 10,
+              "y": 10,
+              "width": 328,
+              "height": 170
+            },
+            {
+              "id": "evidence",
+              "block_id": "counter-evidence",
+              "x": 430,
+              "y": 130,
+              "width": 344,
+              "height": 180
+            },
+            {
+              "id": "statement",
+              "block_id": "counter-statement",
+              "x": 160,
+              "y": 360,
+              "width": 420,
+              "height": 170
+            }
+          ],
+          "edges": [
+            {
+              "from": "hypothesis",
+              "to": "evidence",
+              "source_refs": [
+                "sample-001/highlight/s1-h2"
+              ]
+            },
+            {
+              "from": "evidence",
+              "to": "statement",
+              "source_refs": [
+                "sample-001/highlight/s1-h2",
+                "sample-001/thought/s1-r2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-005",
+      "role": "book",
+      "book_ids": [
+        "sample-005"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-005-title",
+          "kind": "fact",
+          "text": "重新学习提问",
+          "source_refs": [
+            "sample-005/title"
+          ]
+        },
+        {
+          "id": "b-sample-005-author",
+          "kind": "fact",
+          "text": "顾言",
+          "source_refs": [
+            "sample-005/author"
+          ]
+        },
+        {
+          "id": "b-sample-005-about",
+          "kind": "editorial",
+          "text": "把提问看作澄清边界、寻找证据和暴露假设的工具。",
+          "source_refs": [
+            "sample-005/intro"
+          ]
+        },
+        {
+          "id": "b-sample-005-note",
+          "kind": "thought",
+          "text": "我想把需求讨论里的抽象争论改成三个具体问题。",
+          "source_refs": [
+            "sample-005/thought/s5-r1"
+          ]
+        },
+        {
+          "id": "question-boundary",
+          "kind": "editorial",
+          "text": "先问边界",
+          "source_refs": [
+            "sample-005/highlight/s5-h2"
+          ]
+        },
+        {
+          "id": "question-answer",
+          "kind": "editorial",
+          "text": "再问答案",
+          "source_refs": [
+            "sample-005/highlight/s5-h2"
+          ]
+        },
+        {
+          "id": "question-excerpt",
+          "kind": "quote",
+          "text": "先问边界，再问答案。",
+          "source_refs": [
+            "sample-005/highlight/s5-h2"
+          ]
+        },
+        {
+          "id": "question-evidence",
+          "kind": "quote",
+          "text": "问题决定我们允许什么成为证据。",
+          "source_refs": [
+            "sample-005/highlight/s5-h1"
+          ]
+        }
+      ],
+      "storyboard": {
+        "reading_task": "辨认先问边界、再问答案的次序，以及它与证据的关系。",
+        "evidence_refs": [
+          "sample-005/title",
+          "sample-005/author",
+          "sample-005/intro",
+          "sample-005/thought/s5-r1",
+          "sample-005/highlight/s5-h2",
+          "sample-005/highlight/s5-h1"
+        ],
+        "main_visual": {
+          "structure": "question-pair",
+          "description": "错开的两块问题牌，证据片段与个人提醒分区阅读。"
+        },
+        "supporting_blocks": [
+          "b-sample-005-title",
+          "b-sample-005-author",
+          "b-sample-005-about",
+          "b-sample-005-note",
+          "question-boundary",
+          "question-answer",
+          "question-excerpt",
+          "question-evidence"
+        ],
+        "omit": "不补写样例笔记中未给出的三个问题。"
+      },
+      "graphics": [
+        {
+          "id": "question-pair",
+          "kind": "relations",
+          "font_size": 42,
+          "nodes": [
+            {
+              "id": "boundary",
+              "block_id": "question-boundary",
+              "x": 10,
+              "y": 14,
+              "width": 332,
+              "height": 172
+            },
+            {
+              "id": "answer",
+              "block_id": "question-answer",
+              "x": 450,
+              "y": 136,
+              "width": 332,
+              "height": 172
+            }
+          ],
+          "edges": [
+            {
+              "from": "boundary",
+              "to": "answer",
+              "source_refs": [
+                "sample-005/highlight/s5-h2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "book-b-sample-004",
+      "role": "book",
+      "book_ids": [
+        "sample-004"
+      ],
+      "blocks": [
+        {
+          "id": "b-sample-004-title",
+          "kind": "fact",
+          "text": "植物知道时间",
+          "source_refs": [
+            "sample-004/title"
+          ]
+        },
+        {
+          "id": "b-sample-004-author",
+          "kind": "fact",
+          "text": "苏禾",
+          "source_refs": [
+            "sample-004/author"
+          ]
+        },
+        {
+          "id": "b-sample-004-about",
+          "kind": "editorial",
+          "text": "通过植物节律解释生命如何感知光照、季节与环境变化。",
+          "source_refs": [
+            "sample-004/intro"
+          ]
+        },
+        {
+          "id": "b-sample-004-note",
+          "kind": "quote",
+          "text": "节律不是钟表，\n而是生命对环境变化的响应。",
+          "source_refs": [
+            "sample-004/highlight/s4-h1"
+          ]
+        },
+        {
+          "id": "plant-environment",
+          "kind": "editorial",
+          "text": "光照\n季节\n环境变化",
+          "source_refs": [
+            "sample-004/intro"
+          ]
+        }
+      ],
+      "storyboard": {
+        "reading_task": "用一条划线和书籍简介展示节律与环境的关系。",
+        "evidence_refs": [
+          "sample-004/title",
+          "sample-004/author",
+          "sample-004/intro",
+          "sample-004/highlight/s4-h1"
+        ],
+        "main_visual": {
+          "structure": "specimen-excerpt",
+          "description": "原创植物意象与环境词旁注，长引文作为理解入口。"
+        },
+        "supporting_blocks": [
+          "b-sample-004-title",
+          "b-sample-004-author",
+          "b-sample-004-about",
+          "b-sample-004-note",
+          "plant-environment"
+        ],
+        "omit": "没有个人笔记，不补写读后感；植物意象非科学物种图。"
+      }
+    }
+  ],
+  "annual_summary": {
+    "total_read_seconds": 118800,
+    "read_days": 94,
+    "monthly_read_seconds": [
+      7200,
+      10800,
+      16200,
+      9000,
+      14400,
+      5400,
+      12600,
+      3600,
+      18000,
+      4200,
+      10800,
+      6600
+    ],
+    "monthly_observed": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "brief": {
+    "platform": "本地技术样例",
+    "format": "annual",
+    "focus": "excerpts"
+  },
+  "canvas": {
+    "ratio": "3:4",
+    "width": 900,
+    "height": 1200
+  },
+  "directions": [
+    {
+      "id": "a",
+      "label": "阅读展览（样例）",
+      "concept": "阅读展览：物件、片段、内容图解各有职责。仅用于这组虚构材料。",
+      "fonts": [
+        {
+          "family": "Noto Serif SC",
+          "role": "标题、引文"
+        },
+        {
+          "family": "Noto Sans SC",
+          "role": "正文、数字、图解"
+        }
+      ],
+      "references": [
+        {
+          "source": "design.md#2",
+          "lesson": "书籍物件与记录共同构图；主视觉变化来自具体内容。"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "label": "编辑档案（备选，仅说明）",
+      "concept": "浅底、多栏笔记与旁注；以内容图解而非物件陈列为主要视觉。",
+      "fonts": [
+        {
+          "family": "SimSun",
+          "role": "标题"
+        }
+      ],
+      "references": [
+        {
+          "source": "https://github.com/larashero3-dotcom/lieflat-charts/blob/eace082a317b696c5570c25826a53a7fa113e984/templates/reports/report-10.zh.html",
+          "lesson": "记录、名单、图形交替展开；没有复制代码或素材。"
+        }
+      ]
+    }
+  ],
+  "selected_direction": "a",
+  "art_brief": {
+    "concept": "阅读展览：物件、片段、内容图解各有职责。仅用于这组虚构材料。",
+    "palette": "炭底／纸色／柠檬黄绿；植物页用暗绿，与本次物件呼应。",
+    "fonts": "Noto Serif SC标题与引文，Noto Sans SC正文、数字和图形。",
+    "sequence": "书册陈列、记录轨迹、摄影观察、假设关系、提问路径、植物标本。"
+  },
+  "assets": [
+    {
+      "path": "assets/street.jpg",
+      "source": "https://www.artic.edu/artworks/55394",
+      "rights": "public-domain; museum API is_public_domain=true",
+      "sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf",
+      "role": "visual illustration; not a book cover or reader photograph"
+    }
+  ],
+  "caption": "2026年的书，挑几本聊聊。\n\n- 《缓慢的城市》\n- 《看见选择》\n- 《重新学习提问》\n- 《植物知道时间》\n\n样例：虚构书籍与笔记，仅作设计演示。",
+  "approvals": {
+    "scope": {
+      "stage": "scope",
+      "hash": "fd711751abe3a7e346cf5b561c71cad3c87d313c7e7b1538af4e56ed4dd9261b",
+      "actor": "sample-test",
+      "at": "2026-10-03T02:47:11.239310+00:00",
+      "evidence": {
+        "reply": "仅样例技术测试，不代表用户认可。",
+        "context_ref": "sample-test"
+      },
+      "presented_scope": {
+        "year": 2026,
+        "period": {
+          "year": 2026,
+          "as_of": "2026-12-31",
+          "complete": true
+        },
+        "brief": {
+          "platform": "本地技术样例",
+          "format": "annual",
+          "focus": "excerpts"
+        },
+        "canvas": {
+          "ratio": "3:4",
+          "width": 900,
+          "height": 1200
+        },
+        "books": [
+          {
+            "book_id": "sample-002",
+            "title": "缓慢的城市",
+            "author": "周野"
+          },
+          {
+            "book_id": "sample-001",
+            "title": "看见选择",
+            "author": "林舟"
+          },
+          {
+            "book_id": "sample-005",
+            "title": "重新学习提问",
+            "author": "顾言"
+          },
+          {
+            "book_id": "sample-004",
+            "title": "植物知道时间",
+            "author": "苏禾"
+          }
+        ],
+        "page_plan": [
+          {
+            "id": "cover",
+            "role": "cover",
+            "book_ids": [
+              "sample-002",
+              "sample-001",
+              "sample-005",
+              "sample-004"
+            ]
+          },
+          {
+            "id": "overview",
+            "role": "overview",
+            "book_ids": []
+          },
+          {
+            "id": "book-b-sample-002",
+            "role": "book",
+            "book_ids": [
+              "sample-002"
+            ]
+          },
+          {
+            "id": "book-b-sample-001",
+            "role": "book",
+            "book_ids": [
+              "sample-001"
+            ]
+          },
+          {
+            "id": "book-b-sample-005",
+            "role": "book",
+            "book_ids": [
+              "sample-005"
+            ]
+          },
+          {
+            "id": "book-b-sample-004",
+            "role": "book",
+            "book_ids": [
+              "sample-004"
+            ]
+          }
+        ]
+      }
+    },
+    "content": {
+      "stage": "content",
+      "hash": "ca6ed4c3c21e8130e681d76e5893436dae3d54b80651e033c8579d0548eff211",
+      "actor": "sample-test",
+      "at": "2026-10-03T02:47:11.245048+00:00",
+      "evidence": {
+        "reply": "仅样例技术测试，不代表用户认可。",
+        "context_ref": "sample-test"
+      }
+    },
+    "visual": {
+      "stage": "visual",
+      "hash": "118e686faed4bab24bd6d780b599f6aed50091a28f20388aa944074a2359ca92",
+      "actor": "sample-test",
+      "at": "2026-10-03T02:47:13.954795+00:00",
+      "evidence": {
+        "reply": "仅样例技术测试，不代表用户认可。",
+        "context_ref": "sample-test"
+      },
+      "art_hash": "761b472b4bedafc908dbacf530d9a285ee3b21ea363643b515301470d7d5609c",
+      "brief_hash": "32043f13720dbaa01d87f2e7346472969db27f06d97c98a14ec7cd26325deb26",
+      "anchors": {
+        "cover": "2a73b314913b63252ecd89bbf0311b223f22a28a6299a926910a10972fd11cc9",
+        "overview": "9901bcb111c9fa7459fa73628a73dae333dd913e58b279a2328071d150bb4f67",
+        "book-b-sample-002": "f3721479dc7c788a97b8d6f32f0510a6e1674c97e28fb72bc6e19ccb5fba32eb",
+        "book-b-sample-001": "79110481179bbf95f7d28e1b9dc1b48ae10cda36fc4986a1721ec02754f891b0"
+      }
+    }
+  },
+  "status": "ready_sample",
+  "runs": [
+    {
+      "stage": "preview",
+      "at": "2026-10-03T02:47:13.944128+00:00",
+      "rendered": 4,
+      "reused": 0,
+      "elapsed_seconds": 2.29
+    },
+    {
+      "stage": "final",
+      "at": "2026-10-03T02:47:16.258442+00:00",
+      "rendered": 2,
+      "reused": 4,
+      "elapsed_seconds": 1.85
+    }
+  ]
+}

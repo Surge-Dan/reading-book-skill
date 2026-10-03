@@ -11,7 +11,10 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "reading-yearbook-skill"
 sys.path.insert(0, str(SKILL / "scripts"))
-from run_share import (approve_content, approve_visual, content_hash, digest, export_share,
+sys.path.insert(0, str(SKILL / "examples"))
+from workflow_fixture import sample_decisions, build as build_annual_fixture
+from share_contract import make_canvas, preview_ids, require_scope
+from run_share import (approve_scope, approve_content, approve_visual, content_hash, digest, export_share,
                        file_digest, load_job, prepare_share, require_content, status, validate_job, write_json)
 
 
@@ -19,9 +22,11 @@ class ShareStateTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.folder = Path(self.temp.name) / "share"
-        self.job = prepare_share(2026, SKILL / "assets/sample-data.json", self.folder, ["sample-002"])
+        self.job = prepare_share(2026, SKILL / "assets/sample-data.json", self.folder, ["sample-002"], "book-list")
+        sample_decisions(self.job)
         self.job["art_brief"] = {"focus": "街道观察", "layout": "照片全景与局部"}
         write_json(self.folder / "share-job.json", self.job)
+        approve_scope(self.folder, True)
 
     def tearDown(self):
         self.temp.cleanup()
@@ -64,7 +69,9 @@ class ShareStateTests(unittest.TestCase):
         write_json(self.folder / "share-job.json", self.job)
         with self.assertRaisesRegex(ValueError, "技术测试"):
             approve_content(self.folder, True)
-        approve_content(self.folder)
+        evidence = {"reply": "确认本次范围和内容，数据不完整先看草稿。", "context_ref": "test:live-partial"}
+        approve_scope(self.folder, confirmation=evidence)
+        approve_content(self.folder, confirmation=evidence)
         with self.assertRaisesRegex(ValueError, "采集不完整"):
             export_share(self.folder, "final")
 
@@ -112,7 +119,7 @@ class ShareStateTests(unittest.TestCase):
         fixture = Path(self.temp.name) / "long.json"
         write_json(fixture, raw)
         folder = Path(self.temp.name) / "long"
-        job = prepare_share(2026, fixture, folder, ["sample-002"])
+        job = prepare_share(2026, fixture, folder, ["sample-002"], "book-list")
         source = job["sources"]["sample-002/thought/s2-r1"]
         self.assertTrue(source["truncated"])
         self.assertEqual(len(source["text"]), 800)
@@ -120,6 +127,89 @@ class ShareStateTests(unittest.TestCase):
         job["pages"][1]["blocks"].append({"id": "wrong-quote", "kind": "thought", "text": source["text"], "source_refs": ["sample-002/thought/s2-r1"]})
         with self.assertRaisesRegex(ValueError, "截断"):
             validate_job(job, folder)
+
+    def test_annual_candidates_do_not_choose_a_ratio_or_approve_scope(self):
+        folder = Path(self.temp.name) / "annual"
+        job = prepare_share(2026, SKILL / "assets/sample-data.json", folder)
+        self.assertIsNone(job["canvas"])
+        self.assertFalse(job["approvals"])
+        self.assertEqual([p["role"] for p in job["pages"][:3]], ["cover", "overview", "book"])
+        self.assertEqual(preview_ids(job), ["cover", "overview", job["pages"][2]["id"]])
+        with self.assertRaisesRegex(ValueError, "比例"):
+            approve_scope(folder, True)
+
+    def test_confirmation_requires_reply_and_context_not_just_actor(self):
+        for evidence in (None, {}, {"reply": "可以"}, {"reply": "可以", "context_ref": " "}):
+            with self.subTest(evidence=evidence), self.assertRaisesRegex(ValueError, "实际回复"):
+                approve_content(self.folder, confirmation=evidence)
+        job = approve_content(self.folder, confirmation={"reply": "确认内容，选择方向a。", "context_ref": "test:creation-reply"})
+        require_content(job)
+        job["approvals"]["content"].pop("evidence")
+        with self.assertRaisesRegex(ValueError, "未确认"):
+            require_content(job)
+
+    def test_confirmation_does_not_persist_credentials(self):
+        before = (self.folder / "share-job.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "密钥"):
+            approve_content(self.folder, confirmation={"reply": "WEREAD_API_KEY=synthetic-test", "context_ref": "test:synthetic-secret"})
+        self.assertEqual((self.folder / "share-job.json").read_bytes(), before)
+
+    def test_scope_changes_invalidate_later_steps(self):
+        for change in (lambda j: j.update(canvas=make_canvas("1:1")),
+                       lambda j: j["brief"].update(platform="其他平台"),
+                       lambda j: j["pages"].append(deepcopy(j["pages"][-1]))):
+            job = approve_content(self.folder, True)
+            change(job)
+            with self.assertRaises(ValueError):
+                require_content(job)
+
+    def test_two_directions_and_actual_font_reference_decisions_are_required(self):
+        for mutate in (lambda j: j.update(directions=j["directions"][:1]),
+                       lambda j: j["directions"][0].update(fonts=[]),
+                       lambda j: j["directions"][1].update(references=[]),
+                       lambda j: j.update(selected_direction=None)):
+            job = deepcopy(self.job)
+            mutate(job)
+            write_json(self.folder / "share-job.json", job)
+            approve_scope(self.folder, True)
+            with self.assertRaises(ValueError):
+                approve_content(self.folder, True)
+
+    def test_quotation_is_not_a_personal_takeaway(self):
+        page = self.job["pages"][1]
+        page["blocks"] = [block for block in page["blocks"] if block["kind"] != "thought"]
+        ref = next(ref for ref in self.job["books"][0]["excerpt_refs"] if self.job["sources"][ref]["kind"] == "highlight")
+        page["blocks"].append({"id": "quote-only", "kind": "quote", "text": self.job["sources"][ref]["text"], "source_refs": [ref]})
+        page['storyboard']['supporting_blocks'] = [b['id'] for b in page['blocks']]
+        write_json(self.folder / "share-job.json", self.job)
+        approve_scope(self.folder, True)
+        with self.assertRaisesRegex(ValueError, "个人想法"):
+            approve_content(self.folder, True)
+        self.job["brief"]["focus"] = "excerpts"
+        write_json(self.folder / "share-job.json", self.job)
+        approve_scope(self.folder, True)
+        approve_content(self.folder, True)
+
+    def test_legacy_approval_cannot_silently_bypass_new_brief(self):
+        self.job["schema_version"] = "share-1"
+        write_json(self.folder / "share-job.json", self.job)
+        with self.assertRaisesRegex(ValueError, "旧任务"):
+            approve_content(self.folder, True)
+
+    def test_canvas_ratio_bounds_and_single_image_scope(self):
+        for ratio, dimensions in (("1:1", (900, 900)), ("3:4", (900, 1200)), ("4:5", (900, 1125))):
+            canvas = make_canvas(ratio)
+            self.assertEqual((canvas["width"], canvas["height"]), dimensions)
+        self.assertEqual(make_canvas("custom", 800, 1000)["ratio"], "4:5")
+        for args in (("1:1", 900, 1200), ("custom", 100, 900), ("custom", 900, 9000)):
+            with self.assertRaises(ValueError):
+                make_canvas(*args)
+        folder = Path(self.temp.name) / "single"
+        job = prepare_share(2026, SKILL / "assets/sample-data.json", folder, ["sample-002"], "single-image")
+        sample_decisions(job, "1:1")
+        self.assertEqual(len(job["pages"]), 1)
+        write_json(folder / "share-job.json", job)
+        approve_scope(folder, True)
 
 
 @unittest.skipUnless(os.environ.get("SHARE_NODE") and os.environ.get("SHARE_PLAYWRIGHT") and os.environ.get("SHARE_BROWSER"), "Set SHARE_NODE, SHARE_PLAYWRIGHT and SHARE_BROWSER for the real local-render test.")
@@ -132,6 +222,7 @@ class ShareRenderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             folder = Path(temp) / "share"
             demo.build(folder)
+            approve_scope(folder, True)
             approve_content(folder, True)
             first = export_share(folder, "preview", **options)
             self.assertEqual((first["rendered"], first["reused"]), (2, 0))
@@ -184,6 +275,7 @@ class ShareRenderTests(unittest.TestCase):
             write_json(folder / "share-job.json", job)
             html = (folder / "deck.html").read_text("utf-8").replace('class="page inside"', 'class="page inside" style="background-image:url(\'assets/paper (1).svg\')"')
             (folder / "deck.html").write_text(html, "utf-8")
+            approve_scope(folder, True)
             approve_content(folder, True)
             export_share(folder, "preview", **options)
             approve_visual(folder, True)
@@ -197,6 +289,33 @@ class ShareRenderTests(unittest.TestCase):
             self.assertEqual((preview["rendered"], preview["reused"]), (1, 1))
             approve_visual(folder, True)
             self.assertEqual(export_share(folder, "final", **options)["status"], "pass")
+
+    def test_annual_three_previews_and_all_canvas_sizes(self):
+        options = {"node": os.environ["SHARE_NODE"], "playwright_package": os.environ["SHARE_PLAYWRIGHT"], "browser": os.environ["SHARE_BROWSER"]}
+        with tempfile.TemporaryDirectory() as temp:
+            for ratio in ("1:1", "3:4", "4:5"):
+                with self.subTest(ratio=ratio):
+                    folder = Path(temp) / ratio.replace(":", "-")
+                    build_annual_fixture(folder, ratio)
+                    approve_scope(folder, True)
+                    approve_content(folder, True)
+                    preview = export_share(folder, "preview", **options)
+                    self.assertEqual((preview["rendered"], preview["pages"]), (3, 3))
+                    report = json.loads((folder / "validation-report.json").read_text("utf-8"))
+                    self.assertEqual(report["requested_ids"], preview_ids(load_job(folder)))
+                    with self.assertRaisesRegex(ValueError, "实际图片"):
+                        export_share(folder, "final", **options)
+                    approve_visual(folder, True)
+                    result = export_share(folder, "final", **options)
+                    self.assertEqual((result["rendered"], result["reused"]), (2, 3))
+                    self.assertEqual(status(folder)["status"], "ready_sample")
+                    canvas = make_canvas(ratio)
+                    for png in (folder / "images").glob("*.png"):
+                        header = png.read_bytes()[:24]
+                        self.assertEqual((int.from_bytes(header[16:20], "big"), int.from_bytes(header[20:24], "big")), (canvas["width"], canvas["height"]))
+                    overview = (folder / "overview.png").read_bytes()[:24]
+                    self.assertEqual(int.from_bytes(overview[16:20], "big"), 750)
+                    self.assertGreater(int.from_bytes(overview[20:24], "big"), canvas["height"] * 375 / canvas["width"])
 
 
 if __name__ == "__main__":
