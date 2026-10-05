@@ -284,7 +284,7 @@ def build_html(data, output, covers=None, art_assets=None, require_all_covers=Fa
            for name, file in [('hero', 'hero-book.png'), ('reading', 'reading.png'), ('rhythm', 'rhythm.png')]}
     replacements = {'__DATA__': serialized, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-art.css').read_text('utf-8'),
                     '__ART__': json.dumps(art),
-                    '__APP__': (ROOT / 'assets' / 'reading-app.js').read_text('utf-8'),
+                    '__APP__': (ROOT / 'assets' / 'reading-share-art.js').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-app.js').read_text('utf-8'),
                     '__LICENSE__': html.escape((ROOT / 'assets' / 'lieflat-LICENSE.txt').read_text('utf-8'))}
     # One-pass replacement: user text may itself contain template delimiters.
     page = re.sub(r'__(?:DATA|STYLE|APP|LICENSE|ART)__', lambda m: replacements[m.group()], template)
