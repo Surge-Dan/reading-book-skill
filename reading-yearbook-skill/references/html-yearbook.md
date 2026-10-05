@@ -14,7 +14,20 @@ python -X utf8 scripts/build_reading_html.py --input reading-data.json --output 
 
 接受原始`shelf/stats/book_details`、规范化`summary/books`或已有`share-job.json`。已有分享任务包通常仅有精选书，用`--annual-snapshot`补充年内书目，不能直接加入整个书架。年度快照包含`annual.readLongest`、`shelf.books`与可选`non_ranked_progress`；后者只纳入实际开始阅读且末次阅读在本年的书。快照需通过显式year或annual.readTimes日期核验年份，跨年快照拒绝合并。
 
-`--covers covers.json`映射书籍ID到本地PNG/JPEG/WebP路径，路径相对covers.json。已有真实书封内嵌到HTML；缺少时显示明确的文字封面，不生成伪装成真实版本的封面。不自动请求远程书封或在线字体。
+`--covers covers.json`映射书籍ID到本地PNG/JPEG/WebP路径，路径相对covers.json。正式年鉴使用`--require-all-covers`，有任何真实封面缺失时停止生成，保留上一版；文字封面仅用于草稿、示例或坏图恢复，不能把大批占位封面当正式交付。网页和离线构建本身不请求远程封面，材料采集阶段先取得来源中的真实封面并内嵌，不生成伪装成真实版本的封面。
+
+### 补齐书籍材料
+
+已有组图任务只保留精选片段，不能将其当成完整年鉴的笔记输入。补全年内书目后，逐本核实封面、当前进度、完整划线及个人想法；只请求已确认的书，不重采整个书架。使用：
+
+```powershell
+python -X utf8 scripts/collect_html_materials.py --input share-job.json --annual-snapshot annual-snapshot.json --output private/html-materials
+python -X utf8 scripts/build_reading_html.py --input share-job.json --annual-snapshot annual-snapshot.json --book-materials private/html-materials/materials.json --covers private/html-materials/covers.json --require-all-covers --output output/reading/index.html
+```
+
+采集脚本读取环境变量中的Key，两个并发任务、复用有效缓存、按游标拉取全部个人想法；单书最多20页，超过时停止扩批，版本升级或鉴权失败停止新请求。可用`--legacy-cache`复用旧的`bookId-highlights.json`／`bookId-thoughts.json`。缓存及封面留在私人目录，错误状态不写成空笔记。构建器只合并当前年鉴已有书籍，不让额外书目混入。
+
+详情默认载入该书全部历史记录，并注明范围；年度时间线只取本年事件。确认接口完整返回0条时写“已核查，无记录”，请求失败或只取了片段时写“未完整载入”。年度统计优先读取官方`readStat/readDays/totalReadTime`及月度分桶；当前进度100%的筛选和官方年度读完汇总分别保留，不能为了对齐数字篡改任何一方。刷新统计同时更新采集日期。划线区支持按书籍筛选，导出保留材料范围。
 
 缺少读完、进度、日期或逐书时长时显示未知，不从年度总量分摊。每本书保留一个来源主分类，层级分类第一层用于分布，原始分类保留在数据中。书目覆盖和材料覆盖分别检查；有15本身份不意味着15本都有笔记或全文。
 
@@ -25,6 +38,8 @@ python -X utf8 scripts/build_reading_html.py --input reading-data.json --output 
 ## 全文书评
 
 微信读书提供阅读记录、书籍信息、划线与笔记；不要假设它提供完整正文。需要全书评价时主动检索：作者／出版社公开版本、公共领域或开放许可书库、可用的用户授权来源。初次每本最多两组针对作者与版本的查询、核验五个候选，暂时网络失败最多重试一次；找不到则保留“等待全文”，继续处理其他书。
+
+排查能力时可实际查询官方网关`/_list`；`/store/search`的`scope=12`为全文搜索，不代表可以导出整本正文。找到完整外文原版须明确和用户所读版本的差异；未完成正文阅读与版本核对时只展示可用来源，不能标记全书书评已完成。`--book-materials`支持`full_text_search`（status/reason/sources/checked_on）及已有合格`full_text_review`；查找状态与完成书评分别记录。
 
 核验书名、作者、版本、开头／结尾、目录和章节覆盖，记录访问依据和来源。目录、试读、其他书评不能当全文。正文留在私人目录；分章节读取和缓存，完成结构理解后写书评并回查判断对应章节。个人体验只来自真实笔记，不把生成评价写成用户经历。
 

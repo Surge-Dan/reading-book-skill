@@ -11,6 +11,7 @@ description: Create offline HTML reading yearbooks with real reading statistics,
 
 - HTML阅读年鉴：只读[HTML年鉴操作](references/html-yearbook.md)，复用已采数据，运行`build_reading_html.py`。首次先对齐视觉与数据范围，已有认可原型则直接实现；无需再走组图的三个确认点。
 - HTML图表按数据问题从lieflat-charts真实gallery选型，不只模仿外观。当前示例含细线、分类阶梯、逐书刻度与滚入／重播动画；用户指定参考图时连同字体、原创素材、纸面层次和实际导出一起还原。缺少逐日数据不制作每日热力图。
+- 完整HTML先补齐每本已确认书籍的真实封面、当前进度、完整划线和个人想法；组图中的精选摘录不能代替完整采集。正式生成用`--require-all-covers`。核查后为零与采集失败分开显示；年度汇总和当前阅读进度分别保留口径。
 - 只做书单或单书分享：读 [艺术指导](references/art-direction.md) 和 [分享操作](references/share-workflow.md)。
 - 用户选择拼贴时才读[拼贴方法](references/collage-method.md)；需要选字或换字时读[字体方法](references/typography.md)。不一次加载字体库或所有风格说明。
 - 改一页：只读现有简报、该页内容与分享操作的修订段，不重跑调研或采集。

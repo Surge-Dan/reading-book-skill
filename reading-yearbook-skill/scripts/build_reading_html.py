@@ -46,7 +46,7 @@ def notes(rows, year):
             continue
         text = str(row.get('text') or '').strip()
         when = date_value(row.get('created_at'))
-        if not text or (when and int(when[:4]) != year):
+        if not text or (year is not None and when and int(when[:4]) != year):
             continue
         source_id = str(row.get('source_id') or '')
         identity = source_id or (text, when)
@@ -54,7 +54,8 @@ def notes(rows, year):
             continue
         seen.add(identity)
         result.append({'text': text, 'created_at': when, 'source_id': source_id,
-                       'chapter': str(row.get('chapter_uid') or ''), 'quote': str(row.get('quote') or '')})
+                       'chapter': str(row.get('chapter_uid') or ''), 'chapter_title': str(row.get('chapter_title') or ''),
+                       'quote': str(row.get('quote') or '')})
     return result
 
 
@@ -162,6 +163,28 @@ def merge_annual(data, snapshot):
         years.add(int(declared_year))
     if years != {data['year']}:
         raise ValueError('年度快照缺少可核验年份，或与年鉴年份不一致')
+    # Official annual totals and current per-book progress are separate scopes.
+    # Prefer an actual annual response to stale hand-entered share facts.
+    for row in annual.get('readStat', []):
+        key = {'读过': 'read', '读完': 'finished', '笔记': 'notes'}.get(row.get('stat'))
+        count = re.fullmatch(r'\s*(\d+)\s*(?:本|条)?\s*', str(row.get('counts') or ''))
+        if key and count:
+            data['summary'][key] = int(count[1])
+    for field, key in [('readDays', 'read_days'), ('totalReadTime', 'seconds')]:
+        if number(annual.get(field)) is not None:
+            data['summary'][key] = number(annual[field])
+    if date_value(snapshot.get('as_of')):
+        data['as_of'] = date_value(snapshot['as_of'])
+        data['summary']['complete_months'] = int(data['as_of'][5:7])-1 if int(data['as_of'][:4]) == data['year'] else 12
+    if annual.get('readTimes'):
+        monthly = [None]*12
+        for timestamp, seconds in annual['readTimes'].items():
+            date = date_value(timestamp)
+            if date and int(date[:4]) == data['year']:
+                month = int(date[5:7])-1
+                if not data['as_of'] or int(data['as_of'][:4]) != data['year'] or month < int(data['as_of'][5:7]):
+                    monthly[month] = number(seconds)
+        data['summary']['monthly'] = monthly
     shelf = {str(b.get('bookId')): b for b in snapshot.get('shelf', {}).get('books', [])}
     existing = {b['book_id']: b for b in data['books']}
     ranked = {str(x.get('book', {}).get('bookId')): x for x in annual.get('readLongest', []) if number(x.get('readTime')) and x.get('book', {}).get('bookId')}
@@ -195,8 +218,53 @@ def merge_annual(data, snapshot):
         if info.get('finished_on'):
             b['finish_date'] = date_value(info['finished_on'])
     data['books'] = list(existing.values())
+    data['coverage']['annual_books'] = data['summary']['read']
     data['coverage']['loaded_books'] = len(existing)
     data['coverage']['complete'] = len(existing) == data['coverage']['annual_books']
+    return data
+
+
+def merge_materials(data, materials):
+    """Fill known books only. Failed collection never means an empty notebook."""
+    if materials.get('year') != data['year']:
+        raise ValueError('书籍材料年份与年鉴不一致')
+    existing = {b['book_id']: b for b in data['books']}
+    for row in materials.get('books', []):
+        b = existing.get(str(row.get('book_id') or ''))
+        if b is None:
+            continue
+        coverage = row.get('collection') or {}
+        for key in ('title', 'author', 'intro'):
+            if row.get(key):
+                b[key] = str(row[key])
+        if coverage.get('progress') == 'complete':
+            progress = number(row.get('progress'))
+            if progress is not None and progress <= 100:
+                b['progress'] = progress
+                b['status'] = 'finished' if progress == 100 else 'reading' if progress > 0 else 'unknown'
+            finish = date_value(row.get('finish_time'))
+            if finish and int(finish[:4]) == data['year']:
+                b['finish_date'] = finish
+        note_year = None if row.get('notes_scope') == 'all_time' else data['year']
+        for key in ('highlights', 'thoughts'):
+            if coverage.get(key) == 'complete':
+                b[key] = notes(row.get(key, []), note_year)
+        b['note_coverage'] = {'scope': 'all_time' if note_year is None else 'year',
+                              'highlights': 'complete' if coverage.get('highlights') == 'complete' else 'unverified',
+                              'thoughts': 'complete' if coverage.get('thoughts') == 'complete' else 'unverified',
+                              'collected_on': date_value(row.get('collected_on'))}
+        if row.get('full_text_review'):
+            b['review'] = review_value(row)
+        search = row.get('full_text_search') or {}
+        if isinstance(search, dict) and search:
+            b['full_text_search'] = {'status': str(search.get('status') or 'unverified'),
+                                     'reason': str(search.get('reason') or ''),
+                                     'checked_on': date_value(search.get('checked_on')),
+                                     'sources': [str(u) for u in search.get('sources', []) if isinstance(u, str) and u.startswith('https://')]}
+    data['material_coverage'] = {'books_with_checked_highlights': sum(b.get('note_coverage', {}).get('highlights') == 'complete' for b in data['books']),
+                                 'books_with_checked_thoughts': sum(b.get('note_coverage', {}).get('thoughts') == 'complete' for b in data['books']),
+                                 'current_finished': sum(b['status'] == 'finished' for b in data['books']),
+                                 'states_collected_on': max((b.get('note_coverage', {}).get('collected_on') or '' for b in data['books']), default='')}
     return data
 
 
@@ -216,11 +284,14 @@ def embed_image(path):
     return 'data:' + mime + ';base64,' + base64.b64encode(content).decode('ascii')
 
 
-def build_html(data, output, covers=None, art_assets=None):
+def build_html(data, output, covers=None, art_assets=None, require_all_covers=False):
     """Whitelist data at adapter boundary; no raw payload embedded."""
     for b in data['books']:
         if (covers or {}).get(b['book_id']):
             b['cover'] = embed_image(covers[b['book_id']])
+    missing = sum(not b['cover'] for b in data['books'])
+    if require_all_covers and missing:
+        raise ValueError(f'有{missing}本书缺少真实封面，请补采后再生成正式年鉴')
     serialized = json.dumps(data, ensure_ascii=False, allow_nan=False).replace('<', '\\u003c').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')
     if re.search(r'wrk-[A-Za-z0-9_-]{8,}', serialized):
         raise ValueError('交付内容中检测到密钥格式，请移除后重试')
@@ -251,18 +322,22 @@ def main():
     parser.add_argument('--annual-snapshot', type=Path)
     parser.add_argument('--covers', type=Path, help='JSON：book_id到本地书封路径，路径相对该JSON')
     parser.add_argument('--art-assets', type=Path, help='JSON：hero/reading/rhythm到本地透明图片路径，可按认可方向替换')
+    parser.add_argument('--book-materials', type=Path, help='补采的进度与完整笔记材料，不能用精选摘录冒充完整采集')
+    parser.add_argument('--require-all-covers', action='store_true', help='正式年鉴缺任一本封面时停止，不覆盖上一版')
     args = parser.parse_args()
     raw = json.loads(args.input.read_text('utf-8-sig'))
     data = adapt_data(raw, args.year)
     if args.annual_snapshot:
         merge_annual(data, json.loads(args.annual_snapshot.read_text('utf-8-sig')))
+    if args.book_materials:
+        merge_materials(data, json.loads(args.book_materials.read_text('utf-8-sig')))
     covers = {}
     if args.covers:
         covers = {k: args.covers.parent / v for k, v in json.loads(args.covers.read_text('utf-8-sig')).items()}
     art_assets = {}
     if args.art_assets:
         art_assets = {k: args.art_assets.parent / v for k, v in json.loads(args.art_assets.read_text('utf-8-sig')).items()}
-    print(json.dumps(build_html(data, args.output, covers, art_assets), ensure_ascii=False))
+    print(json.dumps(build_html(data, args.output, covers, art_assets, args.require_all_covers), ensure_ascii=False))
     return 0
 
 

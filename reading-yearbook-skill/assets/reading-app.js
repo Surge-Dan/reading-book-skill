@@ -12,12 +12,15 @@
   const state = {query:'', status:'all', category:'', list:false, expanded:false, quote:0, busy:false, preview:'cover', ratio:'3:4', undo:[], selection:new Set(), composing:false};
   const bookMap = new Map(data.books.map(b => [b.book_id,b]));
   const highlights = data.books.flatMap(b => b.highlights.map(n => ({...n,book:b})));
+  let quoteBook='';
   let toastTimer, searchTimer, previousFocus, originalHash='', dialogPushed=false, renderToken=0;
   const hours = v => v == null ? '未记录' : `${(v/3600).toFixed(1)}小时`;
   const duration = v => v == null ? '未记录' : `${Math.floor(v/3600)}小时${Math.floor(v%3600/60)}分钟`;
   const value = v => v == null ? '—' : String(v);
   const statusLabel = b => ({finished:'已读完',reading:'在读',unknown:'状态未记录'}[b.status]);
   const scope = data.coverage.complete ? `全年${data.books.length}本` : `已载入${data.books.length}本 · 年度记录${value(data.coverage.annual_books)}本`;
+  function updateNavSurface(){document.querySelector('.masthead').classList.toggle('is-scrolled',scrollY>8);}
+  addEventListener('scroll',updateNavSurface,{passive:true});updateNavSurface();
   function toast(text) {$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,2800);}
   $('#period').textContent = String(data.year);
   $('#modeNotice').textContent = data.source_mode==='sample' ? '示例数据 · 不代表真实阅读记录' : data.verification_status!=='live_verified' ? '数据尚未核验，供预览使用' : '';
@@ -99,7 +102,7 @@
   $('#investmentTable').innerHTML='<table><thead><tr><th>书名</th><th>时长</th><th>秒数</th></tr></thead><tbody>'+timedBooks.map(b=>`<tr><td>${esc(b.title)}</td><td>${esc(duration(b.reading_seconds))}</td><td>${b.reading_seconds}</td></tr>`).join('')+'</tbody></table>';
   revealChart('investment');
   const events=[]; const seenEvents=new Set();
-  data.books.forEach(b=>{for(const [type,list] of [['划线',b.highlights],['笔记',b.thoughts]])list.forEach(n=>{if(n.created_at){const key=`${b.book_id}|${type}|${n.source_id||n.text+'|'+n.created_at}`;if(!seenEvents.has(key)){seenEvents.add(key);events.push({date:n.created_at,type,book:b,text:n.text});}}});
+  data.books.forEach(b=>{for(const [type,list] of [['划线',b.highlights],['笔记',b.thoughts]])list.forEach(n=>{if(n.created_at&&Number(n.created_at.slice(0,4))===data.year){const key=`${b.book_id}|${type}|${n.source_id||n.text+'|'+n.created_at}`;if(!seenEvents.has(key)){seenEvents.add(key);events.push({date:n.created_at,type,book:b,text:n.text});}}});
     for(const [type,date] of [['开始阅读',b.start_date],['读完',b.finish_date]])if(date&&Number(date.slice(0,4))===data.year)events.push({date,type,book:b});});
   events.sort((a,b)=>a.date.localeCompare(b.date));
   const eventHtml = e=>`<div class="timeline-row"><time datetime="${esc(e.date)}">${e.date.slice(5).replace('-','.')}</time><button class="timeline-book" data-open-book="${esc(e.book.book_id)}">${esc(e.book.title)}</button><span class="event-type">${e.type}</span></div>`;
@@ -135,11 +138,18 @@
   $('#search').addEventListener('input',e=>{if(state.composing||e.isComposing)return;clearTimeout(searchTimer);searchTimer=setTimeout(updateSearch,180);});
   $('#viewSwitch').onclick=()=>{state.list=!state.list;$('#viewSwitch').setAttribute('aria-pressed',String(state.list));$('#viewSwitch').textContent=state.list?'封面视图':'列表视图';drawBooks();};
 
-  function noteHtml(n,b,index,type){return `<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}${n.chapter?' · 章节 '+esc(n.chapter):''}</small>${type==='划线'?`<button class="text-button" data-add-quote="${esc(b.book_id)}" data-index="${index}">选这条加入分享</button>`:''}</div>`;}
+  function noteHtml(n,b,index,type){return `<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}${n.chapter_title?' · '+esc(n.chapter_title):n.chapter?' · 章节 '+esc(n.chapter):''}</small>${type==='划线'?`<button class="text-button" data-add-quote="${esc(b.book_id)}" data-index="${index}">选这条加入分享</button>`:''}</div>`;}
+  function emptyNotes(b,kind){return b.note_coverage?.[kind]==='complete'?(kind==='highlights'?'已核查：这本书没有划线记录。':'已核查：这本书没有个人想法或点评。'):(kind==='highlights'?'这本书尚未载入完整划线。':'这本书尚未载入完整个人笔记。');}
+  function reviewMarkup(b){
+    if(b.review.status==='verified')return `<p>${esc(b.review.body)}</p><p class="review-source">正文来源：${esc(b.review.source)}\n版本：${esc(b.review.version)}\n章节依据：${esc(b.review.citations.join('；'))}</p>`;
+    const search=b.full_text_search;
+    return `<div class="unavailable-review"><p>尚未取得并核验完整正文，暂不生成全书书评。</p>${search?.reason?`<p>${esc(search.reason)}</p>`:''}${search?.sources?.length?`<div class="source-links">${search.sources.map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${search.status==='available'?'查看全文来源':'已检查来源'}${search.sources.length>1?' '+(i+1):''} ↗</a>`).join('')}</div>`:''}</div>`;
+  }
   function openBook(id,fromHash=false) {
     const b=bookMap.get(id);if(!b)return;
     if(!$('#detail').open){previousFocus=document.activeElement;originalHash=location.hash;}
-    $('#detailContent').innerHTML=`<div class="detail-identity"><div>${coverMarkup(b)}</div><div><h2 id="detailTitle">${esc(b.title)}</h2><p>${esc(b.author)}</p><p>${esc(statusLabel(b))} · ${esc(b.category)}${b.reading_seconds==null?'':' · 年内'+duration(b.reading_seconds)}</p></div></div><section class="detail-section"><h3>全书书评</h3>${b.review.status==='verified'?`<p>${esc(b.review.body)}</p><p class="review-source">正文来源：${esc(b.review.source)}\n版本：${esc(b.review.version)}\n章节依据：${esc(b.review.citations.join('；'))}</p>`:'<p class="muted">尚未取得并核验完整正文，暂不生成全书书评。</p>'}</section>${b.intro?`<details class="detail-section"><summary>书籍简介</summary><p>${esc(b.intro)}</p></details>`:''}<section class="detail-section"><h3>划线 · ${b.highlights.length}条</h3>${b.highlights.map((n,i)=>noteHtml(n,b,i,'划线')).join('')||'<p class="muted">这本书尚未载入划线。</p>'}</section><section class="detail-section"><h3>我的笔记 · ${b.thoughts.length}条</h3>${b.thoughts.map((n,i)=>noteHtml(n,b,i,'笔记')).join('')||'<p class="muted">这本书尚未载入个人笔记。</p>'}</section>`;
+    const noteScope=b.note_coverage?.scope==='all_time'?'本书全部历史记录':'年内已载入记录';
+    $('#detailContent').innerHTML=`<div class="detail-identity"><div>${coverMarkup(b)}</div><div><h2 id="detailTitle">${esc(b.title)}</h2><p>${esc(b.author)}</p><p>${esc(statusLabel(b))} · ${esc(b.category)}${b.reading_seconds==null?'':' · 年内'+duration(b.reading_seconds)}</p></div></div><section class="detail-section"><h3>全书书评</h3>${reviewMarkup(b)}</section>${b.intro?`<details class="detail-section"><summary>书籍简介</summary><p>${esc(b.intro)}</p></details>`:''}<section class="detail-section"><h3>划线 · ${b.highlights.length}条</h3><p class="material-note">${noteScope}</p>${b.highlights.map((n,i)=>noteHtml(n,b,i,'划线')).join('')||`<p class="muted">${emptyNotes(b,'highlights')}</p>`}</section><section class="detail-section"><h3>我的笔记 · ${b.thoughts.length}条</h3><p class="material-note">${noteScope}</p>${b.thoughts.map((n,i)=>noteHtml(n,b,i,'笔记')).join('')||`<p class="muted">${emptyNotes(b,'thoughts')}</p>`}</section>`;
     if(!$('#detail').open)$('#detail').showModal();$('#detail').scrollTop=0;
     if(!fromHash){history.pushState(null,'','#book='+encodeURIComponent(id));dialogPushed=true;}
   }
@@ -150,13 +160,16 @@
   if(location.hash.startsWith('#book=')){try{openBook(decodeURIComponent(location.hash.slice(6)),true);}catch{}}
   document.addEventListener('click',e=>{const open=e.target.closest('[data-open-book]');if(open)openBook(open.dataset.openBook);const add=e.target.closest('[data-share-book]');if(add)addBookShare(add.dataset.shareBook);const quote=e.target.closest('[data-add-quote]');if(quote){const b=bookMap.get(quote.dataset.addQuote);addBookShare(b.book_id,b.highlights[Number(quote.dataset.index)]?.text);toast('已加入分享，可在分享区预览');}});
   $('#sourcesDialog .close').onclick=()=>$('#sourcesDialog').close();
-  $('#openSources').onclick=()=>{$('#sourcesContent').innerHTML=`<p>统计年份：${data.year}${data.as_of?'；采集日期：'+esc(data.as_of):''}</p><p>书目范围：${esc(scope)}。</p><p>模式：${esc(data.source_mode)}；核验状态：${esc(data.verification_status)}。</p><p>分布按已载入书籍的主分类计数；未知状态不归入“在读”。月度图只展示完整月份，缺失值不当作零。</p><p>时间线只展示有日期的事件。书介、原文划线、个人笔记和全书书评分别呈现。</p><p>字体优先使用本机Noto Serif SC／Noto Sans SC，无该字体时使用系统中文字体。文件不依赖在线字体或CDN。</p>`;$('#sourcesDialog').showModal();};
+  $('#openSources').onclick=()=>{$('#sourcesContent').innerHTML=`<p>统计年份：${data.year}${data.as_of?'；采集日期：'+esc(data.as_of):''}</p><p>书目范围：${esc(scope)}。</p><p>模式：${esc(data.source_mode)}；核验状态：${esc(data.verification_status)}。</p><p>分布按已载入书籍的主分类计数；未知状态不归入“在读”。月度图只展示完整月份，缺失值不当作零。</p><p>时间线只展示本年有日期的事件。书介、原文划线、个人笔记和全书书评分别呈现。</p>${data.material_coverage?`<p>已核查${data.material_coverage.books_with_checked_highlights}本书的划线、${data.material_coverage.books_with_checked_thoughts}本书的个人想法。书籍详情保留本书全部历史记录，年度时间线只取${data.year}年。</p><p>年度汇总读完${value(data.summary.finished)}本；当前书架进度100%的书有${data.material_coverage.current_finished}本。年度汇总与当前阅读进度是不同口径；“已读完”筛选使用当前进度。进度采集日期：${esc(data.material_coverage.states_collected_on)}。</p>`:''}<p>字体优先使用本机Noto Serif SC／Noto Sans SC，无该字体时使用系统中文字体。文件不依赖在线字体或CDN。</p>`;$('#sourcesDialog').showModal();};
 
   async function copyText(text){try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);}else{const t=document.createElement('textarea');t.value=text;document.body.append(t);t.select();if(!document.execCommand('copy'))throw Error('clipboard');t.remove();}toast('已复制');}catch{toast('复制失败，可选中文字后手动复制');}}
-  function drawQuote(){if(!highlights.length){$('#quote').innerHTML='<p class="empty">暂无已载入的划线。</p>';$('#quotePosition').textContent='0／0';$('#previousQuote').disabled=$('#nextQuote').disabled=true;return;}
-    const n=highlights[state.quote];$('#quotePosition').textContent=`${state.quote+1}／${highlights.length}`;
-    $('#previousQuote').disabled=state.quote===0;$('#nextQuote').disabled=state.quote===highlights.length-1;
-    $('#quote').innerHTML=`<div class="quote-body"><blockquote>${esc(n.text)}</blockquote><p class="attribution">—《${esc(n.book.title)}》</p><div class="quote-actions"><button id="copyQuote" class="text-button">复制</button><button id="shareQuote" class="text-button">加入分享</button></div></div>`;
+  $('#quoteBook').innerHTML='<option value="">全部书籍</option>'+data.books.filter(b=>b.highlights.length).map(b=>`<option value="${esc(b.book_id)}">${esc(b.title)}（${b.highlights.length}）</option>`).join('');
+  $('#quoteBook').onchange=()=>{quoteBook=$('#quoteBook').value;state.quote=0;drawQuote();};
+  function drawQuote(){const rows=quoteBook?highlights.filter(n=>n.book.book_id===quoteBook):highlights;if(!rows.length){$('#quote').innerHTML='<p class="empty">暂无已载入的划线。</p>';$('#quotePosition').textContent='0／0';$('#previousQuote').disabled=$('#nextQuote').disabled=true;return;}
+    state.quote=Math.max(0,Math.min(state.quote,rows.length-1));
+    const n=rows[state.quote];$('#quotePosition').textContent=`${state.quote+1}／${rows.length}`;
+    $('#previousQuote').disabled=state.quote===0;$('#nextQuote').disabled=state.quote===rows.length-1;
+    $('#quote').innerHTML=`<div class="quote-body"><blockquote>${esc(n.text)}</blockquote><p class="attribution">—《${esc(n.book.title)}》</p><p class="quote-scope">${n.book.note_coverage?.scope==='all_time'?'本书历史划线 · ':''}${esc(n.created_at||'日期未记录')}</p><div class="quote-actions"><button id="copyQuote" class="text-button">复制</button><button id="shareQuote" class="text-button">加入分享</button></div></div>`;
     $('#copyQuote').onclick=()=>copyText(n.text);$('#shareQuote').onclick=()=>addBookShare(n.book.book_id,n.text);
   }drawQuote();$('#previousQuote').onclick=()=>{state.quote--;drawQuote();};$('#nextQuote').onclick=()=>{state.quote++;drawQuote();};
 
@@ -216,7 +229,7 @@
     } else {
       const b=p.book;c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';y=wrap(c,b.author,65,y,W-130,32,2)+25;
       const ch=Math.min(300,H*.26);if(b.cover){const im=await loadImage(b.cover);const sc=Math.min(220/im.width,ch/im.height);c.drawImage(im,65,y,im.width*sc,im.height*sc);}else{c.fillStyle='#e6e3d8';c.fillRect(65,y,190,ch);c.fillStyle=ink;c.font=`22px ${serif}`;wrap(c,b.title,82,y+38,155,33,5);}c.fillStyle=blue;c.font=`22px ${serif}`;wrap(c,b.category,330,y+40,W-395,36,3);c.fillStyle=muted;c.font='20px ReadingSans, sans-serif';c.fillText(statusLabel(b),330,y+160);y+=ch+65;
-      c.fillStyle=red;c.font='45px Georgia';c.fillText('“',65,y);c.fillStyle=ink;c.font=`27px ${serif}`;wrap(c,p.quote||'这本书暂未载入划线。',100,y,W-165,44,Math.max(1,Math.floor((H-y-100)/44)));
+      c.fillStyle=red;c.font='45px Georgia';c.fillText('“',65,y);c.fillStyle=ink;c.font=`27px ${serif}`;wrap(c,p.quote||emptyNotes(b,'highlights'),100,y,W-165,44,Math.max(1,Math.floor((H-y-100)/44)));
     }
     c.fillStyle=muted;c.font='16px ReadingSans, sans-serif';c.fillText(String(data.year),65,H-55);c.textAlign='right';c.fillText(p.kind==='book'?'原文摘录':'阅读年鉴',W-65,H-55);return cv;
   }
@@ -234,7 +247,20 @@
     const size=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array(22),v=new DataView(end.buffer);u32(v,0,0x06054b50);u16(v,8,files.length);u16(v,10,files.length);u32(v,12,size);u32(v,16,offset);return new Blob([...chunks,...central,end],{type:'application/zip'});
   }
   $('#exportGroup').onclick=()=>runExport(async()=>{const chosen=pages.filter(p=>state.selection.has(p.id)),ratio=state.ratio,files=[];for(const [i,p] of chosen.entries()){$('#exportStatus').textContent=`正在生成第${i+1}／${chosen.length}页…`;files.push({name:filename(p),blob:await blobCanvas(await canvasPage(p,ratio))});}download(await zip(files),`${data.year}-reading-share.zip`);});
-  function markdown(){const lines=[`# ${data.year}阅读年鉴`,'',`范围：${scope}${data.as_of?'；采集日期：'+data.as_of:''}`,'',`阅读时长：${duration(data.summary.seconds)}`,`读过：${value(data.summary.read)}本；读完：${value(data.summary.finished)}本`,''];for(const b of data.books){lines.push(`## ${b.title}`,'',`作者：${b.author}`,'','### 全书书评','',b.review.status==='verified'?b.review.body:'尚未取得并核验完整正文。','');if(b.review.status==='verified')lines.push(`正文来源：${b.review.source}`,`版本：${b.review.version}`,`章节依据：${b.review.citations.join('；')}`,'');for(const [title,rows] of [['划线',b.highlights],['个人笔记',b.thoughts]]){lines.push(`### ${title}`,'');for(const n of rows)lines.push(n.text,'',`来源：${b.title} · ${n.created_at||'日期未记录'} · ${n.source_id||'未记录来源ID'}`,'');if(!rows.length)lines.push('尚未载入。','');}}return lines.join('\n');}
+  function markdown(){
+    const lines=[`# ${data.year}阅读年鉴`,'',`范围：${scope}${data.as_of?'；采集日期：'+data.as_of:''}`,'',`阅读时长：${duration(data.summary.seconds)}`,`读过：${value(data.summary.read)}本；年度汇总读完：${value(data.summary.finished)}本`,''];
+    if(data.material_coverage)lines.push(`当前进度100%的书：${data.material_coverage.current_finished}本（与年度汇总分别统计）。`,'');
+    for(const b of data.books){
+      lines.push(`## ${b.title}`,'',`作者：${b.author}`,'','### 全书书评','',b.review.status==='verified'?b.review.body:'尚未取得并核验完整正文。','');
+      if(b.review.status==='verified')lines.push(`正文来源：${b.review.source}`,`版本：${b.review.version}`,`章节依据：${b.review.citations.join('；')}`,'');
+      else if(b.full_text_search)lines.push(b.full_text_search.reason,...b.full_text_search.sources.map(u=>'来源：'+u),'');
+      if(b.note_coverage?.scope==='all_time')lines.push('笔记范围：本书全部历史记录。','');
+      for(const [title,rows,key] of [['划线',b.highlights,'highlights'],['个人笔记',b.thoughts,'thoughts']]){
+        lines.push(`### ${title}`,'');for(const n of rows)lines.push(n.text,'',`来源：${b.title} · ${n.created_at||'日期未记录'} · ${n.source_id||'未记录来源ID'}`,'');
+        if(!rows.length)lines.push(emptyNotes(b,key),'');
+      }
+    }return lines.join('\n');
+  }
   $('#exportMd').onclick=()=>download(new Blob([markdown()],{type:'text/markdown;charset=utf-8'}),`${data.year}-reading.md`);
   $('#exportJson').onclick=()=>{const copy=JSON.parse(JSON.stringify(data));copy.books.forEach(b=>delete b.cover);download(new Blob([JSON.stringify(copy,null,2)],{type:'application/json;charset=utf-8'}),`${data.year}-reading.json`);};
   $('#exportPdf').onclick=()=>{if(state.query||state.category||state.status!=='all')toast('PDF将使用当前筛选的书架范围');window.print();};

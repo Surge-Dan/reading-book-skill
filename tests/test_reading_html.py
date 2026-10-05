@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'reading-yearbook-skill' / 'scripts'))
-from build_reading_html import adapt_data, build_html, date_value, merge_annual, number
+from build_reading_html import adapt_data, build_html, date_value, merge_annual, merge_materials, number
 
 
 def fixture():
@@ -27,6 +27,46 @@ def fixture():
 
 
 class ReadingHtmlTests(unittest.TestCase):
+    def test_formal_yearbook_requires_every_cover_and_preserves_previous_html(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'index.html';path.write_text('previous valid version','utf-8')
+            with self.assertRaisesRegex(ValueError,'缺少真实封面'):
+                build_html(adapt_data(fixture()),path,require_all_covers=True)
+            self.assertEqual(path.read_text('utf-8'),'previous valid version')
+
+    def test_complete_materials_include_historical_notes_without_changing_year_totals(self):
+        data=adapt_data(fixture())
+        material={'year':2026,'books':[{'book_id':'one','progress':84,'notes_scope':'all_time',
+                   'collection':{'progress':'complete','highlights':'complete','thoughts':'complete'},
+                   'highlights':[{'text':'old personal highlight','created_at':'2025-10-01','source_id':'old'}],
+                   'thoughts':[]}]}
+        merge_materials(data,material)
+        self.assertEqual(data['books'][0]['progress'],84)
+        self.assertEqual(data['books'][0]['highlights'][0]['created_at'],'2025-10-01')
+        self.assertEqual(data['summary']['notes'],4)
+        self.assertEqual(data['books'][0]['note_coverage']['thoughts'],'complete')
+
+    def test_failed_material_collection_preserves_existing_notes(self):
+        data=adapt_data(fixture())
+        merge_materials(data,{'year':2026,'books':[{'book_id':'one','collection':{'highlights':'failed'},'highlights':[]}]})
+        self.assertEqual(len(data['books'][0]['highlights']),1)
+        self.assertEqual(data['books'][0]['note_coverage']['highlights'],'unverified')
+
+    def test_material_year_mismatch_and_unrelated_books(self):
+        data=adapt_data(fixture())
+        with self.assertRaisesRegex(ValueError,'年份'):
+            merge_materials(data,{'year':2025,'books':[]})
+        merge_materials(data,{'year':2026,'books':[{'book_id':'unrelated'}]})
+        self.assertEqual(len(data['books']),3)
+
+    def test_official_annual_totals_refresh_without_overwriting_current_progress(self):
+        data=adapt_data(fixture())
+        merge_annual(data,{'year':2026,'as_of':'2026-10-05','annual':{'readStat':[{'stat':'读过','counts':'3本'}, {'stat':'读完','counts':'2本'}, {'stat':'笔记','counts':'9条'}], 'readDays':174, 'totalReadTime':163315}})
+        self.assertEqual(data['summary']['finished'],2)
+        self.assertEqual(data['summary']['notes'],9)
+        self.assertEqual(data['summary']['seconds'],163315)
+        self.assertEqual(sum(b['status']=='finished' for b in data['books']),1)
+
     def test_art_resources_are_embedded_once_outside_reading_data(self):
         import base64
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,0 +1,33 @@
+const{chromium}=require('playwright'),assert=require('assert'),path=require('path'),fs=require('fs'),{pathToFileURL}=require('url');
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}),context=await browser.newContext({acceptDownloads:true}),page=await context.newPage(),checks=[],errors=[],network=[];
+ await context.setOffline(true);page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))network.push(r.url());});
+ const url=pathToFileURL(path.resolve(process.argv[2])).href;await page.goto(url);await page.evaluate(()=>document.fonts.ready);
+ const data=await page.locator('#reading-data').evaluate(n=>JSON.parse(n.textContent)),out=path.resolve(process.argv[4]||'demo-output/material-browser');fs.mkdirSync(out,{recursive:true});
+ const pass=name=>checks.push(name);
+ for(const width of [1440,768,390]){
+  await page.setViewportSize({width,height:1000});await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(70);
+  const geometry=await page.evaluate(()=>{const paper=document.querySelector('.paper').getBoundingClientRect(),nav=document.querySelector('.masthead').getBoundingClientRect(),style=getComputedStyle(document.querySelector('.masthead'));return{left:nav.left-paper.left,right:nav.right-paper.right,corner:parseFloat(style.borderBottomLeftRadius),overflow:document.documentElement.scrollWidth>innerWidth,background:style.backgroundColor,links:[...document.querySelectorAll('nav a')].every(n=>{const r=n.getBoundingClientRect();return r.top>=nav.top&&r.bottom<=nav.bottom+1})};});
+  assert(Math.abs(geometry.left)<=1&&Math.abs(geometry.right)<=1);assert(geometry.corner>0&&!geometry.overflow&&geometry.links,JSON.stringify({width,...geometry}));assert.equal(geometry.background,'rgba(0, 0, 0, 0)');pass(`navigation edge, corner, transparent paper and wrapped links ${width}`);
+ }
+ await page.evaluate(()=>scrollTo(0,180));await page.waitForTimeout(100);assert(await page.locator('.masthead').evaluate(n=>n.classList.contains('is-scrolled')));pass('sticky navigation gains readable surface after scroll');
+ await page.locator('#expandShelf').click();assert.equal(await page.locator('.book-entry').count(),data.books.length);
+ await page.locator('#shelf').scrollIntoViewIfNeeded();await page.waitForFunction(()=>[...document.querySelectorAll('.book-entry img')].every(n=>n.complete&&n.naturalWidth));assert.equal(await page.locator('.book-entry img').count(),data.books.length);pass('all selected annual books have real embedded covers');
+ for(const width of [1440,768,390]){
+  await page.setViewportSize({width,height:1000});
+  for(const b of data.books){await page.evaluate(id=>document.querySelector(`[data-open-book="${CSS.escape(id)}"]`).click(),b.book_id);await page.waitForFunction(()=>[...document.querySelectorAll('#detailContent img')].every(n=>n.complete&&n.naturalWidth));
+   const valid=await page.evaluate(()=>{const cover=document.querySelector('.detail-identity>div:first-child').getBoundingClientRect(),title=document.querySelector('#detailTitle').getBoundingClientRect(),ps=[...document.querySelectorAll('.detail-identity>div:last-child>p')].map(n=>n.getBoundingClientRect()),content=document.querySelector('.detail-identity');return cover.right<=title.left+1&&title.bottom<=ps[0].top+1&&ps[0].bottom<=ps[1].top+1&&content.scrollWidth<=content.clientWidth;});assert(valid,`detail overlap ${b.title} at ${width}`);await page.locator('#detail .close').click();
+  }pass(`every real book detail, title, author and meta ${width}`);
+ }
+ await page.locator('[data-status="finished"]').click();assert.equal(await page.locator('.book-entry').count(),data.books.filter(b=>b.status==='finished').length);await page.locator('#clearFilters').click();pass('finished filter follows verified current progress');
+ const empty=data.books.find(b=>b.note_coverage?.highlights==='complete'&&!b.highlights.length);assert(empty);await page.evaluate(id=>document.querySelector(`[data-open-book="${CSS.escape(id)}"]`).click(),empty.book_id);assert((await page.locator('#detailContent').textContent()).includes('已核查：这本书没有划线记录'));await page.locator('#detail .close').click();pass('confirmed zero highlights differs from uncollected');
+ const withNotes=data.books.find(b=>b.highlights.length>2);await page.locator('#quoteBook').selectOption(withNotes.book_id);assert.equal(await page.locator('#quotePosition').textContent(),`1／${withNotes.highlights.length}`);assert((await page.locator('#quote').textContent()).includes(withNotes.title));await page.locator('#nextQuote').click();assert.equal(await page.locator('#quotePosition').textContent(),`2／${withNotes.highlights.length}`);pass('large highlight collection filters by book and pages safely');
+ await page.locator('#shareQuote').click();assert(await page.locator(`[data-page="book-${withNotes.book_id}"]`).isChecked());assert.equal(await page.locator(`[data-preview="book-${withNotes.book_id}"]`).getAttribute('aria-pressed'),'true');pass('filtered exact quote enters the correct share page');
+ await page.locator('#openSources').click();assert((await page.locator('#sourcesContent').textContent()).includes('不同口径'));await page.locator('#sourcesDialog .close').click();pass('annual totals and current progress scopes explained');
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#shelf').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'complete-shelf.png'),fullPage:false});
+ if(process.argv[3]){await page.goto(pathToFileURL(path.resolve(process.argv[3])).href);await page.setViewportSize({width:390,height:900});await page.locator('.book').first().click();const overlap=await page.evaluate(()=>{const image=document.querySelector('.detail-identity .cover-fallback').getBoundingClientRect(),title=document.querySelector('#detailTitle').getBoundingClientRect();return image.right>title.left;});assert(!overlap);pass('text fallback cover stays inside narrow detail column');
+  const old=await page.locator('#detailContent').textContent();assert(old.includes('2025-'));await page.locator('#detail .close').click();assert(!(await page.locator('#timeline').textContent()).includes('12.31'));pass('historical detail notes do not leak into year timeline');
+ }
+ assert.deepEqual(errors,[]);assert.deepEqual(network,[]);pass('offline assets and no runtime errors');
+ fs.writeFileSync(path.join(out,'material-report.json'),JSON.stringify({status:'pass',checks},null,2));await browser.close();console.log(JSON.stringify({status:'pass',checks:checks.length,out}));
+})().catch(e=>{console.error(e);process.exit(1)});
