@@ -216,7 +216,7 @@ def embed_image(path):
     return 'data:' + mime + ';base64,' + base64.b64encode(content).decode('ascii')
 
 
-def build_html(data, output, covers=None):
+def build_html(data, output, covers=None, art_assets=None):
     """Whitelist data at adapter boundary; no raw payload embedded."""
     for b in data['books']:
         if (covers or {}).get(b['book_id']):
@@ -225,11 +225,18 @@ def build_html(data, output, covers=None):
     if re.search(r'wrk-[A-Za-z0-9_-]{8,}', serialized):
         raise ValueError('交付内容中检测到密钥格式，请移除后重试')
     template = (ROOT / 'assets' / 'reading-template.html').read_text('utf-8')
-    replacements = {'__DATA__': serialized, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8'),
+    # Art belongs to presentation, never the user's exported reading JSON.
+    unknown = set(art_assets or {}) - {'hero', 'reading', 'rhythm'}
+    if unknown:
+        raise ValueError('未知艺术素材字段：' + ', '.join(sorted(unknown)))
+    art = {name: embed_image((art_assets or {}).get(name) or ROOT / 'assets' / 'yearbook-art' / file)
+           for name, file in [('hero', 'hero-book.png'), ('reading', 'reading.png'), ('rhythm', 'rhythm.png')]}
+    replacements = {'__DATA__': serialized, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-art.css').read_text('utf-8'),
+                    '__ART__': json.dumps(art),
                     '__APP__': (ROOT / 'assets' / 'reading-app.js').read_text('utf-8'),
                     '__LICENSE__': html.escape((ROOT / 'assets' / 'lieflat-LICENSE.txt').read_text('utf-8'))}
     # One-pass replacement: user text may itself contain template delimiters.
-    page = re.sub(r'__(?:DATA|STYLE|APP|LICENSE)__', lambda m: replacements[m.group()], template)
+    page = re.sub(r'__(?:DATA|STYLE|APP|LICENSE|ART)__', lambda m: replacements[m.group()], template)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(page, 'utf-8')
@@ -243,6 +250,7 @@ def main():
     parser.add_argument('--year', type=int)
     parser.add_argument('--annual-snapshot', type=Path)
     parser.add_argument('--covers', type=Path, help='JSON：book_id到本地书封路径，路径相对该JSON')
+    parser.add_argument('--art-assets', type=Path, help='JSON：hero/reading/rhythm到本地透明图片路径，可按认可方向替换')
     args = parser.parse_args()
     raw = json.loads(args.input.read_text('utf-8-sig'))
     data = adapt_data(raw, args.year)
@@ -251,7 +259,10 @@ def main():
     covers = {}
     if args.covers:
         covers = {k: args.covers.parent / v for k, v in json.loads(args.covers.read_text('utf-8-sig')).items()}
-    print(json.dumps(build_html(data, args.output, covers), ensure_ascii=False))
+    art_assets = {}
+    if args.art_assets:
+        art_assets = {k: args.art_assets.parent / v for k, v in json.loads(args.art_assets.read_text('utf-8-sig')).items()}
+    print(json.dumps(build_html(data, args.output, covers, art_assets), ensure_ascii=False))
     return 0
 
 

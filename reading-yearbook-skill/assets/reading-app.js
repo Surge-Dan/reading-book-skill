@@ -1,9 +1,12 @@
-/* Offline reading yearbook. Chart adapted from lieflat-charts Basics B2/F2;
+/* Offline reading yearbook. Charts adapted from lieflat-charts Basics B2/F2,
+ * B1/F1 Rung Bars and C1/F5 Tick Rows, including draw / pop / fade animation;
  * PolyForm Noncommercial 1.0.0, full license retained in this document. */
 (() => {
   'use strict';
   const data = JSON.parse(document.getElementById('reading-data').textContent);
+  const art = JSON.parse(document.getElementById('reading-art').textContent);
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  $$('[data-art]').forEach(image=>{image.src=art[image.dataset.art];});
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const serif = 'ReadingSerif, "Noto Serif SC", "SimSun", serif';
   const state = {query:'', status:'all', category:'', list:false, expanded:false, quote:0, busy:false, preview:'cover', ratio:'3:4', undo:[], selection:new Set(), composing:false};
@@ -16,14 +19,37 @@
   const statusLabel = b => ({finished:'已读完',reading:'在读',unknown:'状态未记录'}[b.status]);
   const scope = data.coverage.complete ? `全年${data.books.length}本` : `已载入${data.books.length}本 · 年度记录${value(data.coverage.annual_books)}本`;
   function toast(text) {$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,2800);}
-  $('#period').textContent = `${data.year}${data.as_of ? ` · 1—${Number(data.as_of.slice(5,7))}月` : ''}`;
+  $('#period').textContent = String(data.year);
   $('#modeNotice').textContent = data.source_mode==='sample' ? '示例数据 · 不代表真实阅读记录' : data.verification_status!=='live_verified' ? '数据尚未核验，供预览使用' : '';
   const time = data.summary.seconds;
   $('#stats').innerHTML = `<div class="metric lead"><strong>${time==null?'—':`${Math.floor(time/3600)}<em>小时</em>${Math.floor(time%3600/60)}<em>分钟</em>`}</strong><span>累计阅读时长</span></div>` + [[data.summary.read,'本读过'],[data.summary.finished,'本读完'],[data.summary.read_days,'天阅读'],[data.summary.notes,'条笔记']].map(([v,t])=>`<div class="metric"><strong>${esc(value(v))}</strong><span>${t}</span></div>`).join('');
   $('#distributionScope').textContent=`${scope} · 按主分类计数`;
   $('#shelfScope').textContent=scope;
 
+  // lieflat's obsReveal, adapted to independent replay controls and persistent
+  // DOM interactions. No timers accumulate when resizing, filtering or replaying.
+  const motionMedia=matchMedia('(prefers-reduced-motion:reduce)'), chartMotion=new Map();
+  const rnd=(i,k)=>Math.abs(((i*73856093)^(k*19349663))%1000)/1000;
+  function settleChart(record){record.version++;record.node.getAnimations({subtree:true}).forEach(a=>a.cancel());record.node.classList.remove('is-playing');record.node.dataset.motionState='complete';}
+  function playChart(record){
+    settleChart(record);record.seen=true;
+    if(motionMedia.matches||matchMedia('print').matches)return;
+    void record.node.offsetWidth;record.node.classList.add('is-playing');record.node.dataset.motionState='playing';
+    const version=++record.version, animations=record.node.getAnimations({subtree:true});
+    Promise.allSettled(animations.map(a=>a.finished)).then(()=>{if(record.version===version){record.node.classList.remove('is-playing');record.node.dataset.motionState='complete';}});
+  }
+  function revealChart(id){
+    let record=chartMotion.get(id);
+    if(!record){record={node:$('#'+id),seen:false,version:0};chartMotion.set(id,record);
+      if('IntersectionObserver' in window){record.observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){record.observer.disconnect();playChart(record);}},{threshold:.2});record.observer.observe(record.node);}else playChart(record);
+    }else if(record.seen)settleChart(record);
+  }
+  $$('[data-replay]').forEach(b=>b.onclick=()=>{const record=chartMotion.get(b.dataset.replay);if(record){record.observer?.disconnect();playChart(record);}});
+  motionMedia.addEventListener('change',()=>{if(motionMedia.matches)chartMotion.forEach(settleChart);});
+  addEventListener('beforeprint',()=>chartMotion.forEach(settleChart));
+
   function drawChart() {
+    if(chartMotion.has('chart'))settleChart(chartMotion.get('chart'));
     const end = data.summary.complete_months;
     const months = data.summary.monthly.slice(0,end);
     $('#monthlyTable').innerHTML='<table><thead><tr><th>月份</th><th>时长</th></tr></thead><tbody>'+months.map((v,i)=>`<tr><td>${i+1}月</td><td>${esc(duration(v))}</td></tr>`).join('')+'</tbody></table>';
@@ -38,21 +64,40 @@
     svg+='<text x="0" y="13" fill="#696962" font-size="11">小时</text>';
     let segment=[]; const paths=[];
     months.forEach((v,i)=>{if(v==null){if(segment.length)paths.push(segment);segment=[];}else segment.push([x(i),y(v)]);});if(segment.length)paths.push(segment);
-    paths.forEach(points=>svg+=`<path d="${points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' ')}" fill="none" stroke="#ad3736" stroke-width="1.4"/>`);
+    paths.forEach(points=>svg+=`<path d="${points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' ')}" fill="none" stroke="#b94035" stroke-width="1.4" pathLength="1" class="draw"/>`);
     const peak=months.findIndex(v=>v!=null&&v===Math.max(...months.filter(v=>v!=null)));
     months.forEach((v,i)=>{svg+=`<line x1="${x(i)}" y1="${base}" x2="${x(i)}" y2="${base-7}" stroke="#bdbab0" stroke-width=".8"/><text x="${x(i)}" y="${base+24}" text-anchor="middle" fill="#696962" font-size="12">${i+1}月</text>`;
-      if(v!=null) {svg+=`<circle data-chart-month="${i}" tabindex="0" role="button" aria-label="${i+1}月，${esc(duration(v))}" cx="${x(i)}" cy="${y(v)}" r="${i===peak?4.5:3}" fill="#ad3736"/><circle cx="${x(i)}" cy="${y(v)}" r="11" fill="transparent" data-chart-month="${i}" aria-hidden="true"/>`;
-        if(i===peak)svg+=`<text x="${x(i)}" y="${y(v)-13}" text-anchor="middle" fill="#ad3736" font-size="13" style="paint-order:stroke;stroke:#faf8f2;stroke-width:4">${(v/3600).toFixed(1)}</text>`;}
+      if(v!=null) {svg+=`<circle data-chart-month="${i}" tabindex="0" role="button" aria-label="${i+1}月，${esc(duration(v))}" cx="${x(i)}" cy="${y(v)}" r="${i===peak?4.5:3}" fill="#b94035" class="pop" style="animation-delay:${.2+i*.03}s"/><circle cx="${x(i)}" cy="${y(v)}" r="11" fill="transparent" data-chart-month="${i}" aria-hidden="true"/>`;
+        svg+=`<text x="${x(i)}" y="${y(v)-13}" text-anchor="middle" fill="${i===peak?'#b94035':'#68665e'}" font-size="11" class="fade" style="paint-order:stroke;stroke:#faf6e9;stroke-width:4;animation-delay:${1+i*.01}s">${(v/3600).toFixed(1)}</text>`;}
     }); $('#chart').innerHTML=svg+'</svg>';
     $$('[data-chart-month]').forEach(el=>{const show=()=>$('#chartReadout').textContent=`${Number(el.dataset.chartMonth)+1}月 · ${duration(months[el.dataset.chartMonth])}`;el.addEventListener('mouseenter',show);el.addEventListener('focus',show);el.addEventListener('click',show);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});
+    revealChart('chart');
   }
   drawChart(); let resizeFrame;addEventListener('resize',()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(drawChart);});
 
   const categories = [...new Set(data.books.map(b=>b.category))];
-  const categoryPalette=['#b65a54','#60829a','#b08b3d','#63806e'];
+  const categoryPalette=['#bd5143','#4477a1','#b8973b','#5c897c','#ac7b84','#897b9e','#71828b'];
   const categoryCounts = categories.map(c=>({name:c,count:data.books.filter(b=>b.category===c).length})).sort((a,b)=>b.count-a.count);
-  $('#distribution').innerHTML=categoryCounts.length?categoryCounts.map((c,i)=>`<button class="category-row" data-category="${esc(c.name)}" aria-pressed="false"><span>${esc(c.name)}</span><span class="category-track"><i class="category-bar" style="width:${c.count/data.books.length*100}%;background:${categoryPalette[i%4]}"></i></span><span class="category-count">${c.count}本</span></button>`).join(''):'<p class="empty">暂无可统计书目</p>';
+  const maxCount=Math.max(...categoryCounts.map(c=>c.count),1), rungStep=Math.min(18,112/maxCount);
+  $('#distribution').innerHTML=categoryCounts.length?'<div class="distribution-grid">'+categoryCounts.map((c,i)=>{
+    const base=135,topY=base-(c.count-1)*rungStep;
+    let marks='';for(let k=0;k<c.count;k++){const y=base-k*rungStep,w=16-1.5+rnd(k+1,i+2)*3;marks+=`<line x1="${35-w}" y1="${y}" x2="${35+w}" y2="${y}" stroke="${categoryPalette[i%7]}" stroke-width="2" opacity="${.5+rnd(k+2,i+4)*.5}" class="fade" style="animation-delay:${i*.08+k*.012}s"/>`;if(k%5===4)marks+=`<circle cx="57" cy="${y}" r="1" fill="#9a9585" class="fade"/>`;}
+    return `<button class="category-rung" data-category="${esc(c.name)}" aria-pressed="false" aria-label="${esc(c.name)}，${c.count}本，筛选书架"><svg viewBox="0 0 70 158" aria-hidden="true"><line x1="5" y1="142" x2="65" y2="142" stroke="#d7ceba"/>${marks}<text x="35" y="${topY-14}" text-anchor="middle" fill="#24241f" font-size="16" class="category-count fade" style="animation-delay:${.4+i*.08}s">${c.count}</text></svg><span class="category-name">${esc(c.name)}</span></button>`;
+  }).join('')+'</div>':'<p class="empty">暂无可统计书目</p>';
+  revealChart('distribution');
   $$('[data-category]').forEach(button=>button.onclick=()=>{state.category=state.category===button.dataset.category?'':button.dataset.category;drawBooks();$('#shelf').scrollIntoView({block:'start'});});
+  const timedBooks=data.books.filter(b=>b.reading_seconds!=null).sort((a,b)=>b.reading_seconds-a.reading_seconds);
+  const maxSeconds=Math.max(...timedBooks.map(b=>b.reading_seconds),1);
+  const tickUnit=Math.max(1800,Math.ceil(maxSeconds/80/1800)*1800),tickWidth=480/(maxSeconds/tickUnit);
+  $('#investmentScope').textContent=timedBooks.length?`已记录时长的${timedBooks.length}本 · 每格${tickUnit/60}分钟，末尾短横线表示不足一格的时长`:'暂未载入逐书阅读时长';
+  $('#investment').innerHTML=timedBooks.length?timedBooks.map((b,i)=>{
+    const v=b.reading_seconds/tickUnit,n=Math.floor(v),tail=v-n;let marks='';
+    for(let k=0;k<n;k++){const x=k*tickWidth+tickWidth/2,h=9+rnd(k+1,i+2)*6;marks+=`<line x1="${x}" y1="21" x2="${x}" y2="${21-h}" stroke="${categoryPalette[i%7]}" opacity="${.55+rnd(k+3,i+5)*.45}" class="fade" style="animation-delay:${i*.08+k*.012}s"/>`;if(k%5===4)marks+=`<circle cx="${x}" cy="26" r=".8" fill="#9a9585"/>`;}
+    if(tail>0)marks+=`<line data-fraction="${tail}" x1="${n*tickWidth}" x2="${v*tickWidth}" y1="18" y2="18" stroke="${categoryPalette[i%7]}" stroke-width="2" class="fade" style="animation-delay:${.4+i*.08}s"/>`;
+    return `<button class="tick-row" data-open-book="${esc(b.book_id)}" data-seconds="${b.reading_seconds}" aria-label="${esc(b.title)}，${esc(duration(b.reading_seconds))}，查看详情"><span class="tick-label">${esc(b.title)}</span><svg viewBox="0 0 490 30" aria-hidden="true"><line x1="0" x2="480" y1="21" y2="21" stroke="#d7ceba" stroke-width=".6"/>${marks}</svg><span class="tick-time">${esc(duration(b.reading_seconds))}</span></button>`;
+  }).join(''):'<p class="empty">有逐书数据时，这里会呈现每本书的阅读投入。</p>';
+  $('#investmentTable').innerHTML='<table><thead><tr><th>书名</th><th>时长</th><th>秒数</th></tr></thead><tbody>'+timedBooks.map(b=>`<tr><td>${esc(b.title)}</td><td>${esc(duration(b.reading_seconds))}</td><td>${b.reading_seconds}</td></tr>`).join('')+'</tbody></table>';
+  revealChart('investment');
   const events=[]; const seenEvents=new Set();
   data.books.forEach(b=>{for(const [type,list] of [['划线',b.highlights],['笔记',b.thoughts]])list.forEach(n=>{if(n.created_at){const key=`${b.book_id}|${type}|${n.source_id||n.text+'|'+n.created_at}`;if(!seenEvents.has(key)){seenEvents.add(key);events.push({date:n.created_at,type,book:b,text:n.text});}}});
     for(const [type,date] of [['开始阅读',b.start_date],['读完',b.finish_date]])if(date&&Number(date.slice(0,4))===data.year)events.push({date,type,book:b});});
@@ -135,23 +180,36 @@
   function wrap(ctx,text,x,y,width,lineHeight,maxLines=20){let line='',lines=[];for(const ch of String(text)){if(ch==='\n'){lines.push(line);line='';continue;}if(ctx.measureText(line+ch).width>width&&line){lines.push(line);line=ch;}else line+=ch;}if(line)lines.push(line);const cut=lines.length>maxLines;lines=lines.slice(0,maxLines);if(cut){let last=lines.at(-1)||'';while(ctx.measureText(last+'…').width>width)last=last.slice(0,-1);lines[lines.length-1]=last+'…';}lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));return y+lines.length*lineHeight;}
   async function canvasPage(p,ratio){
     await document.fonts.ready;const [W,H]=dimensions(ratio),cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');if(!c)throw Error('浏览器不支持Canvas');
-    const red='#ad3736',ink='#272723',muted='#696962',blue='#54768a',paper='#faf8f2';c.fillStyle=paper;c.fillRect(0,0,W,H);c.strokeStyle='#c8a87a';c.lineWidth=1;c.strokeRect(20,20,W-40,H-40);
+    const red='#b94035',ink='#24241f',muted='#68665e',blue='#3f6e96',paper='#faf6e9';c.fillStyle=paper;c.fillRect(0,0,W,H);
+    for(const [x,yy,color] of [[W,0,'#f0c967'],[0,H,'#76add1'],[W,H*.65,'#efada0']]){const g=c.createRadialGradient(x,yy,0,x,yy,330);g.addColorStop(0,color+'42');g.addColorStop(1,color+'00');c.fillStyle=g;c.fillRect(0,0,W,H);}
+    c.strokeStyle='#c8a87a';c.lineWidth=1;c.strokeRect(20,20,W-40,H-40);
     c.fillStyle=ink;c.font=`600 27px ${serif}`;c.fillText('年年阅',65,80);c.fillStyle=muted;c.font=`18px ReadingSans, sans-serif`;c.textAlign='right';c.fillText(`${data.year}${data.source_mode==='sample'?' · 示例':''}`,W-65,80);c.textAlign='left';
+    if(p.kind==='cover'){
+      const lettering=await loadImage(art.reading),illustration=await loadImage(art.hero),square=ratio==='1:1';
+      const lw=square?380:480;c.drawImage(lettering,42,96,lw,lw*lettering.height/lettering.width);
+      const titleY=square?370:410;c.font=`650 42px ${serif}`;c.fillStyle=ink;c.fillText('我的阅读年鉴',65,titleY);
+      const artW=square?590:730;c.drawImage(illustration,W-artW+100,square?285:335,artW,artW*illustration.height/illustration.width);
+      let rowY=titleY+78;
+      for(const [v,label,x,yy]of [[data.summary.read,'本读过',65,rowY],[data.summary.finished,'本读完',250,rowY],[data.summary.read_days,'天阅读',65,rowY+65],[data.summary.notes,'条笔记',250,rowY+65]]){c.fillStyle=ink;c.font=`600 48px ${serif}`;c.fillText(value(v),x,yy);const numW=c.measureText(value(v)).width;c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(label,x+numW+10,yy);}
+      c.fillStyle=ink;c.font=`600 29px ${serif}`;c.fillText(duration(data.summary.seconds),65,rowY+137);c.fillStyle=muted;c.font='16px ReadingSans, sans-serif';c.fillText('累计阅读时长',65,rowY+166);
+      const picked=data.books.filter(b=>b.selected),covers=(picked.length?picked:data.books).slice(0,4),gap=24,cw=(W-130-gap*3)/4,ch=square?140:205,shelfY=H-110;
+      c.strokeStyle='#b89668';c.lineWidth=2;c.beginPath();c.moveTo(65,shelfY);c.lineTo(W-65,shelfY);c.stroke();
+      for(const [i,b]of covers.entries()){const x=65+i*(cw+gap);if(b.cover){const im=await loadImage(b.cover),sc=Math.min(cw/im.width,ch/im.height);c.drawImage(im,x,shelfY-im.height*sc,im.width*sc,im.height*sc);}else{c.fillStyle='#e6dfcc';c.fillRect(x,shelfY-ch,cw,ch);c.fillStyle=ink;c.font=`18px ${serif}`;wrap(c,b.title,x+12,shelfY-ch+30,cw-24,26,Math.floor((ch-40)/26));}}
+      c.fillStyle=muted;c.font='16px ReadingSans, sans-serif';c.fillText('我的阅读年鉴',65,H-55);return cv;
+    }
     c.font=`600 42px ${serif}`;c.fillStyle=ink;let y=wrap(c,p.kind==='cover'?'我的阅读年鉴':p.title,65,175,W-130,58,p.kind==='book'?3:2);
     c.strokeStyle='#d5d3ca';c.beginPath();c.moveTo(65,y+12);c.lineTo(W-65,y+12);c.stroke();y+=75;
-    if(p.kind==='cover'){
-      c.fillStyle=blue;c.font='italic 34px Georgia';c.fillText('Reading, at my own pace.',65,y);y+=95;
-      c.fillStyle=red;c.font=`600 75px ${serif}`;c.fillText(String(data.summary.read),65,y);c.font=`26px ${serif}`;c.fillStyle=ink;c.fillText('本读过',195,y);y+=65;c.font=`26px ${serif}`;c.fillText(duration(data.summary.seconds),65,y);y+=60;
-      const covers=data.books.filter(b=>b.selected).slice(0,4);const gap=20,cw=(W-130-gap*3)/4,ch=Math.min(220,H-y-140);
-      for(let i=0;i<covers.length;i++){const b=covers[i],x=65+i*(cw+gap);if(b.cover){const im=await loadImage(b.cover);const scale=Math.min(cw/im.width,ch/im.height);c.drawImage(im,x,y+ch-im.height*scale,im.width*scale,im.height*scale);}else{c.fillStyle='#e6e3d8';c.fillRect(x,y,cw,ch);c.fillStyle=ink;c.font=`19px ${serif}`;wrap(c,b.title,x+12,y+32,cw-24,28,Math.max(1,Math.floor((ch-40)/28)));}}
-    } else if(p.kind==='stats'){
+    if(p.kind==='stats'){
       c.fillStyle=red;c.font=`500 49px ${serif}`;c.fillText(duration(data.summary.seconds),65,y);y+=62;c.fillStyle=muted;c.font='22px ReadingSans, sans-serif';c.fillText(`${value(data.summary.read)}本读过  ·  ${value(data.summary.finished)}本读完`,65,y);y+=45;c.fillText(`${value(data.summary.read_days)}天阅读  ·  ${value(data.summary.notes)}条笔记`,65,y);y+=65;
       const vals=data.summary.monthly.slice(0,data.summary.complete_months),top=Math.ceil(Math.max(...vals.filter(x=>x!=null).map(x=>x/3600),1)/2)*2,base=H-180,upper=y,left=100,right=W-75;
       for(const t of [0,top/2,top]){const yy=base-t/top*(base-upper);c.strokeStyle='#d5d3ca';c.beginPath();c.moveTo(left,yy);c.lineTo(right,yy);c.stroke();c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(String(t),65,yy+5);}
       c.fillText('小时',65,upper-22);let active=false;c.strokeStyle=red;c.beginPath();vals.forEach((v,i)=>{if(v==null){active=false;return;}const x=vals.length===1?(left+right)/2:left+i*(right-left)/(vals.length-1),yy=base-v/3600/top*(base-upper);active?c.lineTo(x,yy):c.moveTo(x,yy);active=true;});c.lineWidth=2;c.stroke();
       vals.forEach((v,i)=>{const x=vals.length===1?(left+right)/2:left+i*(right-left)/(vals.length-1);c.fillStyle=muted;c.font='17px ReadingSans, sans-serif';c.textAlign='center';c.fillText(`${i+1}月`,x,base+32);if(v!=null){c.fillStyle=red;c.beginPath();c.arc(x,base-v/3600/top*(base-upper),4,0,2*Math.PI);c.fill();}});c.textAlign='left';
     } else if(p.kind==='distribution'){
-      c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText(scope,65,y);y+=65;const rows=categoryCounts.slice(0,8);for(const [i,row]of rows.entries()){c.fillStyle=ink;c.font=`25px ${serif}`;wrap(c,row.name,65,y,290,35,2);c.fillStyle=categoryPalette[i%4];c.fillRect(365,y-22,row.count/Math.max(data.books.length,1)*360,12);c.fillStyle=muted;c.font='22px ReadingSans, sans-serif';c.fillText(`${row.count}本`,755,y);y+=Math.min(80,(H-y-100)/(rows.length-i));}if(categoryCounts.length>8){c.fillStyle=muted;c.fillText('更多分类见HTML年鉴',65,H-125);}
+      c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText(scope+' · 一档一本',65,y);
+      const rows=categoryCounts.slice(0,8),base=H-220,col=(W-130)/Math.max(rows.length,1),step=Math.min(40,(base-y-100)/maxCount);
+      for(const [i,row]of rows.entries()){const x=65+col*(i+.5);c.strokeStyle=categoryPalette[i%7];c.lineWidth=3;for(let k=0;k<row.count;k++){const w=col*.24-1.5+rnd(k+1,i+2)*3;c.beginPath();c.moveTo(x-w,base-k*step);c.lineTo(x+w,base-k*step);c.stroke();}c.fillStyle=ink;c.font=`32px ${serif}`;c.textAlign='center';c.fillText(String(row.count),x,base-(row.count-1)*step-25);c.fillStyle=muted;c.font=`20px ${serif}`;c.textAlign='left';wrap(c,row.name,x-col*.4,base+48,col*.8,30,3);}
+      c.textAlign='left';if(categoryCounts.length>8){c.fillStyle=muted;c.fillText('更多分类见HTML年鉴',65,H-100);}
     } else if(p.kind==='timeline'){
       c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText('有日期的阅读与笔记记录',65,y);y+=65;
       const visible=events.slice(0,Math.max(1,Math.min(6,Math.floor((H-y-100)/115))));for(const e of visible){c.fillStyle=blue;c.beginPath();c.arc(75,y-8,5,0,2*Math.PI);c.fill();c.fillStyle=muted;c.font='20px ReadingSans, sans-serif';c.fillText(e.date.slice(5).replace('-','.'),105,y);c.fillStyle=ink;c.font=`24px ${serif}`;wrap(c,e.book.title,225,y,W-300,34,2);c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(e.type,225,y+65);y+=115;}if(events.length>visible.length)c.fillText('更多记录见HTML年鉴',65,H-100);
@@ -160,7 +218,7 @@
       const ch=Math.min(300,H*.26);if(b.cover){const im=await loadImage(b.cover);const sc=Math.min(220/im.width,ch/im.height);c.drawImage(im,65,y,im.width*sc,im.height*sc);}else{c.fillStyle='#e6e3d8';c.fillRect(65,y,190,ch);c.fillStyle=ink;c.font=`22px ${serif}`;wrap(c,b.title,82,y+38,155,33,5);}c.fillStyle=blue;c.font=`22px ${serif}`;wrap(c,b.category,330,y+40,W-395,36,3);c.fillStyle=muted;c.font='20px ReadingSans, sans-serif';c.fillText(statusLabel(b),330,y+160);y+=ch+65;
       c.fillStyle=red;c.font='45px Georgia';c.fillText('“',65,y);c.fillStyle=ink;c.font=`27px ${serif}`;wrap(c,p.quote||'这本书暂未载入划线。',100,y,W-165,44,Math.max(1,Math.floor((H-y-100)/44)));
     }
-    c.fillStyle=muted;c.font='16px ReadingSans, sans-serif';c.fillText(data.as_of?`${data.year} · 数据采集于${data.as_of}`:String(data.year),65,H-55);c.textAlign='right';c.fillText(p.kind==='book'?'原文摘录':'阅读年鉴',W-65,H-55);return cv;
+    c.fillStyle=muted;c.font='16px ReadingSans, sans-serif';c.fillText(String(data.year),65,H-55);c.textAlign='right';c.fillText(p.kind==='book'?'原文摘录':'阅读年鉴',W-65,H-55);return cv;
   }
   async function updatePreview(){const token=++renderToken,p=pages.find(p=>p.id===state.preview)||pages[0];try{const cv=await canvasPage(p,state.ratio);if(token!==renderToken)return;const target=$('#previewCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('#previewTitle').textContent=p.title;}catch(e){if(token===renderToken){$('#previewTitle').textContent='预览失败：'+e.message;}}}
   const blobCanvas = cv=>new Promise((resolve,reject)=>cv.toBlob(b=>b?resolve(b):reject(Error('无法生成PNG')),'image/png'));

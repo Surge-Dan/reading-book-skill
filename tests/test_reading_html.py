@@ -27,6 +27,22 @@ def fixture():
 
 
 class ReadingHtmlTests(unittest.TestCase):
+    def test_art_resources_are_embedded_once_outside_reading_data(self):
+        import base64
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'index.html';build_html(adapt_data(fixture()),path)
+            text=path.read_text('utf-8')
+            encoded=base64.b64encode((ROOT/'reading-yearbook-skill/assets/yearbook-art/hero-book.png').read_bytes()).decode('ascii')
+            self.assertEqual(text.count(encoded),1)
+            self.assertIn('id="reading-art"',text)
+            data=json.loads(text.split('<script id="reading-data" type="application/json">')[1].split('</script>')[0])
+            self.assertNotIn('art',data)
+
+    def test_unknown_art_asset_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError,'未知艺术素材'):
+                build_html(adapt_data(fixture()),Path(tmp)/'index.html',art_assets={'unknown':'missing.png'})
+
     def test_unknown_is_not_zero_or_reading(self):
         b = adapt_data(fixture())['books'][2]
         self.assertIsNone(b['progress'])
