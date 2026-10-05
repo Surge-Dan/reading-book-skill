@@ -1,6 +1,6 @@
 ---
 name: reading-yearbook-skill
-description: Create offline HTML reading yearbooks with real reading statistics, book distribution, timeline, notes, source-backed full-text reviews and share-image exports. Use for 阅读年报、年度阅读档案、小红书读书组图、书单 or 单书卡. Keep excerpts, personal notes and generated reviews distinct; never infer a whole book from sparse notes.
+description: Create offline HTML reading yearbooks with real reading statistics, book distribution, timeline, notes, highlights, personal notes and share-image exports. Use for 阅读年报、年度阅读档案、小红书读书组图、书单 or 单书卡. Keep excerpts and personal notes distinct; adapt gracefully to empty or incomplete records.
 ---
 
 # 年年阅
@@ -9,15 +9,15 @@ description: Create offline HTML reading yearbooks with real reading statistics,
 
 ## 路由
 
-- HTML阅读年鉴：只读[HTML年鉴操作](references/html-yearbook.md)，复用已采数据，运行`build_reading_html.py`。首次先对齐视觉与数据范围，已有认可原型则直接实现；无需再走组图的三个确认点。
+- 默认交付HTML阅读年鉴：用户安装Skill并接入有效微信读书接口后，助手完成采集、材料核查、视觉制作和导出验证，给出完整单文件网页；不让用户准备JSON或执行脚本。只读[HTML年鉴操作](references/html-yearbook.md)，运行`generate_reading_html.py`；已有材料先复用。年份未指定默认本年并说明，已有认可方向直接实现；用户提出新的视觉要求时才集中对齐。独立组图／单书卡按其明确范围交付。
 - HTML图表按数据问题从lieflat-charts真实gallery选型，不只模仿外观。当前示例含细线、分类阶梯、逐书刻度与滚入／重播动画；用户指定参考图时连同字体、原创素材、纸面层次和实际导出一起还原。缺少逐日数据不制作每日热力图。
+- 没有划线或个人笔记是正常阅读状态，不阻止网页交付。仅有笔记时展示个人想法；都没有时展示书架、真实统计及温和提示，分享转为书封与阅读信息卡。请求失败必须标为未取得，不能伪装成零记录。缺时间数据不猜测时间线，零书目也有可用的空年鉴。生成书评与自动全文检索已从HTML流程移除。
 - 完整HTML先补齐每本已确认书籍的真实封面、当前进度、完整划线和个人想法；组图中的精选摘录不能代替完整采集。正式生成用`--require-all-covers`。核查后为零与采集失败分开显示；年度汇总和当前阅读进度分别保留口径。
 - 只做书单或单书分享：读 [艺术指导](references/art-direction.md) 和 [分享操作](references/share-workflow.md)。
 - 用户选择拼贴时才读[拼贴方法](references/collage-method.md)；需要选字或换字时读[字体方法](references/typography.md)。不一次加载字体库或所有风格说明。
 - 改一页：只读现有简报、该页内容与分享操作的修订段，不重跑调研或采集。
 - 真实数据尚未采集：才读 [微信读书接口](references/weread-api.md)。已有数据直接复用。
 - 用户明确要完整私人档案或图谱：读 [档案交付](references/output-contract.md)，使用原 `run_yearbook.py`；不默认扩展分享任务。
-- 年鉴需要全书书评：按HTML年鉴操作主动检索可访问的完整来源，核验版本与章节；用户已有合法全文时才读 [深度蒸馏](references/distillation-method.md)。
 - 调整原始数据字段时才读 [数据契约](references/data-contract.md)；证据分级细节见 [证据规则](references/evidence-rules.md)。
 
 ## 三个确认点
@@ -41,7 +41,7 @@ description: Create offline HTML reading yearbooks with real reading statistics,
 在 Skill 目录执行。Windows 使用 `python -X utf8`。后续确认与导出命令见分享操作，不必读脚本源码。
 
 ```powershell
-python -X utf8 scripts/build_reading_html.py --input assets/sample-data.json --year 2026 --output output/reading-2026/index.html
+python -X utf8 scripts/generate_reading_html.py --year 2026 --output output/reading-2026/index.html
 python -X utf8 scripts/run_share.py prepare --year 2026 --input assets/sample-data.json --output output/share-2026
 python -X utf8 scripts/run_share.py status output/share-2026
 python -X utf8 scripts/art_direction.py --job output/share-2026/share-job.json --output output/share-2026/design-packet.json

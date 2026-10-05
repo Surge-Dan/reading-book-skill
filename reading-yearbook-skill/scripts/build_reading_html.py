@@ -59,20 +59,6 @@ def notes(rows, year):
     return result
 
 
-def review_value(book):
-    """Only display completed full-text reviews with identifiable source/coverage."""
-    r = book.get('full_text_review') or {}
-    if not isinstance(r, dict):
-        r = {}
-    citations = r.get('citations')
-    if (r.get('status') == 'verified' and r.get('coverage') == 'complete'
-            and r.get('source') and r.get('version') and r.get('body')
-            and isinstance(citations, list) and citations and all(isinstance(x, str) and x.strip() for x in citations)):
-        return {'status': 'verified', 'body': str(r['body']), 'source': str(r['source']),
-                'version': str(r.get('version') or ''), 'citations': [str(x) for x in r['citations']]}
-    return {'status': 'waiting', 'body': '', 'source': '', 'version': '', 'citations': []}
-
-
 def adapt_data(raw, year=None):
     year = int(year or raw.get('year') or raw.get('period', {}).get('year') or datetime.now(TZ).year)
     if not 1900 <= year <= 2200:
@@ -119,7 +105,7 @@ def adapt_data(raw, year=None):
                       'highlights': notes(highlights, year), 'thoughts': notes(thoughts, year),
                       'finish_date': date_value(row.get('finish_time')), 'start_date': date_value(row.get('start_time')),
                       'intro': str(row.get('intro') or sources.get(book_id + '/intro', {}).get('text') or ''),
-                      'review': review_value(row), 'cover': '', 'selected': row.get('selected', True) is True})
+                      'cover': '', 'selected': row.get('selected', True) is True})
     def stat(key, fallback):
         return number(sources.get(key, {}).get('value')) if key in sources else number(fallback)
     total = stat('annual/read', summary.get('book_count'))
@@ -140,7 +126,7 @@ def adapt_data(raw, year=None):
         values.append(value)
     # Do not present the partly collected current month as a complete month.
     complete_months = int(as_of[5:7]) - 1 if as_of and int(as_of[:4]) == year else 12
-    return {'schema_version': 'reading-html/1.0', 'year': year, 'as_of': as_of,
+    return {'schema_version': 'reading-html/1.1', 'year': year, 'as_of': as_of,
             'source_mode': str(raw.get('source_mode', 'unknown')),
             'verification_status': str(raw.get('coverage', {}).get('verification_status') or raw.get('verification_status') or 'unverified'),
             'coverage': {'loaded_books': len(books), 'annual_books': total,
@@ -253,14 +239,6 @@ def merge_materials(data, materials):
                               'highlights': 'complete' if coverage.get('highlights') == 'complete' else 'unverified',
                               'thoughts': 'complete' if coverage.get('thoughts') == 'complete' else 'unverified',
                               'collected_on': date_value(row.get('collected_on'))}
-        if row.get('full_text_review'):
-            b['review'] = review_value(row)
-        search = row.get('full_text_search') or {}
-        if isinstance(search, dict) and search:
-            b['full_text_search'] = {'status': str(search.get('status') or 'unverified'),
-                                     'reason': str(search.get('reason') or ''),
-                                     'checked_on': date_value(search.get('checked_on')),
-                                     'sources': [str(u) for u in search.get('sources', []) if isinstance(u, str) and u.startswith('https://')]}
     data['material_coverage'] = {'books_with_checked_highlights': sum(b.get('note_coverage', {}).get('highlights') == 'complete' for b in data['books']),
                                  'books_with_checked_thoughts': sum(b.get('note_coverage', {}).get('thoughts') == 'complete' for b in data['books']),
                                  'current_finished': sum(b['status'] == 'finished' for b in data['books']),
@@ -287,6 +265,8 @@ def embed_image(path):
 def build_html(data, output, covers=None, art_assets=None, require_all_covers=False):
     """Whitelist data at adapter boundary; no raw payload embedded."""
     for b in data['books']:
+        for removed in ('review', 'full_text_review', 'full_text_search'):
+            b.pop(removed, None)
         if (covers or {}).get(b['book_id']):
             b['cover'] = embed_image(covers[b['book_id']])
     missing = sum(not b['cover'] for b in data['books'])

@@ -136,19 +136,18 @@ class ReadingHtmlTests(unittest.TestCase):
         raw=fixture();raw['books'].append(raw['books'][0])
         self.assertEqual(len(adapt_data(raw)['books']), 3)
 
-    def test_reviews_require_complete_sources_and_citations(self):
-        raw=fixture();r={'status':'verified','body':'review','source':'https://example.org/book','version':'核验版本','coverage':'partial','citations':['第1章']}
-        raw['books'][0]['full_text_review']=r
-        self.assertEqual(adapt_data(raw)['books'][0]['review']['status'], 'waiting')
-        r['coverage']='complete'
-        self.assertEqual(adapt_data(raw)['books'][0]['review']['body'], 'review')
+    def test_legacy_review_is_ignored_in_yearbook_data(self):
+        raw=fixture();raw['books'][0]['full_text_review']={'status':'verified','body':'private generated review'}
+        data=adapt_data(raw)
+        self.assertNotIn('review',data['books'][0])
+        self.assertNotIn('private generated review',json.dumps(data))
 
-    def test_review_rejects_citation_string_and_missing_version(self):
-        raw=fixture();r={'status':'verified','body':'review','source':'public source','coverage':'complete','citations':'不是章节清单'}
-        raw['books'][0]['full_text_review']=r
-        self.assertEqual(adapt_data(raw)['books'][0]['review']['status'], 'waiting')
-        r['version']='v1';r['citations']=[]
-        self.assertEqual(adapt_data(raw)['books'][0]['review']['status'], 'waiting')
+    def test_legacy_search_and_review_are_removed_at_build_boundary(self):
+        data=adapt_data(fixture());data['books'][0].update(review={'body':'obsolete review'},full_text_search={'reason':'obsolete source'})
+        with tempfile.TemporaryDirectory() as tmp:
+            target=Path(tmp)/'index.html';build_html(data,target)
+            text=target.read_text('utf-8')
+            self.assertNotIn('obsolete review',text);self.assertNotIn('obsolete source',text)
 
     def test_invalid_monthly_shape_rejected(self):
         raw=fixture();raw['summary']['monthly_read_seconds']={'1':20}

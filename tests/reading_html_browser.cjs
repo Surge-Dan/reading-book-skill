@@ -30,8 +30,8 @@ const checks=[];const pass=(name,detail='')=>checks.push({name,status:'pass',det
  await page.locator('[data-status="unknown"]').click();assert.equal(await page.locator('.book-entry').count(),1);await page.locator('#clearFilters').click();pass('finished and unknown status filters');
  await page.locator('[data-category]').first().click();assert((await page.locator('.book-entry').count())<original);await page.locator('#clearFilters').click();pass('distribution links to clearable shelf filter');
  await page.locator('#viewSwitch').click();assert(await page.locator('#books').evaluate(el=>el.classList.contains('list')));await page.locator('#viewSwitch').click();pass('cover and list views');
- await page.locator('.book').first().click();assert(await page.locator('#detail').evaluate(el=>el.open));assert(await page.locator('#detailContent').textContent().then(t=>t.includes('尚未取得')));assert(page.url().includes('#book='));
- await page.keyboard.press('Escape');await page.waitForTimeout(150);assert(!(await page.locator('#detail').evaluate(el=>el.open)));pass('detail hash, honest review state, Escape');
+ await page.locator('.book').first().click();assert(await page.locator('#detail').evaluate(el=>el.open));assert(await page.locator('#detailContent').textContent().then(t=>!t.includes('全书书评')&&t.includes('原文摘录')));assert(page.url().includes('#book='));
+ await page.keyboard.press('Escape');await page.waitForTimeout(150);assert(!(await page.locator('#detail').evaluate(el=>el.open)));pass('detail hash, actual notes without generated review, Escape');
  await page.locator('#chart circle[role=button]').first().focus();await page.keyboard.press('Enter');assert(await page.locator('#chartReadout').textContent().then(t=>t.includes('小时')));pass('keyboard chart exact readout');
  const geometry=await page.evaluate(()=>{const d=JSON.parse(document.querySelector('#reading-data').textContent),svg=document.querySelector('#chart svg'),H=svg.viewBox.baseVal.height,base=H-37,vals=d.summary.monthly.slice(0,d.summary.complete_months),top=Math.ceil(Math.max(...vals.filter(v=>v!=null).map(v=>v/3600),1)/2)*2;return [...svg.querySelectorAll('circle[role=button]')].every(dot=>Math.abs(Number(dot.getAttribute('cy'))-(base-vals[Number(dot.dataset.chartMonth)]/3600/top*(base-25)))<1e-7);});assert(geometry);assert.equal(await page.locator('#chart path').count(),2);pass('chart geometry, missing-month path break, true zero');
  await page.locator('#openSources').click();assert(await page.locator('#sourcesContent').textContent().then(t=>t.includes('缺失值')));await page.locator('#sourcesDialog .close').click();pass('source and missing data explanation');
@@ -42,11 +42,11 @@ const checks=[];const pass=(name,detail='')=>checks.push({name,status:'pass',det
  await page.evaluate(()=>{window.savedToBlob=HTMLCanvasElement.prototype.toBlob;HTMLCanvasElement.prototype.toBlob=function(cb){cb(null);};});
  await page.locator('#exportOne').click();await page.waitForTimeout(100);assert(await page.locator('#exportStatus').textContent().then(t=>t.includes('导出失败')));assert.equal(await page.locator('[data-page]:checked').count(),count);assert(!(await page.locator('#exportOne').isDisabled()));await page.evaluate(()=>HTMLCanvasElement.prototype.toBlob=window.savedToBlob);pass('export failure preserves selection and unlocks retry');
  for(const ratio of ['3:4','1:1','4:5']){
-  await page.locator('#ratio').selectOption(ratio);await page.waitForTimeout(150);
+  await page.locator('#ratio').selectOption(ratio,{force:true});await page.waitForTimeout(150);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#exportOne').click()]);
   const name=`export-${ratio.replace(':','-')}.png`;await download.saveAs(path.join(out,name));const bytes=fs.readFileSync(path.join(out,name));assert.equal(bytes.readUInt32BE(16),900);assert.equal(bytes.readUInt32BE(20),ratio==='1:1'?900:ratio==='4:5'?1125:1200);pass(`actual PNG ${ratio}`);
  }
- await page.locator('#ratio').selectOption('3:4');
+ await page.locator('#ratio').selectOption('3:4',{force:true});
  const [zip]=await Promise.all([page.waitForEvent('download'),page.locator('#exportGroup').click()]);await zip.saveAs(path.join(out,'reading-share.zip'));pass('actual group ZIP download',String(count));
  for(const [id,name]of [['#exportMd','reading.md'],['#exportJson','reading.json']]){const[d]=await Promise.all([page.waitForEvent('download'),page.locator(id).click()]);await d.saveAs(path.join(out,name));}
  const exported=JSON.parse(fs.readFileSync(path.join(out,'reading.json'),'utf8'));assert.equal(exported.books.length,original);assert(exported.books.every(b=>!('cover'in b)));assert(fs.readFileSync(path.join(out,'reading.md'),'utf8').includes('来源：'));pass('actual Markdown and JSON exports');
