@@ -26,6 +26,19 @@ const {chromium}=require('playwright'),{pathToFileURL}=require('url'),fs=require
    for(let i=0;i<r.layout.text.length;i++)for(let j=i+1;j<r.layout.text.length;j++){const a=r.layout.text[i],b=r.layout.text[j],dx=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x),dy=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y);assert(!(dx>2&&dy>2),`${label}: text collision ${a.text} / ${b.text}`);}
    for(const gap of r.layout.spacing)assert(gap.gap>=14,`${label}: number and label too close: ${gap.gap}`);
    for(const im of r.layout.images){assert(im.x>=30&&im.x+im.w<=870,`${label}: image exceeds frame`);assert(im.y+im.h<=r.layout.footerTop-16,`${label}: rotated image reaches footer`);}
+   if(r.layout.page==='cover'){
+     const time=r.layout.text.find(t=>t.text==='阅读时长'),units=r.layout.text.filter(t=>['本读过','本读完','天阅读','条笔记'].includes(t.text));
+     assert(time&&units.length===4);
+     assert(time.y-Math.max(...units.map(t=>t.y+t.h))>=24,`${label}: time group too close to headline metrics`);
+   }
+   if(r.layout.page==='stats'&&r.layout.height>900){
+     const title=r.layout.text.find(t=>t.text==='时间花在哪本书上');
+     if(title){
+       const firstRow=r.layout.text.filter(t=>t.role!=='footer'&&t.y>title.y+title.h);
+       assert(Math.min(...firstRow.map(t=>t.y))-title.y-title.h>=20,`${label}: rank rows too close to section heading`);
+       assert(r.layout.footerTop-Math.max(...firstRow.map(t=>t.y+t.h))>=20,`${label}: rank rows too close to footer`);
+     }
+   }
    const chart=r.layout.charts.find(c=>c.kind==='monthly');if(chart)for(const p of chart.points.filter(Boolean)){assert.equal(p.value,r.summary.monthly[p.month-1]);assert(Math.abs(p.y-(chart.base-p.value/3600/chart.top*(chart.base-chart.upper)))<1e-7);}
    const categories=r.layout.charts.filter(c=>c.kind==='category');if(categories.length)assert.equal(categories.reduce((n,c)=>n+c.count,0),r.books);
    checks.push(label+' geometry, spacing and data');

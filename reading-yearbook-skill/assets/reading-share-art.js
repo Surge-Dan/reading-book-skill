@@ -3,7 +3,7 @@
  * Each canvas carries a local layout manifest for export regression checks. */
 window.ReadingShareArtwork = (() => {
   'use strict';
-  const C={paper:'#f7f2e5',ink:'#242822',muted:'#686c61',red:'#b84432',blue:'#305c78',gold:'#cba74e',green:'#607765',line:'#c9c4b3',cream:'#eee6d2'};
+  const C={paper:'#f7f2e5',ink:'#242822',muted:'#686c61',secondaryInk:'#454a41',quietBlue:'#506875',red:'#b84432',blue:'#305c78',gold:'#cba74e',green:'#607765',line:'#c9c4b3',cream:'#eee6d2'};
   const SERIF='ReadingSerif,"Noto Serif SC","Songti SC",SimSun,serif';
   const SANS='ReadingSans,"Noto Sans SC","Microsoft YaHei",sans-serif';
   const NUM='Georgia,"Noto Serif",serif';
@@ -81,13 +81,13 @@ window.ReadingShareArtwork = (() => {
         manifest.images.push({x:x+w/2-bw/2,y:y+h/2-bh/2,w:bw,h:bh,angle});
       }
       async function cover(b,x,y,w,h,opts={}){if(b.cover)await image(b.cover,x,y,w,h,opts);else{rect(x,y,w,h,C.cream);block(b.title,x+18,y+22,w-36,h-44,{size:34,min:28,weight:600});}}
-      function metric(n,label,x,y,w,{size=64,color=C.ink,labelY}={}){
+      function metric(n,label,x,y,w,{size=64,color=C.ink,labelY,labelSize=26}={}){
         const s=amount(n);let fs=size;ctx.font=`400 ${fs}px ${NUM}`;while(ctx.measureText(s).width>w-8&&fs>28){fs-=2;ctx.font=`400 ${fs}px ${NUM}`;}
         const numberBox=text(s,x,y,{size:fs,font:NUM,color});
         // Labels in a row share a baseline, even when a long value shrinks.
         ctx.font=`400 ${size}px ${NUM}`;const descent=ctx.measureText('0123456789').actualBoundingBoxDescent;
-        ctx.font=`400 26px ${SANS}`;const ascent=ctx.measureText('阅读小时分钟').actualBoundingBoxAscent;
-        const labelBox=text(label,x,labelY??y+descent+ascent+18,{size:26,font:SANS,color:C.muted});
+        ctx.font=`400 ${labelSize}px ${SANS}`;const ascent=ctx.measureText('阅读小时分钟').actualBoundingBoxAscent;
+        const labelBox=text(label,x,labelY??y+descent+ascent+18,{size:labelSize,font:SANS,color:C.muted});
         manifest.spacing.push({kind:'metric',gap:labelBox.y-numberBox.y-numberBox.h,minimum:14,labelY:labelBox.y+labelBox.h});
       }
       function progress(b,x,y,w){
@@ -154,14 +154,12 @@ window.ReadingShareArtwork = (() => {
         block(data.coverage.complete?'这一年，还没有读书记录。':'阅读记录尚未取得。',M,shelfBottom-42,R-M,42,{size:28,min:26,color:C.muted});
       }
       line(M,shelfBottom+23,R,shelfBottom+23);
-      const my=square?710:H-267,w=(R-M)/4;
-      for(const [i,[v,label]]of [[data.summary.read,'本读过'],[data.summary.finished,'本读完'],[data.summary.read_days,'天阅读'],[data.summary.notes,'条笔记']].entries())metric(v,label,M+i*w,my,w-22,{size:square?58:66,color:i===0?C.red:C.ink});
-      if(square){text(duration(data.summary.seconds),M,795,{font:SANS,size:28,color:C.blue});}
-      else{
-        text('阅读时长',M,H-174,{font:SANS,size:25,color:C.muted});
-        text(duration(data.summary.seconds),M,H-124,{font:NUM,size:36,color:C.blue});
-        trend(475,H-184,345,90,{small:true});
-      }
+      const my=square?695:H-289,w=(R-M)/4;
+      for(const [i,[v,label]]of [[data.summary.read,'本读过'],[data.summary.finished,'本读完'],[data.summary.read_days,'天阅读'],[data.summary.notes,'条笔记']].entries())metric(v,label,M+i*w,my,w-22,{size:square?52:60,color:C.secondaryInk,labelSize:24});
+      const timeY=square?795:H-132;
+      text('阅读时长',M,timeY,{font:SANS,size:24,color:C.muted});
+      text(duration(data.summary.seconds),M+130,timeY,{font:SANS,size:square?28:30,color:C.quietBlue});
+      if(!square)trend(475,H-181,345,90,{small:true});
     }
     async function statsPage(d){
       const {H,M,R,text,block,line,metric,trend,section,tickRow}=d,square=H===900;
@@ -175,23 +173,27 @@ window.ReadingShareArtwork = (() => {
       const w=(R-M)/4;
       for(const [i,[v,label]]of [[data.summary.read,'本读过'],[data.summary.finished,'本读完'],[data.summary.read_days,'天阅读'],[data.summary.notes,'条笔记']].entries())metric(v,label,M+i*w,410,w-22,{size:52});
       section('每月的阅读节奏',M,490,R-M,'01');
-      const chartY=549,chartH=square?206:H-855;
+      const chartY=549,chartH=square?206:H-895;
       trend(M,chartY,R-M,chartH);
-      const valid=months.map((v,i)=>({v,i})).filter(r=>known(r.v)),peakY=square?791:H-266;
-      if(valid.length){const peak=valid.reduce((a,b)=>b.v>a.v?b:a);text(`${peak.i+1}月读得最久`,M,peakY,{size:29,weight:500,color:C.blue});text(duration(peak.v),R,peakY,{size:28,font:SANS,align:'right'});}
+      const valid=months.map((v,i)=>({v,i})).filter(r=>known(r.v)),peakY=square?791:H-300;
+      if(valid.length){const peak=valid.reduce((a,b)=>b.v>a.v?b:a);text(`${peak.i+1}月读得最久`,M,peakY,{size:27,weight:400,color:C.quietBlue});text(duration(peak.v),R,peakY,{size:26,font:SANS,align:'right',color:C.muted});}
       if(!square){
         const ranked=data.books.filter(b=>known(b.reading_seconds)&&b.reading_seconds>0).sort((a,b)=>b.reading_seconds-a.reading_seconds).slice(0,2);
-        section(ranked.length?'时间花在哪本书上':'这一年的阅读记录',M,H-226,R-M,'02');
+        line(M,H-264,R,H-264);
+        text('02',M,H-230,{font:NUM,size:24,color:C.red,italic:true});
+        text(ranked.length?'时间花在哪本书上':'这一年的阅读记录',M+45,H-230,{size:26,weight:500,font:SANS,color:C.secondaryInk});
         if(ranked.length){
           const max=ranked[0].reading_seconds;
           for(const [i,b]of ranked.entries()){
-            const y=H-159+i*52;
-            block(b.title,M,y-28,350,42,{size:28,min:26,weight:500,leading:1.2});
-            tickRow(b.reading_seconds,max,450,y,165,bookColor(b));
-            text(duration(b.reading_seconds),R,y,{size:25,font:SANS,align:'right',color:C.muted});
+            const y=H-171+i*60,style={size:28,min:26,weight:400,color:C.secondaryInk,leading:1.2};
+            const shortTitle=measureBlockTitle(b.title);
+            block(shortTitle,M,y-28,350,42,style);
+            tickRow(b.reading_seconds,max,450,y-3,165,bookColor(b));
+            text(duration(b.reading_seconds),R,y,{size:24,font:SANS,align:'right',color:C.muted});
           }
-        }else block('每一本书，都在书架里留下了位置。',M,H-159,R-M,56,{size:30,min:28,color:C.muted});
+        }else block('每一本书，都在书架里留下了位置。',M,H-175,R-M,56,{size:28,min:26,color:C.muted});
       }
+      function measureBlockTitle(title){return d.measureBlock(title,350,42,{size:28,min:26,leading:1.2}).cut&&/[：:]/.test(title)?title.split(/[：:]/)[0]:title;}
     }
     async function distributionPage(d){
       const {H,M,R,text,block,line,cover,section}=d,square=H===900;
