@@ -17,7 +17,7 @@ description: Create offline HTML reading yearbooks with real reading statistics,
 - 分享画布按材料组织字体、图表、书封、侧栏与原创元素，不能固定为标题＋书封＋一句话。短摘录、长摘录、有笔记与无笔记采用不同信息结构，数据丰富度决定图表，不按书籍类别猜观点。使用同一绘制入口预览与导出，先做代表样张及375px阅读预览，字体或风格调整后再次检查真实图片。
 - 只做书单或单书分享：读 [艺术指导](references/art-direction.md) 和 [分享操作](references/share-workflow.md)。
 - 用户选择拼贴时才读[拼贴方法](references/collage-method.md)；需要选字或换字时读[字体方法](references/typography.md)。不一次加载字体库或所有风格说明。
-- 改一页：只读现有简报、该页内容与分享操作的修订段，不重跑调研或采集。用户要求微调时保留已认可的字体、插画、纸面、构图及渲染方式；按钮配色仅调整控件，不修改图表和装饰共用的色彩变量。分享图延续网页风格，不能借局部修正另起一套视觉。
+- 改一页：只读现有简报、该页内容与分享操作的修订段，不重跑调研或采集。分享图的字体、间距或比例有问题时读[排印修正](references/share-typography.md)，检查实际PNG及全部书卡。用户要求微调时保留已认可的字体、插画、纸面、构图及渲染方式；按钮配色仅调整控件，不修改图表和装饰共用的色彩变量。分享图延续网页风格，不能借局部修正另起一套视觉。
 - 真实数据尚未采集：才读 [微信读书接口](references/weread-api.md)。已有数据直接复用。
 - 用户明确要完整私人档案或图谱：读 [档案交付](references/output-contract.md)，使用原 `run_yearbook.py`；不默认扩展分享任务。
 - 调整原始数据字段时才读 [数据契约](references/data-contract.md)；证据分级细节见 [证据规则](references/evidence-rules.md)。
