@@ -1,23 +1,26 @@
 ---
 name: reading-yearbook-skill
-description: Design shareable reading yearbooks, book-list images, and single-book cards from WeRead records or existing reading notes, especially 小红书年度阅读分享. Use for 阅读年报、书单图文、单书卡 or revisions to them; also supports a local reading atlas and legal-full-text distillation when explicitly requested. Do not infer a whole book from sparse notes or download book contents.
+description: Create offline HTML reading yearbooks with real reading statistics, book distribution, timeline, notes, source-backed full-text reviews and share-image exports. Use for 阅读年报、年度阅读档案、小红书读书组图、书单 or 单书卡. Keep excerpts, personal notes and generated reviews distinct; never infer a whole book from sparse notes.
 ---
 
 # 年年阅
 
-把真实阅读材料编辑成有个人表达、愿意分享的组图。年度分享默认是封面、独立年度概览和精选书卡；书卡以“我的阅读所得”为主。风格由材料与偏好决定，不固定字体、配色或版式。
+把真实阅读材料整理成可浏览、可探索、可导出的HTML年鉴；精选组图是分享出口。用户只要组图或单卡时按其范围交付。风格由材料与偏好决定，不把示例字体、配色或布局设成唯一风格。
 
 ## 路由
 
-- 新建年报、书单或单书分享：读 [艺术指导](references/art-direction.md) 和 [分享操作](references/share-workflow.md)。
+- HTML阅读年鉴：只读[HTML年鉴操作](references/html-yearbook.md)，复用已采数据，运行`build_reading_html.py`。首次先对齐视觉与数据范围，已有认可原型则直接实现；无需再走组图的三个确认点。
+- 只做书单或单书分享：读 [艺术指导](references/art-direction.md) 和 [分享操作](references/share-workflow.md)。
 - 用户选择拼贴时才读[拼贴方法](references/collage-method.md)；需要选字或换字时读[字体方法](references/typography.md)。不一次加载字体库或所有风格说明。
 - 改一页：只读现有简报、该页内容与分享操作的修订段，不重跑调研或采集。
 - 真实数据尚未采集：才读 [微信读书接口](references/weread-api.md)。已有数据直接复用。
 - 用户明确要完整私人档案或图谱：读 [档案交付](references/output-contract.md)，使用原 `run_yearbook.py`；不默认扩展分享任务。
-- 用户提供合法全文并明确要深挖：读 [深度蒸馏](references/distillation-method.md)。
+- 年鉴需要全书书评：按HTML年鉴操作主动检索可访问的完整来源，核验版本与章节；用户已有合法全文时才读 [深度蒸馏](references/distillation-method.md)。
 - 调整原始数据字段时才读 [数据契约](references/data-contract.md)；证据分级细节见 [证据规则](references/evidence-rules.md)。
 
 ## 三个确认点
+
+以下适用于独立组图任务；HTML走自己的数据与视觉校准流程，导出组图前仍须确认图片比例。已明确或本次已认可的信息不重复询问。
 
 1. **范围**：复用材料，集中确认发布场景、时间范围、产物、比例、候选书目及张数。助手提出选书理由，用户选择；建议3–5本，不按阅读时长推断喜爱程度。比例须在本次任务明确，提供1:1、3:4、4:5或自定义；“做张年报图”等含糊表达先问单图还是组图。已明确的信息不再问。
 2. **内容与方向**：展示全部分镜：每页阅读任务、证据、主视觉及含义、辅助内容和取舍，再给逐页文字。用少量参考提出两个具体视觉方向，说明字体和图文关系，用户选一个。原话、引文、编辑归纳和补充想法区分记录；只有划线不能冒写个人收获。缺少观点时集中追问，或确认换书／转为摘录表达。未确认前不制作正式样张。
@@ -36,6 +39,7 @@ description: Design shareable reading yearbooks, book-list images, and single-bo
 在 Skill 目录执行。Windows 使用 `python -X utf8`。后续确认与导出命令见分享操作，不必读脚本源码。
 
 ```powershell
+python -X utf8 scripts/build_reading_html.py --input assets/sample-data.json --year 2026 --output output/reading-2026/index.html
 python -X utf8 scripts/run_share.py prepare --year 2026 --input assets/sample-data.json --output output/share-2026
 python -X utf8 scripts/run_share.py status output/share-2026
 python -X utf8 scripts/art_direction.py --job output/share-2026/share-job.json --output output/share-2026/design-packet.json
@@ -46,8 +50,8 @@ python -X utf8 scripts/art_direction.py --job output/share-2026/share-job.json -
 ## 不可跨越的边界
 
 - 引用保留来源与原文；材料稀少时缩短表达，不凭模型记忆补全全书。
-- 不下载整本书，不上传用户数据，不自动发布。Key 只来自环境变量，不进对话、参数或交付。
-- 样例每页标明样例；本年记录标明截至日期。真实采集不完整只保留草稿。
+- 不上传用户数据，不自动发布。Key只来自环境变量，不进对话、参数或交付。完整正文仅从有访问依据的来源取得，存放私人目录，不嵌入HTML、JSON或Markdown。
+- 样例明确标注；年鉴时间范围说明一次，采集日期集中放数据来源。真实采集不完整须标明覆盖；不能把已载入书目等同全年总量。
 - PNG 必须与当前内容、素材及页面版本一致。失败保留此前有效图片，不能借旧图或 HTML 成功宣称完成。
 
 ## 成本边界

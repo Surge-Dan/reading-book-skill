@@ -1,7 +1,7 @@
 interface:
   display_name: "年年阅"
-  short_description: "把阅读记录做成适合分享的书单图文与年度卡组"
+  short_description: "生成可浏览、可导出的阅读年鉴与分享组图"
   brand_color: "#245B59"
-  default_prompt: "Use $reading-yearbook-skill to design shareable images from my reading records, choosing an art direction from the material and previewing the cover and one interior page first."
+  default_prompt: "Use $reading-yearbook-skill to create an offline HTML reading yearbook from my records, with source-backed statistics, timeline, book notes and share-image exports. Reuse existing data and confirm only missing scope or design choices."
 policy:
   allow_implicit_invocation: true

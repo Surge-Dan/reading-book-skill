@@ -1,0 +1,13 @@
+const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),assert=require('assert');const {pathToFileURL}=require('url');
+const dir=path.resolve(process.argv[2]);
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}),checks=[];
+ const ctx=await browser.newContext({acceptDownloads:true});await ctx.setOffline(true);const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL(path.join(dir,'empty.html')).href);assert.equal(await page.locator('.book-entry').count(),0);assert(await page.locator('#books').textContent().then(t=>t.includes('没有找到')));assert(await page.locator('#nextQuote').isDisabled());assert(await page.locator('#timeline').textContent().then(t=>t.includes('暂无')));checks.push('empty data, quotes, timeline and distribution');
+ await page.goto(pathToFileURL(path.join(dir,'collision.html')).href);await page.setViewportSize({width:390,height:900});assert(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)));checks.push('long unbroken category labels stay inside mobile page');
+ const[d]=await Promise.all([page.waitForEvent('download'),page.locator('#exportGroup').click()]);await d.saveAs(path.join(dir,'collision.zip'));checks.push('unsafe and Unicode book IDs export to unique numbered filenames');
+ await page.goto(pathToFileURL(path.join(dir,'broken.html')).href);await page.locator('#shelf').scrollIntoViewIfNeeded();await page.waitForTimeout(100);assert.equal(await page.locator('.book-entry img').count(),0);assert.equal(await page.locator('.book-entry .cover-fallback').count(),3);checks.push('broken image replaced by text cover');
+ const before=await page.locator('[data-page]:checked').count();await page.locator('#exportOne').click();await page.waitForTimeout(100);assert(await page.locator('#exportStatus').textContent().then(t=>t.includes('导出失败')));assert.equal(await page.locator('[data-page]:checked').count(),before);assert(!(await page.locator('#exportOne').isDisabled()));checks.push('broken image export fails honestly without losing selection');
+ await page.locator('[data-preview="stats"]').click();const[valid]=await Promise.all([page.waitForEvent('download'),page.locator('#exportOne').click()]);await valid.saveAs(path.join(dir,'recovered-stats.png'));checks.push('other pages still export after broken image failure');
+ assert.deepEqual(errors,[]);await browser.close();fs.writeFileSync(path.join(dir,'edge-case-report.json'),JSON.stringify({status:'pass',checks},null,2));console.log(JSON.stringify({status:'pass',checks}));
+})().catch(e=>{console.error(e);process.exit(1)});

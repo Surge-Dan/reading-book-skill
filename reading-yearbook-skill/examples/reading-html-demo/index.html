@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>年年阅 · 我的阅读年鉴</title><style>@font-face{font-family:ReadingSerif;src:local('Noto Serif SC');font-weight:100 900;font-display:swap}@font-face{font-family:ReadingSans;src:local('Noto Sans SC');font-weight:100 900;font-display:swap}
+:root{--paper:#faf8f2;--ink:#272723;--muted:#696962;--red:#ad3736;--blue:#54768a;--line:#d5d3ca;--serif:ReadingSerif,'Songti SC','SimSun',serif;--sans:ReadingSans,'Microsoft YaHei',sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:#c4d5df;color:var(--ink);font:15px/1.65 var(--sans)}button,input,select{font:inherit;color:inherit}button,a,input,select,summary{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}a{color:inherit;text-decoration:none}button{border:0;background:none}button,a{touch-action:manipulation}button:not(:disabled):hover,a:hover{color:var(--red)}:focus-visible{outline:2px solid var(--blue);outline-offset:4px}h1,h2,h3,p{margin:0}h1,h2,h3{font-family:var(--serif);font-weight:600}h2{font-size:28px;line-height:1.4}h3{font-size:20px}p+p{margin-top:12px}[hidden]{display:none!important}.paper{max-width:1392px;min-height:100vh;margin:auto;background:var(--paper);border-inline:1px solid #c8a87a;padding:0 64px;position:relative}.masthead{display:flex;align-items:center;gap:32px;height:86px;border-bottom:1px solid #e4e1d8;position:sticky;top:0;z-index:5;background:var(--paper)}.wordmark{font-family:var(--serif);font-weight:700;font-size:29px;position:relative;letter-spacing:-1px;margin-right:auto}.wordmark span{position:absolute;right:-4px;bottom:2px;width:30px;height:1px;background:var(--red);transform:rotate(-9deg)}nav{display:flex;gap:32px}nav a{padding:12px 0;white-space:nowrap;position:relative}nav a[aria-current]{color:var(--ink)}nav a[aria-current]:after{content:'';height:2px;position:absolute;bottom:5px;left:0;right:0;background:var(--red)}.button{border:1px solid var(--red);color:var(--red);border-radius:5px;padding:10px 18px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:16px;transition:background .15s var(--ease)}.button:hover{background:#ad373610}.button.primary{background:var(--red);color:#fff}.button.primary:hover{background:#8d2c2d;color:#fff}.hero{display:grid;grid-template-columns:1.5fr 1fr;align-items:center;gap:40px;padding:55px 0 44px}.eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;margin-bottom:10px}h1{font-size:clamp(36px,4.4vw,60px);line-height:1.25;letter-spacing:-.025em}.script{font:italic 27px Georgia,serif;color:var(--blue);margin-top:17px}.book-sketch{width:100%;max-width:330px;justify-self:end;transform:rotate(-4deg)}#modeNotice:empty{display:none}#modeNotice{font-size:13px;margin-top:15px}.chapter{margin-bottom:56px;scroll-margin-top:20px}.chapter-heading{display:flex;align-items:center;gap:20px;margin-bottom:26px}.chapter-no{font:24px Georgia,serif;color:var(--red);border-right:1px solid var(--line);padding-right:18px}.rule{height:1px;background:var(--line);flex:1;min-width:15px}.muted{color:var(--muted);font-size:13px}.small{font-size:12px}.stats{display:grid;grid-template-columns:2.3fr repeat(4,1fr);align-items:center;gap:20px;margin:10px 0 36px}.metric{padding-left:25px;border-left:1px solid var(--line)}.metric strong{font:500 39px/1.25 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}.metric span{display:block;font-size:13px;color:var(--muted);margin-top:9px}.metric.lead{border:0;padding-left:0}.metric.lead strong{font:600 48px/1.2 var(--serif);color:var(--red);white-space:normal}.metric.lead em{font-style:normal;font-size:22px;color:var(--ink);margin:0 5px}.chart-heading{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}.chart{width:100%}.chart svg{display:block;width:100%;overflow:visible}.chart circle{cursor:pointer}.chart circle:hover,.chart circle:focus{stroke:var(--red);stroke-width:2;outline:none}.chart-readout{text-align:right;min-height:24px;color:var(--muted);font-size:12px;margin-top:5px}.chart-table{font-size:12px;color:var(--muted)}summary{cursor:pointer;padding:10px 0}.chart-table table{border-collapse:collapse;width:100%;margin-top:10px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:8px}.two-up{display:grid;grid-template-columns:1fr 1.25fr;gap:44px}.timeline-section{border-left:1px solid var(--line);padding-left:44px}.distribution .muted,.timeline-section>.muted{margin-top:-12px;margin-bottom:20px}.category-row{display:grid;grid-template-columns:112px 1fr 38px;gap:16px;width:100%;align-items:center;text-align:left;padding:10px 0;font-size:14px}.category-row[aria-pressed=true]{color:var(--red)}.category-track{height:8px;background:#e8e5dd;position:relative}.category-bar{display:block;height:100%;background:var(--blue);transition:width .2s}.category-row:nth-child(4n+1) .category-bar{background:#b65a54}.category-row:nth-child(4n+2) .category-bar{background:#60829a}.category-row:nth-child(4n+3) .category-bar{background:#b08b3d}.category-row:nth-child(4n+4) .category-bar{background:#63806e}.category-count{text-align:right;font-variant-numeric:tabular-nums}.timeline-month{font-size:12px;color:var(--muted);margin:18px 0 6px 18px}.timeline-row{display:grid;grid-template-columns:45px 1fr auto;gap:12px;align-items:baseline;position:relative;padding:10px 0 10px 19px;border-left:1px solid var(--line);margin-left:5px}.timeline-row:before{content:'';position:absolute;left:-4px;top:21px;width:7px;height:7px;background:var(--blue);border-radius:50%}.timeline-row time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}.timeline-book{font-family:var(--serif);text-align:left;padding:0;font-size:15px}.event-type{color:var(--muted);font-size:11px;white-space:nowrap}.timeline details{padding-left:20px;color:var(--red);font-size:12px}.shelf-tools{display:flex;align-items:center;gap:20px;flex-wrap:wrap}.tabs{display:flex;gap:19px;flex-wrap:wrap}.tabs button{padding:7px 0;position:relative;min-height:44px;font-size:13px;white-space:nowrap}.tabs button[aria-pressed=true]:after{content:'';position:absolute;bottom:2px;height:2px;background:var(--red);left:0;right:0}.search{margin-left:auto;display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:5px 12px;border-radius:5px;min-height:42px}.search input{width:165px;border:0;background:transparent;min-width:0;font-size:13px}.search span{font-size:24px;line-height:1}.text-button{font-size:13px;color:var(--red);padding:8px 0;min-height:36px}.filter-summary{display:flex;gap:14px;align-items:center;min-height:42px;font-size:12px;color:var(--muted)}.books{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:38px;row-gap:34px}.book-entry{min-width:0;position:relative}.book{display:block;text-align:left;padding:0;width:100%}.cover-wrap{height:246px;display:flex;align-items:flex-end;margin-bottom:16px}.cover-wrap img{max-width:100%;max-height:100%;width:auto;object-fit:contain;object-position:left bottom;box-shadow:3px 5px 9px #31251c18;transition:transform .16s var(--ease)}.book:hover img{transform:translateY(-2px)}.cover-fallback{width:165px;height:225px;background:#e6e3d8;border-left:5px solid #d2cdbb;padding:23px 15px;display:flex;flex-direction:column;justify-content:space-between;font:600 20px/1.5 var(--serif);overflow:hidden;overflow-wrap:anywhere}.cover-fallback small{font:12px var(--sans);color:var(--muted)}.book h3{font-size:18px;line-height:1.5;overflow-wrap:anywhere}.book .author{color:var(--muted);font-size:12px;margin-top:5px}.book-meta{font-size:11px;color:var(--muted);margin-top:9px}.book-actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:7px}.books.list{grid-template-columns:1fr;gap:0}.books.list .book-entry{border-bottom:1px solid var(--line);padding:14px 0}.books.list .book{display:grid;grid-template-columns:60px 1fr;column-gap:20px}.books.list .cover-wrap{height:80px;grid-row:1/4;margin:0}.books.list .cover-fallback{height:80px;width:55px;padding:5px;font-size:9px}.books.list .cover-fallback small{display:none}.books.list .book-actions{margin-left:80px}.empty{padding:32px 0;color:var(--muted);font-size:14px;grid-column:1/-1}.quote-pager{display:flex;align-items:center;gap:10px;white-space:nowrap;font-size:12px}.quote-pager button{min-width:36px;min-height:36px}.quote-body{padding:8px 0 8px 44px;position:relative;max-width:850px;margin:auto}.quote-body:before{content:'“';position:absolute;left:0;top:0;color:var(--red);font:60px Georgia,serif}.quote-body blockquote{font:500 23px/1.85 var(--serif);margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.quote-body .attribution{text-align:right;color:var(--muted);font-size:12px;margin-top:15px}.quote-actions{display:flex;justify-content:flex-end;gap:25px;margin-top:8px}.share-layout{display:grid;grid-template-columns:260px 1fr;gap:46px;max-width:950px;margin:28px auto 0}.share-preview canvas{width:100%;height:auto;border:1px solid var(--line);display:block}.share-preview p{text-align:center;margin-top:10px}.share-settings fieldset{border:0;padding:0;margin:0}.share-settings legend{font-family:var(--serif);font-size:18px;margin-bottom:12px}.share-page{display:flex;align-items:center;gap:10px;min-height:40px;padding:5px 0}.share-page label{display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;font-size:14px}.share-page input{accent-color:var(--red);width:17px;height:17px}.share-page button{font-size:12px;color:var(--muted);padding:6px 10px;border:1px solid transparent;min-height:32px}.share-page button[aria-pressed=true]{border-color:var(--line);color:var(--red);border-radius:4px}.share-controls{display:flex;align-items:center;gap:20px;margin:16px 0 8px}.share-controls label{font-size:13px}.share-controls select{border:1px solid var(--line);background:transparent;border-radius:4px;padding:7px;margin-left:10px}.export-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:17px}.export-status{min-height:25px;font-size:12px;margin:10px 0;color:var(--muted)}.secondary-exports{display:flex;gap:25px}.share-settings .small{margin-top:12px;max-width:400px}.paper footer{display:flex;justify-content:space-between;align-items:center;padding:25px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}dialog{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:30px 36px;width:min(800px,calc(100% - 32px));max-height:85vh;overflow:auto;color:var(--ink)}dialog::backdrop{background:#27272375}.dialog-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px}.close{font-size:13px;min-height:44px;padding:5px 10px;white-space:nowrap}.detail-identity{display:grid;grid-template-columns:100px 1fr;gap:25px;margin-bottom:25px}.detail-identity img{width:100%;height:140px;object-fit:contain}.detail-identity h2{font-size:26px;overflow-wrap:anywhere}.detail-identity p{font-size:13px;color:var(--muted);margin-top:9px}.detail-section{margin-top:26px}.detail-section h3{font-size:19px;margin-bottom:14px}.detail-section p,.detail-note{font-size:16px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}.detail-note{border-top:1px solid var(--line);padding:14px 0}.detail-note small{display:block;white-space:normal;color:var(--muted);font-size:11px;margin-top:8px}.detail-note .text-button{font-size:12px}.review-source{font-size:12px;color:var(--muted);white-space:pre-wrap}.license{font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:5px;max-width:90vw;z-index:20;font-size:13px}.skip{position:absolute;top:-80px;left:16px;z-index:25;padding:12px;background:var(--ink);color:#fff}.skip:focus{top:8px}
+@media(min-width:1440px){body{padding-inline:24px}.paper{margin-top:0}}
+@media(max-width:1100px){.paper{padding:0 36px}.stats{gap:10px;grid-template-columns:1.8fr repeat(4,1fr)}.metric{padding-left:15px}.metric.lead strong{font-size:38px}.metric strong{font-size:32px}.two-up{gap:28px}.timeline-section{padding-left:28px}.books{gap:25px}.cover-wrap{height:210px}.category-row{grid-template-columns:92px 1fr 32px;gap:10px}.share-layout{gap:30px}}
+@media(max-width:800px){.paper{padding:0 24px}.masthead{gap:20px;height:auto;min-height:78px;flex-wrap:wrap;padding:12px 0}.masthead nav{gap:20px;order:3;width:100%;justify-content:space-between;font-size:13px}.wordmark{font-size:25px}.hero{padding:40px 0 30px;gap:15px}.book-sketch{max-width:230px}.stats{grid-template-columns:repeat(4,1fr);row-gap:22px}.metric.lead{grid-column:1/-1}.metric:nth-child(2){border:0;padding-left:0}.two-up{grid-template-columns:1fr;gap:0}.timeline-section{border-left:0;padding-left:0}.chapter{margin-bottom:40px}.books{grid-template-columns:repeat(3,minmax(0,1fr));gap:25px}.chapter-heading{gap:15px}.cover-wrap{height:200px}.category-row{grid-template-columns:120px 1fr 40px}.search{margin-left:0}.share-layout{grid-template-columns:210px 1fr;gap:25px}h2{font-size:24px}.chapter-no{font-size:21px;padding-right:14px}}
+@media(max-width:520px){body{background:var(--paper)}.paper{border:0;padding:0 20px}.masthead .button{padding:7px 14px;font-size:13px}.hero{grid-template-columns:1fr;position:relative;padding:35px 0}.hero h1{font-size:36px;position:relative;z-index:1}.script{font-size:20px}.book-sketch{position:absolute;width:110px;right:0;top:30px;opacity:.5}.hero .eyebrow{font-size:12px}.stats{gap:18px 0}.metric{padding-left:12px}.metric strong{font-size:28px}.metric span{font-size:11px}.metric.lead strong{font-size:40px}.metric.lead em{font-size:19px}.chart-heading .muted{font-size:11px}.chart-readout{text-align:left}.chapter-heading{flex-wrap:wrap;gap:12px;margin-bottom:20px}.chapter-heading h2{font-size:22px}.chapter-heading .muted{font-size:11px}.shelf-tools{gap:8px 16px}.tabs{gap:15px;width:100%}.tabs button{font-size:12px}.search{flex:1}.search input{width:100%}.books{grid-template-columns:repeat(2,minmax(0,1fr));gap:25px 23px}.cover-wrap{height:205px}.cover-fallback{width:100%;height:190px;font-size:17px}.book h3{font-size:16px}.book-actions{flex-wrap:wrap;gap:0}.book-actions .text-button{font-size:12px}.quote-body{padding-left:27px}.quote-body:before{font-size:43px}.quote-body blockquote{font-size:19px}.quote-pager{margin-left:auto}.share-layout{grid-template-columns:1fr}.share-preview{max-width:250px;margin:auto;width:100%}.share-settings{width:100%}.share-controls{justify-content:space-between}.export-buttons .button{flex:1;font-size:13px;padding:10px}.timeline-row{grid-template-columns:42px 1fr auto;gap:9px}.timeline-book{font-size:14px}dialog{padding:20px}.detail-identity{grid-template-columns:65px 1fr;gap:16px}.detail-identity img{height:95px}.detail-identity h2{font-size:22px}.detail-note,.detail-section p{font-size:15px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+#printDetails{display:none}
+.category-row>span:first-child{min-width:0;overflow-wrap:anywhere}
+@media print{.timeline details{display:block!important}.timeline details>summary{display:none}}
+@media print{@page{size:A4;margin:14mm}body{background:white;font-size:11px}.paper{max-width:none;border:0;padding:0;background:white}.masthead,nav,.shelf-tools,.book-actions,.quote-pager,.quote-actions,#share,footer,.chart-readout,.chart-table,.toast,dialog,.skip{display:none!important}.filter-summary button{display:none}.hero{padding-top:0;break-inside:avoid}h1{font-size:32px}.stats{gap:12px}.metric strong{font-size:24px}.metric.lead strong{font-size:30px}.chapter{margin-bottom:25px}.chapter-heading{margin-bottom:15px}.chapter-heading h2{font-size:20px}.two-up{display:block}.timeline-section{padding-left:0;border:0}.chart,.book-entry,.quote-body,.timeline-row{break-inside:avoid}.books{grid-template-columns:repeat(4,1fr);gap:20px}.cover-wrap{height:160px}.cover-fallback{height:150px;font-size:15px}.book h3{font-size:13px}.book .author{font-size:10px}.timeline details{display:none}.book-sketch{max-width:160px}.script{font-size:20px}#printDetails{display:block}#printDetails article{break-before:page}#printDetails h3{margin:25px 0 12px}#printDetails p{font-size:12px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}#printDetails .detail-note{font-size:12px;break-inside:avoid}}
+</style></head>
+<body>
+<a class="skip" href="#main">跳到阅读年鉴</a>
+<div class="paper">
+<header class="masthead"><a class="wordmark" href="#overview">年年阅<span></span></a><nav aria-label="章节导航"><a href="#overview" aria-current="location">概览</a><a href="#shelf">书架</a><a href="#quotes">书评与笔记</a><a href="#share">分享</a></nav><a class="button quiet" href="#share">导出 <span aria-hidden="true">↗</span></a></header>
+<main id="main">
+<section class="hero" id="overview"><div><p class="eyebrow" id="period"></p><h1>我的阅读年鉴</h1><p class="script" aria-hidden="true">Reading, at my own pace.</p><p id="modeNotice" class="muted"></p></div>
+<svg class="book-sketch" viewBox="0 0 400 220" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="#658ea4" stroke-width="2" d="M36 171Q104 151 195 187Q272 155 367 175L358 185Q273 167 197 200Q110 171 35 180Z"/><path stroke="#c66b65" stroke-width="1.3" d="M45 164L72 45Q145 42 196 107L206 188Q132 152 45 164ZM206 188L196 107Q268 47 348 67L367 164Q276 154 206 188Z"/><path stroke="#c66b65" d="M58 158L84 53Q145 60 189 111L199 179M218 178L207 109Q272 58 337 77L354 157M196 107L201 190"/><path stroke="#7696ab" stroke-width=".8" d="M102 80Q144 90 171 118M98 96Q140 106 172 135M94 112Q137 120 175 150M90 128Q134 136 180 163M229 109Q275 82 321 94M230 125Q279 98 324 109M234 140Q281 115 327 125M237 155Q281 134 330 142"/><path stroke="#c66b65" stroke-width="2" d="M255 92L266 182L276 177L283 186L273 85"/></g></svg></section>
+<section class="chapter" aria-labelledby="statsTitle"><div class="chapter-heading"><span class="chapter-no">01</span><h2 id="statsTitle">阅读统计</h2><span class="rule"></span></div><div id="stats" class="stats"></div><div class="chart-heading"><h3>阅读的节奏</h3><span class="muted">每月阅读时长</span></div><div id="chart" class="chart"></div><p id="chartReadout" class="chart-readout" aria-live="polite">选择月份，查看准确时长</p><details class="chart-table"><summary>查看月度数据</summary><div id="monthlyTable"></div></details></section>
+<div class="two-up"><section class="chapter distribution" aria-labelledby="distributionTitle"><div class="chapter-heading"><span class="chapter-no">02</span><h2 id="distributionTitle">阅读分布</h2><span class="rule"></span></div><p id="distributionScope" class="muted"></p><div id="distribution"></div></section>
+<section class="chapter timeline-section" aria-labelledby="timelineTitle"><div class="chapter-heading"><span class="chapter-no">03</span><h2 id="timelineTitle">阅读时间线</h2><span class="rule"></span></div><p class="muted">有日期的阅读与笔记记录</p><div id="timeline" class="timeline"></div></section></div>
+<section id="shelf" class="chapter" aria-labelledby="shelfTitle"><div class="chapter-heading"><span class="chapter-no">04</span><h2 id="shelfTitle">今年读过的书</h2><span class="rule"></span><span id="shelfScope" class="muted"></span></div><div class="shelf-tools"><div class="tabs" role="group" aria-label="阅读状态"><button data-status="all" aria-pressed="true">全部</button><button data-status="finished" aria-pressed="false">已读完</button><button data-status="reading" aria-pressed="false">在读</button><button data-status="unknown" aria-pressed="false">状态未记录</button></div><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索书名或作者" aria-label="搜索书名或作者"></label><button id="viewSwitch" class="text-button" aria-pressed="false">列表视图</button></div><div class="filter-summary"><span id="resultCount" role="status"></span><button id="clearFilters" class="text-button" hidden>清除筛选</button></div><div id="books" class="books"></div><button id="expandShelf" class="text-button" aria-expanded="false" hidden>展开全部书目</button></section>
+<section id="quotes" class="chapter" aria-labelledby="quotesTitle"><div class="chapter-heading"><span class="chapter-no">05</span><h2 id="quotesTitle">留下来的句子</h2><span class="rule"></span><div class="quote-pager"><button id="previousQuote" aria-label="上一条划线">←</button><span id="quotePosition"></span><button id="nextQuote" aria-label="下一条划线">→</button></div></div><div id="quote"></div></section>
+<section id="share" class="chapter" aria-labelledby="shareTitle"><div class="chapter-heading"><span class="chapter-no">06</span><h2 id="shareTitle">把几页带走</h2><span class="rule"></span></div><p class="muted">挑选要分享的页，预览后再导出。</p><div class="share-layout"><div class="share-preview"><canvas id="previewCanvas" width="900" height="1200" aria-label="分享图预览"></canvas><p id="previewTitle" class="muted"></p></div><div class="share-settings"><fieldset><legend>分享页</legend><div id="sharePages"></div></fieldset><div class="share-controls"><label>图片比例 <select id="ratio"><option value="3:4">3:4</option><option value="1:1">1:1</option><option value="4:5">4:5</option></select></label><button id="undoSelection" class="text-button" disabled>撤销选择</button></div><p id="selectedCount" role="status"></p><div class="export-buttons"><button id="exportOne" class="button">导出当前页PNG</button><button id="exportGroup" class="button primary">导出所选组图ZIP</button></div><p id="exportStatus" class="export-status" role="status" aria-live="polite"></p><div class="secondary-exports"><button id="exportPdf" class="text-button">打印／PDF</button><button id="exportMd" class="text-button">Markdown</button><button id="exportJson" class="text-button">JSON</button></div><p class="small muted">PDF由浏览器打印保存；Markdown与JSON导出当前年鉴已载入的内容。</p></div></div></section>
+<section id="printDetails" aria-label="打印书评与笔记"></section>
+</main>
+<footer><span>年年阅 · 阅读留痕</span><button id="openSources" class="text-button">数据与来源</button></footer>
+</div>
+<dialog id="detail" aria-labelledby="detailTitle"><div class="dialog-header"><span class="muted">书评与笔记</span><button class="close" aria-label="关闭书籍详情">关闭 ×</button></div><div id="detailContent"></div></dialog>
+<dialog id="sourcesDialog" aria-labelledby="sourcesTitle"><div class="dialog-header"><h2 id="sourcesTitle">数据与来源</h2><button class="close" aria-label="关闭数据来源">关闭 ×</button></div><div id="sourcesContent"></div><details><summary>图表许可</summary><p class="small">月度图适配lieflat-charts Basics B2/F2 hairline line。来源：github.com/larashero3-dotcom/lieflat-charts。非商业许可，保留完整条款。</p><pre class="license"># PolyForm Noncommercial License 1.0.0
+
+&lt;https://polyformproject.org/licenses/noncommercial/1.0.0&gt;
+
+## Acceptance
+
+In order to get any license under these terms, you must agree
+to them as both strict obligations and conditions to all
+your licenses.
+
+## Copyright License
+
+The licensor grants you a copyright license for the
+software to do everything you might do with the software
+that would otherwise infringe the licensor&#x27;s copyright
+in it for any permitted purpose.  However, you may
+only distribute the software according to [Distribution
+License](#distribution-license) and make changes or new works
+based on the software according to [Changes and New Works
+License](#changes-and-new-works-license).
+
+## Distribution License
+
+The licensor grants you an additional copyright license
+to distribute copies of the software.  Your license
+to distribute covers distributing the software with
+changes and new works permitted by [Changes and New Works
+License](#changes-and-new-works-license).
+
+## Notices
+
+You must ensure that anyone who gets a copy of any part of
+the software from you also gets a copy of these terms or the
+URL for them above, as well as copies of any plain-text lines
+beginning with `Required Notice:` that the licensor provided
+with the software.  For example:
+
+&gt; Required Notice: Copyright Yoyodyne, Inc. (http://example.com)
+
+## Changes and New Works License
+
+The licensor grants you an additional copyright license to
+make changes and new works based on the software for any
+permitted purpose.
+
+## Patent License
+
+The licensor grants you a patent license for the software that
+covers patent claims the licensor can license, or becomes able
+to license, that you would infringe by using the software.
+
+## Noncommercial Purposes
+
+Any noncommercial purpose is a permitted purpose.
+
+## Personal Uses
+
+Personal use for research, experiment, and testing for
+the benefit of public knowledge, personal study, private
+entertainment, hobby projects, amateur pursuits, or religious
+observance, without any anticipated commercial application,
+is use for a permitted purpose.
+
+## Noncommercial Organizations
+
+Use by any charitable organization, educational institution,
+public research organization, public safety or health
+organization, environmental protection organization,
+or government institution is use for a permitted purpose
+regardless of the source of funding or obligations resulting
+from the funding.
+
+## Fair Use
+
+You may have &quot;fair use&quot; rights for the software under the
+law. These terms do not limit them.
+
+## No Other Rights
+
+These terms do not allow you to sublicense or transfer any of
+your licenses to anyone else, or prevent the licensor from
+granting licenses to anyone else.  These terms do not imply
+any other licenses.
+
+## Patent Defense
+
+If you make any written claim that the software infringes or
+contributes to infringement of any patent, your patent license
+for the software granted under these terms ends immediately. If
+your company makes such a claim, your patent license ends
+immediately for work on behalf of your company.
+
+## Violations
+
+The first time you are notified in writing that you have
+violated any of these terms, or done anything with the software
+not covered by your licenses, your licenses can nonetheless
+continue if you come into full compliance with these terms,
+and take practical steps to correct past violations, within
+32 days of receiving notice.  Otherwise, all your licenses
+end immediately.
+
+## No Liability
+
+***As far as the law allows, the software comes as is, without
+any warranty or condition, and the licensor will not be liable
+to you for any damages arising out of these terms or the use
+or nature of the software, under any kind of legal claim.***
+
+## Definitions
+
+The **licensor** is the individual or entity offering these
+terms, and the **software** is the software the licensor makes
+available under these terms.
+
+**You** refers to the individual or entity agreeing to these
+terms.
+
+**Your company** is any legal entity, sole proprietorship,
+or other kind of organization that you work for, plus all
+organizations that have control over, are under the control of,
+or are under common control with that organization.  **Control**
+means ownership of substantially all the assets of an entity,
+or the power to direct its management and policies by vote,
+contract, or otherwise.  Control can be direct or indirect.
+
+**Your licenses** are all the licenses granted to you for the
+software under these terms.
+
+**Use** means anything you do with the software requiring one
+of your licenses.
+</pre></details></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script id="reading-data" type="application/json">{"schema_version": "reading-html/1.0", "year": 2026, "as_of": null, "source_mode": "sample", "verification_status": "sample_verified", "coverage": {"loaded_books": 6, "annual_books": 6.0, "complete": true}, "summary": {"read": 6.0, "finished": null, "read_days": 94.0, "notes": 17.0, "seconds": 118800.0, "monthly": [7200.0, 10800.0, 16200.0, 9000.0, 14400.0, 5400.0, 12600.0, 3600.0, 18000.0, 4200.0, 10800.0, 6600.0], "complete_months": 12}, "books": [{"book_id": "sample-001", "title": "看见选择", "author": "林舟", "category": "社会科学", "source_category": "社会科学-决策", "category_basis": "来源分类", "progress": 100.0, "status": "finished", "reading_seconds": 28800.0, "highlights": [{"text": "事实不会替我们做决定，但会缩小自欺的空间。", "created_at": "2026-01-12", "source_id": "s1-h1", "chapter": "", "quote": ""}, {"text": "先写下你相信什么，再去寻找会推翻它的证据。", "created_at": "2026-02-18", "source_id": "s1-h2", "chapter": "", "quote": ""}, {"text": "好选择不是永远正确，而是允许被复盘。", "created_at": "2026-02-18", "source_id": "s1-h3", "chapter": "", "quote": ""}], "thoughts": [{"text": "今年我真正需要的不是更多建议，而是一套能暴露假设的检查方式。", "created_at": "2026-02-18", "source_id": "s1-r1", "chapter": "", "quote": "先写下你相信什么"}, {"text": "以后做重要决定时，先保留一次反方陈述。", "created_at": "2026-02-18", "source_id": "s1-r2", "chapter": "", "quote": ""}], "finish_date": "2026-02-18", "start_date": null, "intro": "从日常选择出发，讨论事实、假设与判断之间的距离。", "review": {"status": "waiting", "body": "", "source": "", "version": "", "citations": []}, "cover": "", "selected": true}, {"book_id": "sample-002", "title": "缓慢的城市", "author": "周野", "category": "文学", "source_category": "文学-随笔", "category_basis": "来源分类", "progress": 80.0, "status": "reading", "reading_seconds": 21600.0, "highlights": [{"text": "一座城市最诚实的部分，往往在步行速度里。", "created_at": "2026-03-21", "source_id": "s2-h1", "chapter": "", "quote": ""}, {"text": "街道不是通道，它也是停留发生的地方。", "created_at": "2026-03-21", "source_id": "s2-h2", "chapter": "", "quote": ""}], "thoughts": [{"text": "这本书让我重新注意每天经过却没有看见的路。", "created_at": "2026-03-21", "source_id": "s2-r1", "chapter": "", "quote": ""}], "finish_date": null, "start_date": null, "intro": "以步行和街区观察记录城市变化，关心人在空间里如何生活。", "review": {"status": "waiting", "body": "", "source": "", "version": "", "citations": []}, "cover": "", "selected": true}, {"book_id": "sample-003", "title": "工作中的尺度", "author": "陈屿", "category": "商业", "source_category": "商业-管理", "category_basis": "来源分类", "progress": 92.0, "status": "reading", "reading_seconds": 25200.0, "highlights": [{"text": "目标如果不能改变资源分配，就只是墙上的句子。", "created_at": "2026-04-08", "source_id": "s3-h1", "chapter": "", "quote": ""}, {"text": "反馈要靠近行为发生的地方。", "created_at": "2026-05-19", "source_id": "s3-h2", "chapter": "", "quote": ""}, {"text": "复杂问题先找约束，不先堆功能。", "created_at": "2026-05-19", "source_id": "s3-h3", "chapter": "", "quote": ""}], "thoughts": [{"text": "我过去常把方案完整当成可落地，现在更在意谁在什么节点改变什么。", "created_at": "2026-05-19", "source_id": "s3-r1", "chapter": "", "quote": ""}, {"text": "把评审问题改成可验证的假设，会议会短很多。", "created_at": "2026-05-19", "source_id": "s3-r2", "chapter": "", "quote": ""}], "finish_date": null, "start_date": null, "intro": "讨论目标、反馈与协作尺度，强调先定义问题再配置资源。", "review": {"status": "waiting", "body": "", "source": "", "version": "", "citations": []}, "cover": "", "selected": true}, {"book_id": "sample-004", "title": "植物知道时间", "author": "苏禾", "category": "自然科学", "source_category": "自然科学-植物", "category_basis": "来源分类", "progress": 35.0, "status": "reading", "reading_seconds": 9000.0, "highlights": [{"text": "节律不是钟表，而是生命对环境变化的响应。", "created_at": "2026-07-03", "source_id": "s4-h1", "chapter": "", "quote": ""}], "thoughts": [], "finish_date": null, "start_date": null, "intro": "通过植物节律解释生命如何感知光照、季节与环境变化。", "review": {"status": "waiting", "body": "", "source": "", "version": "", "citations": []}, "cover": "", "selected": true}, {"book_id": "sample-005", "title": "重新学习提问", "author": "顾言", "category": "教育", "source_category": "教育-思维", "category_basis": "来源分类", "progress": 74.0, "status": "reading", "reading_seconds": 18000.0, "highlights": [{"text": "问题决定我们允许什么成为证据。", "created_at": "2026-09-11", "source_id": "s5-h1", "chapter": "", "quote": ""}, {"text": "先问边界，再问答案。", "created_at": "2026-09-11", "source_id": "s5-h2", "chapter": "", "quote": ""}], "thoughts": [{"text": "我想把需求讨论里的抽象争论改成三个具体问题。", "created_at": "2026-09-11", "source_id": "s5-r1", "chapter": "", "quote": ""}], "finish_date": null, "start_date": null, "intro": "把提问看作澄清边界、寻找证据和暴露假设的工具。", "review": {"status": "waiting", "body": "", "source": "", "version": "", "citations": []}, "cover": "", "selected": true}, {"book_id": "sample-006", "title": "冬日短篇集", "author": "许川", "category": "文学", "source_category": "文学-小说", "category_basis": "来源分类", "progress": 1.0, "status": "reading", "reading_seconds": 600.0, "highlights": [], "thoughts": [], "finish_date": null, "start_date": null, "intro": "六个发生在冬天的短篇，写迟到的告别和没有说出口的话。", "review": {"status": "waiting", "body": "", "source": "", "version": "", "citations": []}, "cover": "", "selected": true}]}</script><script>/* Offline reading yearbook. Chart adapted from lieflat-charts Basics B2/F2;
+ * PolyForm Noncommercial 1.0.0, full license retained in this document. */
+(() => {
+  'use strict';
+  const data = JSON.parse(document.getElementById('reading-data').textContent);
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const serif = 'ReadingSerif, "Noto Serif SC", "SimSun", serif';
+  const state = {query:'', status:'all', category:'', list:false, expanded:false, quote:0, busy:false, preview:'cover', ratio:'3:4', undo:[], selection:new Set(), composing:false};
+  const bookMap = new Map(data.books.map(b => [b.book_id,b]));
+  const highlights = data.books.flatMap(b => b.highlights.map(n => ({...n,book:b})));
+  let toastTimer, searchTimer, previousFocus, originalHash='', dialogPushed=false, renderToken=0;
+  const hours = v => v == null ? '未记录' : `${(v/3600).toFixed(1)}小时`;
+  const duration = v => v == null ? '未记录' : `${Math.floor(v/3600)}小时${Math.floor(v%3600/60)}分钟`;
+  const value = v => v == null ? '—' : String(v);
+  const statusLabel = b => ({finished:'已读完',reading:'在读',unknown:'状态未记录'}[b.status]);
+  const scope = data.coverage.complete ? `全年${data.books.length}本` : `已载入${data.books.length}本 · 年度记录${value(data.coverage.annual_books)}本`;
+  function toast(text) {$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,2800);}
+  $('#period').textContent = `${data.year}${data.as_of ? ` · 1—${Number(data.as_of.slice(5,7))}月` : ''}`;
+  $('#modeNotice').textContent = data.source_mode==='sample' ? '示例数据 · 不代表真实阅读记录' : data.verification_status!=='live_verified' ? '数据尚未核验，供预览使用' : '';
+  const time = data.summary.seconds;
+  $('#stats').innerHTML = `<div class="metric lead"><strong>${time==null?'—':`${Math.floor(time/3600)}<em>小时</em>${Math.floor(time%3600/60)}<em>分钟</em>`}</strong><span>累计阅读时长</span></div>` + [[data.summary.read,'本读过'],[data.summary.finished,'本读完'],[data.summary.read_days,'天阅读'],[data.summary.notes,'条笔记']].map(([v,t])=>`<div class="metric"><strong>${esc(value(v))}</strong><span>${t}</span></div>`).join('');
+  $('#distributionScope').textContent=`${scope} · 按主分类计数`;
+  $('#shelfScope').textContent=scope;
+
+  function drawChart() {
+    const end = data.summary.complete_months;
+    const months = data.summary.monthly.slice(0,end);
+    $('#monthlyTable').innerHTML='<table><thead><tr><th>月份</th><th>时长</th></tr></thead><tbody>'+months.map((v,i)=>`<tr><td>${i+1}月</td><td>${esc(duration(v))}</td></tr>`).join('')+'</tbody></table>';
+    if (!months.some(x=>x!=null)) {$('#chart').innerHTML='<p class="empty">暂无完整月份的阅读时长</p>';return;}
+    // B2 skeleton: calendar floor, hairline path, individual dots, peak label.
+    // Mapping uses unrounded seconds; null breaks a path, a measured zero stays on baseline.
+    const mobile=matchMedia('(max-width:520px)').matches, W=Math.max(280,$('#chart').clientWidth),H=mobile?220:235;
+    const left=37,right=W-15,base=H-37,max=Math.max(...months.filter(v=>v!=null).map(v=>v/3600),1);
+    const top=Math.ceil(max/2)*2, x=i=>months.length===1?(left+right)/2:left+i*(right-left)/(months.length-1), y=v=>base-(v/3600)/top*(base-25);
+    let svg=`<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="月度阅读时长，单位小时"><title>月度阅读时长</title>`;
+    for (const tick of [0,top/2,top]) svg+=`<line x1="${left}" y1="${base-tick/top*(base-25)}" x2="${right}" y2="${base-tick/top*(base-25)}" stroke="#d5d3ca" stroke-width=".7" ${tick?'stroke-dasharray="2 4"':''}/><text x="${left-12}" y="${base-tick/top*(base-25)+4}" text-anchor="end" fill="#696962" font-size="12">${tick}</text>`;
+    svg+='<text x="0" y="13" fill="#696962" font-size="11">小时</text>';
+    let segment=[]; const paths=[];
+    months.forEach((v,i)=>{if(v==null){if(segment.length)paths.push(segment);segment=[];}else segment.push([x(i),y(v)]);});if(segment.length)paths.push(segment);
+    paths.forEach(points=>svg+=`<path d="${points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' ')}" fill="none" stroke="#ad3736" stroke-width="1.4"/>`);
+    const peak=months.findIndex(v=>v!=null&&v===Math.max(...months.filter(v=>v!=null)));
+    months.forEach((v,i)=>{svg+=`<line x1="${x(i)}" y1="${base}" x2="${x(i)}" y2="${base-7}" stroke="#bdbab0" stroke-width=".8"/><text x="${x(i)}" y="${base+24}" text-anchor="middle" fill="#696962" font-size="12">${i+1}月</text>`;
+      if(v!=null) {svg+=`<circle data-chart-month="${i}" tabindex="0" role="button" aria-label="${i+1}月，${esc(duration(v))}" cx="${x(i)}" cy="${y(v)}" r="${i===peak?4.5:3}" fill="#ad3736"/><circle cx="${x(i)}" cy="${y(v)}" r="11" fill="transparent" data-chart-month="${i}" aria-hidden="true"/>`;
+        if(i===peak)svg+=`<text x="${x(i)}" y="${y(v)-13}" text-anchor="middle" fill="#ad3736" font-size="13" style="paint-order:stroke;stroke:#faf8f2;stroke-width:4">${(v/3600).toFixed(1)}</text>`;}
+    }); $('#chart').innerHTML=svg+'</svg>';
+    $$('[data-chart-month]').forEach(el=>{const show=()=>$('#chartReadout').textContent=`${Number(el.dataset.chartMonth)+1}月 · ${duration(months[el.dataset.chartMonth])}`;el.addEventListener('mouseenter',show);el.addEventListener('focus',show);el.addEventListener('click',show);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});
+  }
+  drawChart(); let resizeFrame;addEventListener('resize',()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(drawChart);});
+
+  const categories = [...new Set(data.books.map(b=>b.category))];
+  const categoryPalette=['#b65a54','#60829a','#b08b3d','#63806e'];
+  const categoryCounts = categories.map(c=>({name:c,count:data.books.filter(b=>b.category===c).length})).sort((a,b)=>b.count-a.count);
+  $('#distribution').innerHTML=categoryCounts.length?categoryCounts.map((c,i)=>`<button class="category-row" data-category="${esc(c.name)}" aria-pressed="false"><span>${esc(c.name)}</span><span class="category-track"><i class="category-bar" style="width:${c.count/data.books.length*100}%;background:${categoryPalette[i%4]}"></i></span><span class="category-count">${c.count}本</span></button>`).join(''):'<p class="empty">暂无可统计书目</p>';
+  $$('[data-category]').forEach(button=>button.onclick=()=>{state.category=state.category===button.dataset.category?'':button.dataset.category;drawBooks();$('#shelf').scrollIntoView({block:'start'});});
+  const events=[]; const seenEvents=new Set();
+  data.books.forEach(b=>{for(const [type,list] of [['划线',b.highlights],['笔记',b.thoughts]])list.forEach(n=>{if(n.created_at){const key=`${b.book_id}|${type}|${n.source_id||n.text+'|'+n.created_at}`;if(!seenEvents.has(key)){seenEvents.add(key);events.push({date:n.created_at,type,book:b,text:n.text});}}});
+    for(const [type,date] of [['开始阅读',b.start_date],['读完',b.finish_date]])if(date&&Number(date.slice(0,4))===data.year)events.push({date,type,book:b});});
+  events.sort((a,b)=>a.date.localeCompare(b.date));
+  const eventHtml = e=>`<div class="timeline-row"><time datetime="${esc(e.date)}">${e.date.slice(5).replace('-','.')}</time><button class="timeline-book" data-open-book="${esc(e.book.book_id)}">${esc(e.book.title)}</button><span class="event-type">${e.type}</span></div>`;
+  const groups=[...new Set(events.map(e=>e.date.slice(0,7)))];
+  const previewEvents=[],previewBooks=new Set();
+  for(const e of [...events].reverse())if(!previewBooks.has(e.book.book_id)&&previewEvents.length<4){previewBooks.add(e.book.book_id);previewEvents.push(e);}
+  previewEvents.sort((a,b)=>a.date.localeCompare(b.date));
+  const remainingEvents=events.filter(e=>!previewEvents.includes(e));
+  $('#timeline').innerHTML=events.length?previewEvents.map(eventHtml).join('')+(remainingEvents.length?`<details><summary>展开其余${remainingEvents.length}条记录</summary>${groups.map(m=>{const rows=remainingEvents.filter(e=>e.date.startsWith(m));return rows.length?`<h3 class="timeline-month">${Number(m.slice(5))}月</h3>${rows.map(eventHtml).join('')}`:'';}).join('')}</details>`:''):'<p class="empty">暂无带日期的阅读记录</p>';
+
+  function fallbackCover(b){return `<span class="cover-fallback"><span>${esc(b.title)}</span><small>${esc(b.author)}</small></span>`;}
+  function coverMarkup(b) {return b.cover?`<img data-cover-book="${esc(b.book_id)}" src="${esc(b.cover)}" alt="《${esc(b.title)}》书封" loading="lazy">`:fallbackCover(b);}
+  document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement&&e.target.dataset.coverBook){const b=bookMap.get(e.target.dataset.coverBook);if(b){const holder=document.createElement('span');holder.innerHTML=fallbackCover(b);e.target.replaceWith(holder.firstElementChild);}}},true);
+  function visibleBooks(){const q=state.query.toLocaleLowerCase();return data.books.filter(b=>(state.status==='all'||b.status===state.status)&&(!state.category||b.category===state.category)&&(!q||(b.title+' '+b.author).toLocaleLowerCase().includes(q)));}
+  function drawBooks(printing=false) {
+    const all=visibleBooks(), filtered=!!state.query||!!state.category||state.status!=='all', collapsed=!printing&&!filtered&&!state.expanded&&all.length>4;
+    const picked=all.filter(b=>b.selected), rows=collapsed?(picked.length?picked:all).slice(0,4):all;
+    $('#expandShelf').hidden=filtered||printing||all.length<=4;$('#expandShelf').setAttribute('aria-expanded',String(state.expanded));$('#expandShelf').textContent=state.expanded?'收起书目 ↑':`展开全部${all.length}本 →`;
+    $('#books').classList.toggle('list',state.list);
+    $('#books').innerHTML=rows.length?rows.map(b=>`<article class="book-entry"><button class="book" data-open-book="${esc(b.book_id)}"><span class="cover-wrap">${coverMarkup(b)}</span><h3>${esc(b.title)}</h3><p class="author">${esc(b.author)}</p><p class="book-meta">${esc(statusLabel(b))}${b.progress==null?'':` · ${b.progress}%`}</p></button><div class="book-actions"><button class="text-button" data-open-book="${esc(b.book_id)}">书评与笔记 ↗</button><button class="text-button" data-share-book="${esc(b.book_id)}">加入分享</button></div></article>`).join(''):'<p class="empty">没有找到对应的书。可以换个关键词，或清除筛选。</p>';
+    $('#resultCount').textContent=`${collapsed?'精选':'显示'}${rows.length}／${data.books.length}本${state.category?' · '+state.category:''}`;
+    $('#clearFilters').hidden=!state.query&&!state.category&&state.status==='all';
+    $$('[data-status]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.status===state.status)));
+    $$('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===state.category)));
+  }
+  drawBooks();
+  $('#expandShelf').onclick=()=>{state.expanded=!state.expanded;drawBooks();};
+  $$('[data-status]').forEach(b=>b.onclick=()=>{state.status=b.dataset.status;drawBooks();});
+  $('#clearFilters').onclick=()=>{clearTimeout(searchTimer);state.query='';state.status='all';state.category='';$('#search').value='';drawBooks();};
+  const updateSearch=()=>{state.query=$('#search').value.trim();drawBooks();};
+  $('#search').addEventListener('compositionstart',()=>{state.composing=true;clearTimeout(searchTimer);});
+  $('#search').addEventListener('compositionend',()=>{state.composing=false;updateSearch();});
+  $('#search').addEventListener('input',e=>{if(state.composing||e.isComposing)return;clearTimeout(searchTimer);searchTimer=setTimeout(updateSearch,180);});
+  $('#viewSwitch').onclick=()=>{state.list=!state.list;$('#viewSwitch').setAttribute('aria-pressed',String(state.list));$('#viewSwitch').textContent=state.list?'封面视图':'列表视图';drawBooks();};
+
+  function noteHtml(n,b,index,type){return `<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}${n.chapter?' · 章节 '+esc(n.chapter):''}</small>${type==='划线'?`<button class="text-button" data-add-quote="${esc(b.book_id)}" data-index="${index}">选这条加入分享</button>`:''}</div>`;}
+  function openBook(id,fromHash=false) {
+    const b=bookMap.get(id);if(!b)return;
+    if(!$('#detail').open){previousFocus=document.activeElement;originalHash=location.hash;}
+    $('#detailContent').innerHTML=`<div class="detail-identity"><div>${coverMarkup(b)}</div><div><h2 id="detailTitle">${esc(b.title)}</h2><p>${esc(b.author)}</p><p>${esc(statusLabel(b))} · ${esc(b.category)}${b.reading_seconds==null?'':' · 年内'+duration(b.reading_seconds)}</p></div></div><section class="detail-section"><h3>全书书评</h3>${b.review.status==='verified'?`<p>${esc(b.review.body)}</p><p class="review-source">正文来源：${esc(b.review.source)}\n版本：${esc(b.review.version)}\n章节依据：${esc(b.review.citations.join('；'))}</p>`:'<p class="muted">尚未取得并核验完整正文，暂不生成全书书评。</p>'}</section>${b.intro?`<details class="detail-section"><summary>书籍简介</summary><p>${esc(b.intro)}</p></details>`:''}<section class="detail-section"><h3>划线 · ${b.highlights.length}条</h3>${b.highlights.map((n,i)=>noteHtml(n,b,i,'划线')).join('')||'<p class="muted">这本书尚未载入划线。</p>'}</section><section class="detail-section"><h3>我的笔记 · ${b.thoughts.length}条</h3>${b.thoughts.map((n,i)=>noteHtml(n,b,i,'笔记')).join('')||'<p class="muted">这本书尚未载入个人笔记。</p>'}</section>`;
+    if(!$('#detail').open)$('#detail').showModal();$('#detail').scrollTop=0;
+    if(!fromHash){history.pushState(null,'','#book='+encodeURIComponent(id));dialogPushed=true;}
+  }
+  function closeBook(){if(!$('#detail').open)return;$('#detail').close();if(dialogPushed&&location.hash.startsWith('#book=')){history.back();}else if(location.hash.startsWith('#book=')){history.replaceState(null,'',originalHash.startsWith('#book=')?'#shelf':originalHash||'#shelf');}dialogPushed=false;previousFocus?.isConnected&&previousFocus.focus({preventScroll:true});}
+  $('#detail .close').onclick=closeBook;
+  $('#detail').addEventListener('cancel',e=>{e.preventDefault();closeBook();});
+  addEventListener('hashchange',()=>{if(location.hash.startsWith('#book=')){try{openBook(decodeURIComponent(location.hash.slice(6)),true);}catch{toast('书籍链接无效');}}else if($('#detail').open){$('#detail').close();dialogPushed=false;previousFocus?.isConnected&&previousFocus.focus({preventScroll:true});}});
+  if(location.hash.startsWith('#book=')){try{openBook(decodeURIComponent(location.hash.slice(6)),true);}catch{}}
+  document.addEventListener('click',e=>{const open=e.target.closest('[data-open-book]');if(open)openBook(open.dataset.openBook);const add=e.target.closest('[data-share-book]');if(add)addBookShare(add.dataset.shareBook);const quote=e.target.closest('[data-add-quote]');if(quote){const b=bookMap.get(quote.dataset.addQuote);addBookShare(b.book_id,b.highlights[Number(quote.dataset.index)]?.text);toast('已加入分享，可在分享区预览');}});
+  $('#sourcesDialog .close').onclick=()=>$('#sourcesDialog').close();
+  $('#openSources').onclick=()=>{$('#sourcesContent').innerHTML=`<p>统计年份：${data.year}${data.as_of?'；采集日期：'+esc(data.as_of):''}</p><p>书目范围：${esc(scope)}。</p><p>模式：${esc(data.source_mode)}；核验状态：${esc(data.verification_status)}。</p><p>分布按已载入书籍的主分类计数；未知状态不归入“在读”。月度图只展示完整月份，缺失值不当作零。</p><p>时间线只展示有日期的事件。书介、原文划线、个人笔记和全书书评分别呈现。</p><p>字体优先使用本机Noto Serif SC／Noto Sans SC，无该字体时使用系统中文字体。文件不依赖在线字体或CDN。</p>`;$('#sourcesDialog').showModal();};
+
+  async function copyText(text){try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);}else{const t=document.createElement('textarea');t.value=text;document.body.append(t);t.select();if(!document.execCommand('copy'))throw Error('clipboard');t.remove();}toast('已复制');}catch{toast('复制失败，可选中文字后手动复制');}}
+  function drawQuote(){if(!highlights.length){$('#quote').innerHTML='<p class="empty">暂无已载入的划线。</p>';$('#quotePosition').textContent='0／0';$('#previousQuote').disabled=$('#nextQuote').disabled=true;return;}
+    const n=highlights[state.quote];$('#quotePosition').textContent=`${state.quote+1}／${highlights.length}`;
+    $('#previousQuote').disabled=state.quote===0;$('#nextQuote').disabled=state.quote===highlights.length-1;
+    $('#quote').innerHTML=`<div class="quote-body"><blockquote>${esc(n.text)}</blockquote><p class="attribution">—《${esc(n.book.title)}》</p><div class="quote-actions"><button id="copyQuote" class="text-button">复制</button><button id="shareQuote" class="text-button">加入分享</button></div></div>`;
+    $('#copyQuote').onclick=()=>copyText(n.text);$('#shareQuote').onclick=()=>addBookShare(n.book.book_id,n.text);
+  }drawQuote();$('#previousQuote').onclick=()=>{state.quote--;drawQuote();};$('#nextQuote').onclick=()=>{state.quote++;drawQuote();};
+
+  const pages=[{id:'cover',title:'封面',kind:'cover'},{id:'stats',title:'阅读统计',kind:'stats'}];
+  if(data.books.length)pages.push({id:'distribution',title:'阅读分布',kind:'distribution'});
+  if(events.length)pages.push({id:'timeline',title:'阅读时间线',kind:'timeline'});
+  data.books.filter(b=>b.selected).forEach(b=>pages.push({id:'book-'+b.book_id,title:b.title,kind:'book',book:b,quote:b.highlights[0]?.text||''}));
+  state.selection=new Set(pages.filter(p=>p.id==='cover'||p.id==='stats'||p.kind==='book').map(p=>p.id));
+  function recordUndo(){state.undo.push({ids:[...state.selection],preview:state.preview,quotes:pages.filter(p=>p.kind==='book').map(p=>[p.id,p.quote])});if(state.undo.length>10)state.undo.shift();}
+  function addBookShare(id,quote){if(state.busy){toast('导出中，请稍后再调整');return;}const b=bookMap.get(id);if(!b)return;recordUndo();let p=pages.find(p=>p.id==='book-'+id);if(!p){p={id:'book-'+id,title:b.title,kind:'book',book:b,quote:quote||b.highlights[0]?.text||''};pages.push(p);}if(quote!==undefined)p.quote=quote;state.selection.add(p.id);state.preview=p.id;drawShare();toast('已加入分享');}
+  function drawShare(){ $('#sharePages').innerHTML=pages.map(p=>`<div class="share-page"><label><input type="checkbox" data-page="${esc(p.id)}" ${state.selection.has(p.id)?'checked':''} ${state.busy?'disabled':''}><span>${esc(p.title)}</span></label><button data-preview="${esc(p.id)}" aria-pressed="${state.preview===p.id}">预览</button></div>`).join('');
+    $('#selectedCount').textContent=`已选${state.selection.size}页`;$('#undoSelection').disabled=!state.undo.length||state.busy;$('#exportGroup').disabled=!state.selection.size||state.busy;$('#exportOne').disabled=state.busy;
+    $$('[data-page]').forEach(el=>el.onchange=()=>{if(state.busy)return;recordUndo();el.checked?state.selection.add(el.dataset.page):state.selection.delete(el.dataset.page);drawShare();});
+    $$('[data-preview]').forEach(el=>el.onclick=()=>{if(state.busy)return;state.preview=el.dataset.preview;drawShare();});updatePreview();
+  }
+  $('#undoSelection').onclick=()=>{const old=state.undo.pop();if(!old||state.busy)return;state.selection=new Set(old.ids);state.preview=old.preview;for(const [id,q]of old.quotes){const p=pages.find(p=>p.id===id);if(p)p.quote=q;}drawShare();};
+  $('#ratio').onchange=()=>{if(state.busy)return;state.ratio=$('#ratio').value;updatePreview();};
+  function dimensions(ratio){return [900,ratio==='1:1'?900:ratio==='4:5'?1125:1200];}
+  const images=new Map();
+  function loadImage(src){if(!images.has(src))images.set(src,new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('书封加载失败'));im.src=src;}));return images.get(src);}
+  function wrap(ctx,text,x,y,width,lineHeight,maxLines=20){let line='',lines=[];for(const ch of String(text)){if(ch==='\n'){lines.push(line);line='';continue;}if(ctx.measureText(line+ch).width>width&&line){lines.push(line);line=ch;}else line+=ch;}if(line)lines.push(line);const cut=lines.length>maxLines;lines=lines.slice(0,maxLines);if(cut){let last=lines.at(-1)||'';while(ctx.measureText(last+'…').width>width)last=last.slice(0,-1);lines[lines.length-1]=last+'…';}lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));return y+lines.length*lineHeight;}
+  async function canvasPage(p,ratio){
+    await document.fonts.ready;const [W,H]=dimensions(ratio),cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');if(!c)throw Error('浏览器不支持Canvas');
+    const red='#ad3736',ink='#272723',muted='#696962',blue='#54768a',paper='#faf8f2';c.fillStyle=paper;c.fillRect(0,0,W,H);c.strokeStyle='#c8a87a';c.lineWidth=1;c.strokeRect(20,20,W-40,H-40);
+    c.fillStyle=ink;c.font=`600 27px ${serif}`;c.fillText('年年阅',65,80);c.fillStyle=muted;c.font=`18px ReadingSans, sans-serif`;c.textAlign='right';c.fillText(`${data.year}${data.source_mode==='sample'?' · 示例':''}`,W-65,80);c.textAlign='left';
+    c.font=`600 42px ${serif}`;c.fillStyle=ink;let y=wrap(c,p.kind==='cover'?'我的阅读年鉴':p.title,65,175,W-130,58,p.kind==='book'?3:2);
+    c.strokeStyle='#d5d3ca';c.beginPath();c.moveTo(65,y+12);c.lineTo(W-65,y+12);c.stroke();y+=75;
+    if(p.kind==='cover'){
+      c.fillStyle=blue;c.font='italic 34px Georgia';c.fillText('Reading, at my own pace.',65,y);y+=95;
+      c.fillStyle=red;c.font=`600 75px ${serif}`;c.fillText(String(data.summary.read),65,y);c.font=`26px ${serif}`;c.fillStyle=ink;c.fillText('本读过',195,y);y+=65;c.font=`26px ${serif}`;c.fillText(duration(data.summary.seconds),65,y);y+=60;
+      const covers=data.books.filter(b=>b.selected).slice(0,4);const gap=20,cw=(W-130-gap*3)/4,ch=Math.min(220,H-y-140);
+      for(let i=0;i<covers.length;i++){const b=covers[i],x=65+i*(cw+gap);if(b.cover){const im=await loadImage(b.cover);const scale=Math.min(cw/im.width,ch/im.height);c.drawImage(im,x,y+ch-im.height*scale,im.width*scale,im.height*scale);}else{c.fillStyle='#e6e3d8';c.fillRect(x,y,cw,ch);c.fillStyle=ink;c.font=`19px ${serif}`;wrap(c,b.title,x+12,y+32,cw-24,28,Math.max(1,Math.floor((ch-40)/28)));}}
+    } else if(p.kind==='stats'){
+      c.fillStyle=red;c.font=`500 49px ${serif}`;c.fillText(duration(data.summary.seconds),65,y);y+=62;c.fillStyle=muted;c.font='22px ReadingSans, sans-serif';c.fillText(`${value(data.summary.read)}本读过  ·  ${value(data.summary.finished)}本读完`,65,y);y+=45;c.fillText(`${value(data.summary.read_days)}天阅读  ·  ${value(data.summary.notes)}条笔记`,65,y);y+=65;
+      const vals=data.summary.monthly.slice(0,data.summary.complete_months),top=Math.ceil(Math.max(...vals.filter(x=>x!=null).map(x=>x/3600),1)/2)*2,base=H-180,upper=y,left=100,right=W-75;
+      for(const t of [0,top/2,top]){const yy=base-t/top*(base-upper);c.strokeStyle='#d5d3ca';c.beginPath();c.moveTo(left,yy);c.lineTo(right,yy);c.stroke();c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(String(t),65,yy+5);}
+      c.fillText('小时',65,upper-22);let active=false;c.strokeStyle=red;c.beginPath();vals.forEach((v,i)=>{if(v==null){active=false;return;}const x=vals.length===1?(left+right)/2:left+i*(right-left)/(vals.length-1),yy=base-v/3600/top*(base-upper);active?c.lineTo(x,yy):c.moveTo(x,yy);active=true;});c.lineWidth=2;c.stroke();
+      vals.forEach((v,i)=>{const x=vals.length===1?(left+right)/2:left+i*(right-left)/(vals.length-1);c.fillStyle=muted;c.font='17px ReadingSans, sans-serif';c.textAlign='center';c.fillText(`${i+1}月`,x,base+32);if(v!=null){c.fillStyle=red;c.beginPath();c.arc(x,base-v/3600/top*(base-upper),4,0,2*Math.PI);c.fill();}});c.textAlign='left';
+    } else if(p.kind==='distribution'){
+      c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText(scope,65,y);y+=65;const rows=categoryCounts.slice(0,8);for(const [i,row]of rows.entries()){c.fillStyle=ink;c.font=`25px ${serif}`;wrap(c,row.name,65,y,290,35,2);c.fillStyle=categoryPalette[i%4];c.fillRect(365,y-22,row.count/Math.max(data.books.length,1)*360,12);c.fillStyle=muted;c.font='22px ReadingSans, sans-serif';c.fillText(`${row.count}本`,755,y);y+=Math.min(80,(H-y-100)/(rows.length-i));}if(categoryCounts.length>8){c.fillStyle=muted;c.fillText('更多分类见HTML年鉴',65,H-125);}
+    } else if(p.kind==='timeline'){
+      c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText('有日期的阅读与笔记记录',65,y);y+=65;
+      const visible=events.slice(0,Math.max(1,Math.min(6,Math.floor((H-y-100)/115))));for(const e of visible){c.fillStyle=blue;c.beginPath();c.arc(75,y-8,5,0,2*Math.PI);c.fill();c.fillStyle=muted;c.font='20px ReadingSans, sans-serif';c.fillText(e.date.slice(5).replace('-','.'),105,y);c.fillStyle=ink;c.font=`24px ${serif}`;wrap(c,e.book.title,225,y,W-300,34,2);c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(e.type,225,y+65);y+=115;}if(events.length>visible.length)c.fillText('更多记录见HTML年鉴',65,H-100);
+    } else {
+      const b=p.book;c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';y=wrap(c,b.author,65,y,W-130,32,2)+25;
+      const ch=Math.min(300,H*.26);if(b.cover){const im=await loadImage(b.cover);const sc=Math.min(220/im.width,ch/im.height);c.drawImage(im,65,y,im.width*sc,im.height*sc);}else{c.fillStyle='#e6e3d8';c.fillRect(65,y,190,ch);c.fillStyle=ink;c.font=`22px ${serif}`;wrap(c,b.title,82,y+38,155,33,5);}c.fillStyle=blue;c.font=`22px ${serif}`;wrap(c,b.category,330,y+40,W-395,36,3);c.fillStyle=muted;c.font='20px ReadingSans, sans-serif';c.fillText(statusLabel(b),330,y+160);y+=ch+65;
+      c.fillStyle=red;c.font='45px Georgia';c.fillText('“',65,y);c.fillStyle=ink;c.font=`27px ${serif}`;wrap(c,p.quote||'这本书暂未载入划线。',100,y,W-165,44,Math.max(1,Math.floor((H-y-100)/44)));
+    }
+    c.fillStyle=muted;c.font='16px ReadingSans, sans-serif';c.fillText(data.as_of?`${data.year} · 数据采集于${data.as_of}`:String(data.year),65,H-55);c.textAlign='right';c.fillText(p.kind==='book'?'原文摘录':'阅读年鉴',W-65,H-55);return cv;
+  }
+  async function updatePreview(){const token=++renderToken,p=pages.find(p=>p.id===state.preview)||pages[0];try{const cv=await canvasPage(p,state.ratio);if(token!==renderToken)return;const target=$('#previewCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('#previewTitle').textContent=p.title;}catch(e){if(token===renderToken){$('#previewTitle').textContent='预览失败：'+e.message;}}}
+  const blobCanvas = cv=>new Promise((resolve,reject)=>cv.toBlob(b=>b?resolve(b):reject(Error('无法生成PNG')),'image/png'));
+  function download(blob,name){const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+  const filename = p => `${data.year}-${String(pages.indexOf(p)+1).padStart(2,'0')}-${p.id.replace(/[^a-zA-Z0-9_-]/g,'-').slice(0,80)||'page'}.png`;
+  async function runExport(task){if(state.busy)return;state.busy=true;$('#ratio').disabled=true;drawShare();$('#exportStatus').textContent='正在准备字体、书封与分享画布…';try{await task();$('#exportStatus').textContent='下载已发起，请查看浏览器下载记录。';}catch(e){$('#exportStatus').textContent='导出失败：'+e.message+'。已保留选择，可以重试。';}finally{state.busy=false;$('#ratio').disabled=false;drawShare();}}
+  $('#exportOne').onclick=()=>runExport(async()=>{const p=pages.find(p=>p.id===state.preview);const cv=await canvasPage(p,state.ratio);download(await blobCanvas(cv),filename(p));});
+  // Dependency-free stored ZIP. CRC32 + UTF8 filenames; tested against Python zipfile.
+  function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let i=0;i<8;i++)c=(c>>>1)^((c&1)?0xedb88320:0);}return(c^0xffffffff)>>>0;}
+  async function zip(files){const enc=new TextEncoder(),chunks=[],central=[];let offset=0;const u16=(view,pos,v)=>view.setUint16(pos,v,true),u32=(view,pos,v)=>view.setUint32(pos,v,true);
+    for(const f of files){const name=enc.encode(f.name),bytes=new Uint8Array(await f.blob.arrayBuffer()),crc=crc32(bytes),local=new Uint8Array(30+name.length),l=new DataView(local.buffer);u32(l,0,0x04034b50);u16(l,4,20);u16(l,6,0x800);u32(l,14,crc);u32(l,18,bytes.length);u32(l,22,bytes.length);u16(l,26,name.length);local.set(name,30);chunks.push(local,bytes);
+      const entry=new Uint8Array(46+name.length),v=new DataView(entry.buffer);u32(v,0,0x02014b50);u16(v,4,20);u16(v,6,20);u16(v,8,0x800);u32(v,16,crc);u32(v,20,bytes.length);u32(v,24,bytes.length);u16(v,28,name.length);u32(v,42,offset);entry.set(name,46);central.push(entry);offset+=local.length+bytes.length;}
+    const size=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array(22),v=new DataView(end.buffer);u32(v,0,0x06054b50);u16(v,8,files.length);u16(v,10,files.length);u32(v,12,size);u32(v,16,offset);return new Blob([...chunks,...central,end],{type:'application/zip'});
+  }
+  $('#exportGroup').onclick=()=>runExport(async()=>{const chosen=pages.filter(p=>state.selection.has(p.id)),ratio=state.ratio,files=[];for(const [i,p] of chosen.entries()){$('#exportStatus').textContent=`正在生成第${i+1}／${chosen.length}页…`;files.push({name:filename(p),blob:await blobCanvas(await canvasPage(p,ratio))});}download(await zip(files),`${data.year}-reading-share.zip`);});
+  function markdown(){const lines=[`# ${data.year}阅读年鉴`,'',`范围：${scope}${data.as_of?'；采集日期：'+data.as_of:''}`,'',`阅读时长：${duration(data.summary.seconds)}`,`读过：${value(data.summary.read)}本；读完：${value(data.summary.finished)}本`,''];for(const b of data.books){lines.push(`## ${b.title}`,'',`作者：${b.author}`,'','### 全书书评','',b.review.status==='verified'?b.review.body:'尚未取得并核验完整正文。','');if(b.review.status==='verified')lines.push(`正文来源：${b.review.source}`,`版本：${b.review.version}`,`章节依据：${b.review.citations.join('；')}`,'');for(const [title,rows] of [['划线',b.highlights],['个人笔记',b.thoughts]]){lines.push(`### ${title}`,'');for(const n of rows)lines.push(n.text,'',`来源：${b.title} · ${n.created_at||'日期未记录'} · ${n.source_id||'未记录来源ID'}`,'');if(!rows.length)lines.push('尚未载入。','');}}return lines.join('\n');}
+  $('#exportMd').onclick=()=>download(new Blob([markdown()],{type:'text/markdown;charset=utf-8'}),`${data.year}-reading.md`);
+  $('#exportJson').onclick=()=>{const copy=JSON.parse(JSON.stringify(data));copy.books.forEach(b=>delete b.cover);download(new Blob([JSON.stringify(copy,null,2)],{type:'application/json;charset=utf-8'}),`${data.year}-reading.json`);};
+  $('#exportPdf').onclick=()=>{if(state.query||state.category||state.status!=='all')toast('PDF将使用当前筛选的书架范围');window.print();};
+  addEventListener('beforeprint',()=>{drawBooks(true);$$('#timeline details').forEach(el=>{el.dataset.wasOpen=String(el.open);el.open=true;});$('#printDetails').innerHTML=visibleBooks().map(b=>`<article><h2>${esc(b.title)}</h2><p>${esc(b.author)}</p><h3>全书书评</h3><p>${esc(b.review.status==='verified'?b.review.body:'尚未取得并核验完整正文。')}</p>${b.review.status==='verified'?`<p class="review-source">来源：${esc(b.review.source)}；版本：${esc(b.review.version)}；章节依据：${esc(b.review.citations.join('；'))}</p>`:''}<h3>划线</h3>${b.highlights.map(n=>`<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}</small></div>`).join('')||'<p>尚未载入。</p>'}<h3>个人笔记</h3>${b.thoughts.map(n=>`<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}</small></div>`).join('')||'<p>尚未载入。</p>'}</article>`).join('');});
+  addEventListener('afterprint',()=>{$('#printDetails').replaceChildren();$$('#timeline details').forEach(el=>el.open=el.dataset.wasOpen==='true');drawBooks();});
+  // Keep chapter indicator aligned to the currently visible section.
+  if('IntersectionObserver'in window){const observer=new IntersectionObserver(entries=>{const active=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(active){$$('nav a').forEach(a=>a.getAttribute('href')==='#'+active.target.id?a.setAttribute('aria-current','location'):a.removeAttribute('aria-current'));}},{rootMargin:'-15% 0px -60% 0px'});['overview','shelf','quotes','share'].forEach(id=>observer.observe($('#'+id)));}
+  drawShare();
+})();
+</script>
+</body></html>
