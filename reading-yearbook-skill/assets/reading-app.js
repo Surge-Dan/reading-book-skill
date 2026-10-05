@@ -227,17 +227,52 @@
     $('#copyQuote').onclick=()=>copyText(n.text);$('#shareQuote').onclick=()=>addBookShare(n.book.book_id,n.text,entryKind);
   }drawQuote();$('#previousQuote').onclick=()=>{state.quote--;drawQuote();};$('#nextQuote').onclick=()=>{state.quote++;drawQuote();};
 
-  const pages=[{id:'cover',title:'封面',kind:'cover'},{id:'stats',title:'阅读统计',kind:'stats'}];
-  if(data.books.length)pages.push({id:'distribution',title:'阅读分布',kind:'distribution'});
-  if(events.length)pages.push({id:'timeline',title:'阅读时间线',kind:'timeline'});
-  data.books.filter(b=>b.selected).forEach(b=>pages.push({id:'book-'+b.book_id,title:b.title,kind:'book',book:b,quote:b.highlights[0]?.text||b.thoughts[0]?.text||'',textKind:b.highlights.length?'highlight':'thought'}));
-  state.selection=new Set(pages.filter(p=>p.id==='cover'||p.id==='stats'||p.kind==='book').map(p=>p.id));
+  const pages=[{id:'cover',title:'封面',kind:'cover'},{id:'stats',title:'阅读统计',kind:'stats'},
+    {id:'distribution',title:'阅读分布',kind:'distribution'},{id:'timeline',title:'阅读时间线',kind:'timeline'}];
+  data.books.forEach(b=>pages.push({id:'book-'+b.book_id,title:b.title,kind:'book',book:b,quote:b.highlights[0]?.text||b.thoughts[0]?.text||'',textKind:b.highlights.length?'highlight':'thought'}));
+  state.selection=new Set(pages.map(p=>p.id));
+  let shareBookComposing=false;
+  const bookShareBox=$('#bookSharePicker'),bookShareMenu=$('#bookShareMenu'),bookShareTrigger=$('#bookShareTrigger');
+  function closeShareBooks(restore=false){bookShareMenu.hidden=true;bookShareTrigger.setAttribute('aria-expanded','false');if(restore)bookShareTrigger.focus({preventScroll:true});}
+  function openShareBooks(){
+    if(state.busy||bookShareTrigger.disabled)return;
+    bookShareMenu.hidden=false;bookShareTrigger.setAttribute('aria-expanded','true');
+    const rect=bookShareTrigger.getBoundingClientRect(),below=innerHeight-rect.bottom-12,above=rect.top-12,up=below<240&&above>below;
+    bookShareBox.classList.toggle('opens-up',up);bookShareMenu.style.maxHeight=Math.max(100,Math.min(460,(up?above:below)-8))+'px';
+    $('#shareBookSearch').focus({preventScroll:true});
+  }
+  function filterShareBooks(){
+    const query=$('#shareBookSearch').value.trim().toLocaleLowerCase();let count=0;
+    $$('#bookShareRows .share-page').forEach(row=>{const b=bookMap.get(row.dataset.bookId),match=!query||(b.title+' '+b.author).toLocaleLowerCase().includes(query);row.hidden=!match;if(match)count++;});
+    $('#shareBookEmpty').hidden=count!==0;
+  }
+  bookShareTrigger.onclick=()=>bookShareMenu.hidden?openShareBooks():closeShareBooks();
+  bookShareTrigger.onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();openShareBooks();}};
+  bookShareMenu.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeShareBooks(true);}});
+  bookShareBox.addEventListener('focusout',e=>{if(!bookShareBox.contains(e.relatedTarget))closeShareBooks();});
+  document.addEventListener('click',e=>{if(!bookShareBox.contains(e.target))closeShareBooks();});
+  addEventListener('resize',()=>closeShareBooks());
+  $('#shareBookSearch').addEventListener('compositionstart',()=>shareBookComposing=true);
+  $('#shareBookSearch').addEventListener('compositionend',()=>{shareBookComposing=false;filterShareBooks();});
+  $('#shareBookSearch').addEventListener('input',e=>{if(!shareBookComposing&&!e.isComposing)filterShareBooks();});
+  function changeShareBooks(select){if(state.busy)return;recordUndo();for(const p of pages.filter(p=>p.kind==='book'))select?state.selection.add(p.id):state.selection.delete(p.id);drawShare();}
+  $('#selectAllShareBooks').onclick=()=>changeShareBooks(true);$('#clearShareBooks').onclick=()=>changeShareBooks(false);$('#closeShareBooks').onclick=()=>closeShareBooks(true);
   function recordUndo(){state.undo.push({ids:[...state.selection],preview:state.preview,quotes:pages.filter(p=>p.kind==='book').map(p=>[p.id,p.quote,p.textKind])});if(state.undo.length>10)state.undo.shift();}
   function addBookShare(id,quote,kind='highlight'){if(state.busy){toast('导出中，请稍后再调整');return;}const b=bookMap.get(id);if(!b)return;recordUndo();let p=pages.find(p=>p.id==='book-'+id);if(!p){p={id:'book-'+id,title:b.title,kind:'book',book:b,quote:quote||b.highlights[0]?.text||b.thoughts[0]?.text||'',textKind:quote?kind:b.highlights.length?'highlight':'thought'};pages.push(p);}if(quote!==undefined){p.quote=quote;p.textKind=kind;}state.selection.add(p.id);state.preview=p.id;drawShare();toast('已加入分享');}
-  function drawShare(){ $('#sharePages').innerHTML=pages.map(p=>`<div class="share-page"><label><input type="checkbox" data-page="${esc(p.id)}" ${state.selection.has(p.id)?'checked':''} ${state.busy?'disabled':''}><span>${esc(p.title)}</span></label><button data-preview="${esc(p.id)}" aria-pressed="${state.preview===p.id}">预览</button></div>`).join('');
-    $('#selectedCount').textContent=`已选${state.selection.size}页`;$('#undoSelection').disabled=!state.undo.length||state.busy;$('#exportGroup').disabled=!state.selection.size||state.busy;$('#exportOne').disabled=state.busy;
-    $$('[data-page]').forEach(el=>el.onchange=()=>{if(state.busy)return;recordUndo();el.checked?state.selection.add(el.dataset.page):state.selection.delete(el.dataset.page);drawShare();});
-    $$('[data-preview]').forEach(el=>el.onclick=()=>{if(state.busy)return;state.preview=el.dataset.preview;drawShare();});updatePreview();
+  function shareRow(p){return `<div class="share-page" ${p.kind==='book'?`data-book-id="${esc(p.book.book_id)}"`:''}><label><input type="checkbox" data-page="${esc(p.id)}"><span>${esc(p.title)}${p.kind==='book'?`<small>${esc(p.book.author)}</small>`:''}</span></label><button type="button" data-preview="${esc(p.id)}">预览</button></div>`;}
+  function drawShare(){
+    const books=pages.filter(p=>p.kind==='book');
+    $('#sharePages').innerHTML=pages.filter(p=>p.kind!=='book').map(shareRow).join('');
+    if($('#bookShareRows').dataset.count!==String(books.length)){$('#bookShareRows').innerHTML=books.map(shareRow).join('');$('#bookShareRows').dataset.count=String(books.length);}
+    const selectedBooks=books.filter(p=>state.selection.has(p.id)).length;
+    $('#bookShareLabel').textContent=books.length?`分享书籍 · 已选${selectedBooks}／${books.length}本`:'暂无可选书籍';
+    $('#bookShareCount').textContent=`已选${selectedBooks}／${books.length}本`;
+    bookShareTrigger.disabled=state.busy||!books.length;$('#selectAllShareBooks').disabled=state.busy;$('#clearShareBooks').disabled=state.busy;
+    if(state.busy||!books.length)closeShareBooks();
+    $('#selectedCount').textContent=`已选${state.selection.size}／${pages.length}页`;$('#undoSelection').disabled=!state.undo.length||state.busy;$('#exportGroup').disabled=!state.selection.size||state.busy;$('#exportOne').disabled=state.busy;
+    $$('[data-page]').forEach(el=>{el.checked=state.selection.has(el.dataset.page);el.disabled=state.busy;el.onchange=()=>{if(state.busy)return;recordUndo();el.checked?state.selection.add(el.dataset.page):state.selection.delete(el.dataset.page);drawShare();};});
+    $$('[data-preview]').forEach(el=>{el.disabled=state.busy;el.setAttribute('aria-pressed',String(state.preview===el.dataset.preview));el.onclick=()=>{if(state.busy)return;state.preview=el.dataset.preview;drawShare();};});
+    filterShareBooks();updatePreview();
   }
   $('#undoSelection').onclick=()=>{const old=state.undo.pop();if(!old||state.busy)return;state.selection=new Set(old.ids);state.preview=old.preview;for(const [id,q,kind]of old.quotes){const p=pages.find(p=>p.id===id);if(p){p.quote=q;p.textKind=kind;}}drawShare();};
   $('#ratio').onchange=()=>{if(state.busy)return;state.ratio=$('#ratio').value;updatePreview();};
@@ -269,16 +304,19 @@
     if(p.kind==='stats'){
       c.fillStyle=red;c.font=`500 49px ${serif}`;c.fillText(duration(data.summary.seconds),65,y);y+=62;c.fillStyle=muted;c.font='22px ReadingSans, sans-serif';c.fillText(`${value(data.summary.read)}本读过  ·  ${value(data.summary.finished)}本读完`,65,y);y+=45;c.fillText(`${value(data.summary.read_days)}天阅读  ·  ${value(data.summary.notes)}条笔记`,65,y);y+=65;
       const vals=data.summary.monthly.slice(0,data.summary.complete_months),top=Math.ceil(Math.max(...vals.filter(x=>x!=null).map(x=>x/3600),1)/2)*2,base=H-180,upper=y,left=100,right=W-75;
+      if(!vals.some(v=>v!=null)){c.fillStyle=muted;c.font=`25px ${serif}`;wrap(c,'暂无月度阅读时长记录。',65,y+65,W-130,40,4);return cv;}
       for(const t of [0,top/2,top]){const yy=base-t/top*(base-upper);c.strokeStyle='#d5d3ca';c.beginPath();c.moveTo(left,yy);c.lineTo(right,yy);c.stroke();c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(String(t),65,yy+5);}
       c.fillText('小时',65,upper-22);let active=false;c.strokeStyle=red;c.beginPath();vals.forEach((v,i)=>{if(v==null){active=false;return;}const x=vals.length===1?(left+right)/2:left+i*(right-left)/(vals.length-1),yy=base-v/3600/top*(base-upper);active?c.lineTo(x,yy):c.moveTo(x,yy);active=true;});c.lineWidth=2;c.stroke();
       vals.forEach((v,i)=>{const x=vals.length===1?(left+right)/2:left+i*(right-left)/(vals.length-1);c.fillStyle=muted;c.font='17px ReadingSans, sans-serif';c.textAlign='center';c.fillText(`${i+1}月`,x,base+32);if(v!=null){c.fillStyle=red;c.beginPath();c.arc(x,base-v/3600/top*(base-upper),4,0,2*Math.PI);c.fill();}});c.textAlign='left';
     } else if(p.kind==='distribution'){
       c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText(scope+' · 一档一本',65,y);
+      if(!categoryCounts.length){c.font=`25px ${serif}`;wrap(c,data.coverage.complete?'这一年没有可统计的阅读书目。':'暂未取得书目，暂无法展示分类分布。',65,y+110,W-130,40,4);}
       const rows=categoryCounts.slice(0,8),base=H-220,col=(W-130)/Math.max(rows.length,1),step=Math.min(40,(base-y-100)/maxCount);
       for(const [i,row]of rows.entries()){const x=65+col*(i+.5);c.strokeStyle=categoryPalette[i%7];c.lineWidth=3;for(let k=0;k<row.count;k++){const w=col*.24-1.5+rnd(k+1,i+2)*3;c.beginPath();c.moveTo(x-w,base-k*step);c.lineTo(x+w,base-k*step);c.stroke();}c.fillStyle=ink;c.font=`32px ${serif}`;c.textAlign='center';c.fillText(String(row.count),x,base-(row.count-1)*step-25);c.fillStyle=muted;c.font=`20px ${serif}`;c.textAlign='left';wrap(c,row.name,x-col*.4,base+48,col*.8,30,3);}
       c.textAlign='left';if(categoryCounts.length>8){c.fillStyle=muted;c.fillText('更多分类见HTML年鉴',65,H-100);}
     } else if(p.kind==='timeline'){
       c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';c.fillText('有日期的阅读与笔记记录',65,y);y+=65;
+      if(!events.length){c.font=`25px ${serif}`;wrap(c,'暂无带日期的阅读记录。',65,y+65,W-130,40,4);}
       const visible=events.slice(0,Math.max(1,Math.min(6,Math.floor((H-y-100)/115))));for(const e of visible){c.fillStyle=blue;c.beginPath();c.arc(75,y-8,5,0,2*Math.PI);c.fill();c.fillStyle=muted;c.font='20px ReadingSans, sans-serif';c.fillText(e.date.slice(5).replace('-','.'),105,y);c.fillStyle=ink;c.font=`24px ${serif}`;wrap(c,e.book.title,225,y,W-300,34,2);c.fillStyle=muted;c.font='18px ReadingSans, sans-serif';c.fillText(e.type,225,y+65);y+=115;}if(events.length>visible.length)c.fillText('更多记录见HTML年鉴',65,H-100);
     } else {
       const b=p.book;c.fillStyle=muted;c.font='21px ReadingSans, sans-serif';y=wrap(c,b.author,65,y,W-130,32,2)+25;

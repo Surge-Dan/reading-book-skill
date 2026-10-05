@@ -13,6 +13,7 @@ const checks=[];const pass=(name,detail='')=>checks.push({name,status:'pass',det
  await context.route(/^https?:/,route=>{requests.push(route.request().url());return route.abort();});
  await context.setOffline(true);
  await page.goto(pathToFileURL(input).href);await page.evaluate(()=>document.fonts.ready);
+ const ensurePreview=async id=>{if(id.startsWith('book-')){if(await page.locator('#bookShareMenu').isHidden())await page.locator('#bookShareTrigger').click();}else if(await page.locator('#bookShareMenu').isVisible())await page.locator('#closeShareBooks').click();};
  const original=await page.locator('.book-entry').count();assert(original>0);pass('offline single file loads',String(original));
  for(const width of [1440,768,390]){
   await page.setViewportSize({width,height:950});await page.waitForTimeout(230);
@@ -37,8 +38,9 @@ const checks=[];const pass=(name,detail='')=>checks.push({name,status:'pass',det
  await page.locator('#openSources').click();assert(await page.locator('#sourcesContent').textContent().then(t=>t.includes('缺失值')));await page.locator('#sourcesDialog .close').click();pass('source and missing data explanation');
  const count=await page.locator('[data-page]:checked').count();await page.locator('[data-page]').first().uncheck();assert.equal(await page.locator('[data-page]:checked').count(),count-1);await page.locator('#undoSelection').click();assert.equal(await page.locator('[data-page]:checked').count(),count);pass('share selection undo');
  const selected=await page.locator('[data-page]:checked').evaluateAll(es=>es.map(e=>e.dataset.page));
- for(const id of selected)await page.locator(`[data-page="${id}"]`).uncheck();assert(await page.locator('#exportGroup').isDisabled());
- for(const id of selected)await page.locator(`[data-page="${id}"]`).check();pass('empty selection blocks group download');
+ for(const id of selected){await ensurePreview(id);await page.locator(`[data-page="${id}"]`).uncheck();}assert(await page.locator('#exportGroup').isDisabled());
+ for(const id of selected){await ensurePreview(id);await page.locator(`[data-page="${id}"]`).check();}pass('empty selection blocks group download');
+ if(await page.locator('#bookShareMenu').isVisible())await page.locator('#closeShareBooks').click();
  await page.evaluate(()=>{window.savedToBlob=HTMLCanvasElement.prototype.toBlob;HTMLCanvasElement.prototype.toBlob=function(cb){cb(null);};});
  await page.locator('#exportOne').click();await page.waitForTimeout(100);assert(await page.locator('#exportStatus').textContent().then(t=>t.includes('导出失败')));assert.equal(await page.locator('[data-page]:checked').count(),count);assert(!(await page.locator('#exportOne').isDisabled()));await page.evaluate(()=>HTMLCanvasElement.prototype.toBlob=window.savedToBlob);pass('export failure preserves selection and unlocks retry');
  for(const ratio of ['3:4','1:1','4:5']){
