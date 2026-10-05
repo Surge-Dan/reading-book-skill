@@ -73,7 +73,7 @@ window.ReadingShareArtwork = (() => {
       async function cover(b,x,y,w,h,opts={}){if(b.cover)await image(b.cover,x,y,w,h,opts);else{rect(x,y,w,h,C.cream);block(b.title,x+18,y+22,w-36,h-44,{size:34,min:28,weight:600});}}
       function metric(n,label,x,y,w,{size=64,color=C.ink}={}){
         const s=amount(n);let fs=size;ctx.font=`400 ${fs}px ${NUM}`;while(ctx.measureText(s).width>w&&fs>32){fs-=2;ctx.font=`400 ${fs}px ${NUM}`;}
-        text(s,x,y,{size:fs,font:NUM,color});text(label,x,y+36,{size:26,font:SANS,color:C.muted});
+        text(s,x,y,{size:fs,font:NUM,color});text(label,x,y+44,{size:26,font:SANS,color:C.muted});
       }
       function progress(b,x,y,w){
         if(!known(b.progress))return;const v=Math.max(0,Math.min(100,b.progress));text('当前进度',x,y,{size:26,font:SANS,color:C.muted});text(`${v}%`,x+w,y,{size:30,font:NUM,align:'right',color:bookColor(b)});
