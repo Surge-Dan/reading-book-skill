@@ -9,7 +9,6 @@ import math
 import re
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from reading_fonts import font_css
 
 ROOT = Path(__file__).resolve().parents[1]
 TZ = timezone(timedelta(hours=8))
@@ -283,19 +282,16 @@ def build_html(data, output, covers=None, art_assets=None, require_all_covers=Fa
         raise ValueError('未知艺术素材字段：' + ', '.join(sorted(unknown)))
     art = {name: embed_image((art_assets or {}).get(name) or ROOT / 'assets' / 'yearbook-art' / file)
            for name, file in [('hero', 'hero-book.png'), ('reading', 'reading.png'), ('rhythm', 'rhythm.png')]}
-    fonts, font_info = font_css(data)
-    replacements = {'__DATA__': serialized, '__FONTS__': fonts, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-art.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-refined.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-share.css').read_text('utf-8'),
+    replacements = {'__DATA__': serialized, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-art.css').read_text('utf-8'),
                     '__ART__': json.dumps(art),
-                    '__APP__': (ROOT / 'assets' / 'vendor' / 'html-to-image.js').read_text('utf-8').replace('//# sourceMappingURL=html-to-image.js.map', '') + '\n' + (ROOT / 'assets' / 'reading-share-art.js').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-app.js').read_text('utf-8'),
-                    '__LICENSE__': html.escape((ROOT / 'assets' / 'lieflat-LICENSE.txt').read_text('utf-8')),
-                    '__FONTLICENSE__': html.escape((ROOT / 'assets' / 'vendor' / 'Noto-OFL.txt').read_text('utf-8')),
-                    '__EXPORTLICENSE__': html.escape((ROOT / 'assets' / 'vendor' / 'html-to-image-LICENSE.txt').read_text('utf-8'))}
+                    '__APP__': (ROOT / 'assets' / 'reading-share-art.js').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-app.js').read_text('utf-8'),
+                    '__LICENSE__': html.escape((ROOT / 'assets' / 'lieflat-LICENSE.txt').read_text('utf-8'))}
     # One-pass replacement: user text may itself contain template delimiters.
-    page = re.sub(r'__(?:DATA|FONTS|STYLE|APP|LICENSE|FONTLICENSE|EXPORTLICENSE|ART)__', lambda m: replacements[m.group()], template)
+    page = re.sub(r'__(?:DATA|STYLE|APP|LICENSE|ART)__', lambda m: replacements[m.group()], template)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(page, 'utf-8')
-    return {'output': str(output), 'bytes': output.stat().st_size, 'books': len(data['books']), 'coverage': data['coverage'], 'font': font_info}
+    return {'output': str(output), 'bytes': output.stat().st_size, 'books': len(data['books']), 'coverage': data['coverage']}
 
 
 def main():
