@@ -263,39 +263,40 @@ window.ReadingShareArtwork = (() => {
       const author=block(b.author,M,title.bottom+24,R-M,67,{size:27,min:25,font:SANS,color:C.muted,leading:1.35});
       const bodyY=author.bottom+32,mainBottom=H-260,available=mainBottom-bodyY;
       const primary=p.quote||'',kind=p.textKind==='thought'?'个人笔记':'原文摘录',rich=Boolean(primary),long=primary.length>(square?75:130);
+      const bodyStyle={size:30,min:30,weight:400,font:SERIF,color:C.secondaryInk,leading:1.65,role:'book-body'};
       let excerpted=false;
-      function excerpt(str,x,y,w,h,style,label){
-        const fit=measureBlock(str,w,h,style);excerpted=excerpted||fit.cut;
-        text(label+(fit.cut?' · 节选':''),x,y-20,{size:25,font:SANS,color});
-        return block(str,x,y,w,h,style);
+      function excerpt(str,x,y,w,h,label){
+        const fit=measureBlock(str,w,h,bodyStyle);excerpted=excerpted||fit.cut;
+        text(label+(fit.cut?' · 节选':''),x,y-20,{size:24,weight:400,font:SANS,color,role:'book-label'});
+        return block(str,x,y,w,h,bodyStyle);
       }
       if(available<140)throw Error('书名或作者过长，分享页内容超出安全版面，请缩短展示标题。');
       if(rich&&!long){
         const coverH=Math.min(330,available-90),qx=M+286,qw=R-qx;
         await cover(b,M+7,bodyY+8,222,coverH,{angle:-2,shadow:true});
         line(M+254,bodyY+5,M+254,mainBottom-9,color,1);
-        const q=excerpt(primary,qx,bodyY+57,qw,available-63,{size:38,min:32,leading:1.62},kind);
+        const q=excerpt(primary,qx,bodyY+57,qw,available-63,kind);
         const secondary=[...b.thoughts.map(n=>({...n,label:'我的笔记'})),...b.highlights.map(n=>({...n,label:'另一处划线'}))],seen=new Set([primary]);
         let nextTop=q.bottom+55,added=0;
         for(const n of secondary){
           if(seen.has(n.text)||added===2)continue;seen.add(n.text);
-          const height=mainBottom-nextTop-8,style={size:32,min:30,leading:1.52};
-          if(height<64||measureBlock(n.text,qw,height,style).cut)continue;
-          const item=excerpt(n.text,qx,nextTop,qw,height,style,n.label);nextTop=item.bottom+55;added++;
+          const height=mainBottom-nextTop-8;
+          if(height<64||measureBlock(n.text,qw,height,bodyStyle).cut)continue;
+          const item=excerpt(n.text,qx,nextTop,qw,height,n.label);nextTop=item.bottom+55;added++;
         }
         const categoryY=bodyY+coverH+38;
         if(b.category&&categoryY+51<mainBottom)block(b.category,M+7,categoryY,222,59,{size:28,min:26,color,leading:1.3});
       }else if(rich){
         const cw=112,ch=Math.min(157,available-22),qx=M,qw=R-M-171;
         await cover(b,R-cw-3,bodyY+6,cw,ch,{angle:2,shadow:true});
-        excerpt(primary,qx,bodyY+58,qw,available-66,{size:36,min:30,leading:1.6},kind);
+        excerpt(primary,qx,bodyY+58,qw,available-66,kind);
         const cy=bodyY+ch+38;
         if(b.category&&cy+84<mainBottom)block(b.category,R-135,cy,135,84,{size:28,min:25,color,leading:1.4});
       }else if(b.intro){
         const cw=244,ch=Math.min(377,available-24),tx=M+312;
         await cover(b,M+9,bodyY+9,cw,ch,{angle:-2,shadow:true});
         line(M+279,bodyY+5,M+279,mainBottom-9,color,1);
-        excerpt(b.intro,tx,bodyY+57,R-tx,available-63,{size:34,min:30,leading:1.6},'内容简介');
+        excerpt(b.intro,tx,bodyY+57,R-tx,available-63,'内容简介');
       }else{
         const cw=296,tx=M+370,tw=R-tx;
         await cover(b,M+15,bodyY+7,cw,available-19,{angle:-2,shadow:true});
