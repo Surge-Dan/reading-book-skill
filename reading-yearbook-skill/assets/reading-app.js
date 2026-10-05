@@ -8,7 +8,7 @@
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   $$('[data-art]').forEach(image=>{image.src=art[image.dataset.art];});
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const serif = 'ReadingSerif, "Noto Serif SC", "SimSun", serif';
+  const serif = 'ReadingSans, "Noto Sans SC", "Microsoft YaHei", sans-serif';
   const state = {query:'', status:'all', category:'', list:false, expanded:false, quote:0, busy:false, preview:'cover', ratio:'3:4', undo:[], selection:new Set(), composing:false};
   const bookMap = new Map(data.books.map(b => [b.book_id,b]));
   const highlights = data.books.flatMap(b => b.highlights.map(n => ({...n,book:b})));
@@ -108,15 +108,15 @@
     const left=37,right=W-15,base=H-37,max=Math.max(...months.filter(v=>v!=null).map(v=>v/3600),1);
     const top=Math.ceil(max/2)*2, x=i=>months.length===1?(left+right)/2:left+i*(right-left)/(months.length-1), y=v=>base-(v/3600)/top*(base-25);
     let svg=`<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="月度阅读时长，单位小时"><title>月度阅读时长</title>`;
-    for (const tick of [0,top/2,top]) svg+=`<line x1="${left}" y1="${base-tick/top*(base-25)}" x2="${right}" y2="${base-tick/top*(base-25)}" stroke="#d5d3ca" stroke-width=".7" ${tick?'stroke-dasharray="2 4"':''}/><text x="${left-12}" y="${base-tick/top*(base-25)+4}" text-anchor="end" fill="#696962" font-size="12">${tick}</text>`;
-    svg+='<text x="0" y="13" fill="#696962" font-size="11">小时</text>';
+    for (const tick of [0,top/2,top]) svg+=`<line x1="${left}" y1="${base-tick/top*(base-25)}" x2="${right}" y2="${base-tick/top*(base-25)}" stroke="#e5e7eb" stroke-width=".7" ${tick?'stroke-dasharray="2 4"':''}/><text x="${left-12}" y="${base-tick/top*(base-25)+4}" text-anchor="end" fill="#667085" font-size="12">${tick}</text>`;
+    svg+='<text x="0" y="13" fill="#667085" font-size="11">小时</text>';
     let segment=[]; const paths=[];
     months.forEach((v,i)=>{if(v==null){if(segment.length)paths.push(segment);segment=[];}else segment.push([x(i),y(v)]);});if(segment.length)paths.push(segment);
-    paths.forEach(points=>svg+=`<path d="${points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' ')}" fill="none" stroke="#b94035" stroke-width="1.4" pathLength="1" class="draw"/>`);
+    paths.forEach(points=>svg+=`<path d="${points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' ')}" fill="none" stroke="#0066cc" stroke-width="1.4" pathLength="1" class="draw"/>`);
     const peak=months.findIndex(v=>v!=null&&v===Math.max(...months.filter(v=>v!=null)));
-    months.forEach((v,i)=>{svg+=`<line x1="${x(i)}" y1="${base}" x2="${x(i)}" y2="${base-7}" stroke="#bdbab0" stroke-width=".8"/><text x="${x(i)}" y="${base+24}" text-anchor="middle" fill="#696962" font-size="12">${i+1}月</text>`;
-      if(v!=null) {svg+=`<circle data-chart-month="${i}" tabindex="0" role="button" aria-label="${i+1}月，${esc(duration(v))}" cx="${x(i)}" cy="${y(v)}" r="${i===peak?4.5:3}" fill="#b94035" class="pop" style="animation-delay:${.2+i*.03}s"/><circle cx="${x(i)}" cy="${y(v)}" r="11" fill="transparent" data-chart-month="${i}" aria-hidden="true"/>`;
-        svg+=`<text x="${x(i)}" y="${y(v)-13}" text-anchor="middle" fill="${i===peak?'#b94035':'#68665e'}" font-size="11" class="fade" style="paint-order:stroke;stroke:#faf6e9;stroke-width:4;animation-delay:${1+i*.01}s">${(v/3600).toFixed(1)}</text>`;}
+    months.forEach((v,i)=>{svg+=`<line x1="${x(i)}" y1="${base}" x2="${x(i)}" y2="${base-7}" stroke="#c9d3df" stroke-width=".8"/><text x="${x(i)}" y="${base+24}" text-anchor="middle" fill="#667085" font-size="12">${i+1}月</text>`;
+      if(v!=null) {svg+=`<circle data-chart-month="${i}" tabindex="0" role="button" aria-label="${i+1}月，${esc(duration(v))}" cx="${x(i)}" cy="${y(v)}" r="${i===peak?4.5:3}" fill="#0066cc" class="pop" style="animation-delay:${.2+i*.03}s"/><circle cx="${x(i)}" cy="${y(v)}" r="11" fill="transparent" data-chart-month="${i}" aria-hidden="true"/>`;
+        svg+=`<text x="${x(i)}" y="${y(v)-13}" text-anchor="middle" fill="${i===peak?'#0066cc':'#667085'}" font-size="11" class="fade" style="paint-order:stroke;stroke:#ffffff;stroke-width:4;animation-delay:${1+i*.01}s">${(v/3600).toFixed(1)}</text>`;}
     }); $('#chart').innerHTML=svg+'</svg>';
     $$('[data-chart-month]').forEach(el=>{const show=()=>$('#chartReadout').textContent=`${Number(el.dataset.chartMonth)+1}月 · ${duration(months[el.dataset.chartMonth])}`;el.addEventListener('mouseenter',show);el.addEventListener('focus',show);el.addEventListener('click',show);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});
     revealChart('chart');
@@ -124,13 +124,13 @@
   drawChart(); let resizeFrame;addEventListener('resize',()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(drawChart);});
 
   const categories = [...new Set(data.books.map(b=>b.category))];
-  const categoryPalette=['#bd5143','#4477a1','#b8973b','#5c897c','#ac7b84','#897b9e','#71828b'];
+  const categoryPalette=['#0066cc','#387c91','#7864a2','#557d70','#78889d','#7185a3','#5e7c86'];
   const categoryCounts = categories.map(c=>({name:c,count:data.books.filter(b=>b.category===c).length})).sort((a,b)=>b.count-a.count);
   const maxCount=Math.max(...categoryCounts.map(c=>c.count),1), rungStep=Math.min(18,112/maxCount);
   $('#distribution').innerHTML=categoryCounts.length?'<div class="distribution-grid">'+categoryCounts.map((c,i)=>{
     const base=135,topY=base-(c.count-1)*rungStep;
-    let marks='';for(let k=0;k<c.count;k++){const y=base-k*rungStep,w=16-1.5+rnd(k+1,i+2)*3;marks+=`<line x1="${35-w}" y1="${y}" x2="${35+w}" y2="${y}" stroke="${categoryPalette[i%7]}" stroke-width="2" opacity="${.5+rnd(k+2,i+4)*.5}" class="fade" style="animation-delay:${i*.08+k*.012}s"/>`;if(k%5===4)marks+=`<circle cx="57" cy="${y}" r="1" fill="#9a9585" class="fade"/>`;}
-    return `<button class="category-rung" data-category="${esc(c.name)}" aria-pressed="false" aria-label="${esc(c.name)}，${c.count}本，筛选书架"><svg viewBox="0 0 70 158" aria-hidden="true"><line x1="5" y1="142" x2="65" y2="142" stroke="#d7ceba"/>${marks}<text x="35" y="${topY-14}" text-anchor="middle" fill="#24241f" font-size="16" class="category-count fade" style="animation-delay:${.4+i*.08}s">${c.count}</text></svg><span class="category-name">${esc(c.name)}</span></button>`;
+    let marks='';for(let k=0;k<c.count;k++){const y=base-k*rungStep,w=16-1.5+rnd(k+1,i+2)*3;marks+=`<line x1="${35-w}" y1="${y}" x2="${35+w}" y2="${y}" stroke="${categoryPalette[i%7]}" stroke-width="2" opacity="${.5+rnd(k+2,i+4)*.5}" class="fade" style="animation-delay:${i*.08+k*.012}s"/>`;if(k%5===4)marks+=`<circle cx="57" cy="${y}" r="1" fill="#98a7b7" class="fade"/>`;}
+    return `<button class="category-rung" data-category="${esc(c.name)}" aria-pressed="false" aria-label="${esc(c.name)}，${c.count}本，筛选书架"><svg viewBox="0 0 70 158" aria-hidden="true"><line x1="5" y1="142" x2="65" y2="142" stroke="#e5e7eb"/>${marks}<text x="35" y="${topY-14}" text-anchor="middle" fill="#1d1d1f" font-size="16" class="category-count fade" style="animation-delay:${.4+i*.08}s">${c.count}</text></svg><span class="category-name">${esc(c.name)}</span></button>`;
   }).join('')+'</div>':'<p class="empty">暂无可统计书目</p>';
   revealChart('distribution');
   $$('[data-category]').forEach(button=>button.onclick=()=>{state.category=state.category===button.dataset.category?'':button.dataset.category;drawBooks();$('#shelf').scrollIntoView({block:'start'});});
@@ -140,9 +140,9 @@
   $('#investmentScope').textContent=timedBooks.length?`已记录时长的${timedBooks.length}本 · 每格${tickUnit/60}分钟，末尾短横线表示不足一格的时长`:'暂未载入逐书阅读时长';
   $('#investment').innerHTML=timedBooks.length?timedBooks.map((b,i)=>{
     const v=b.reading_seconds/tickUnit,n=Math.floor(v),tail=v-n;let marks='';
-    for(let k=0;k<n;k++){const x=k*tickWidth+tickWidth/2,h=9+rnd(k+1,i+2)*6;marks+=`<line x1="${x}" y1="21" x2="${x}" y2="${21-h}" stroke="${categoryPalette[i%7]}" opacity="${.55+rnd(k+3,i+5)*.45}" class="fade" style="animation-delay:${i*.08+k*.012}s"/>`;if(k%5===4)marks+=`<circle cx="${x}" cy="26" r=".8" fill="#9a9585"/>`;}
+    for(let k=0;k<n;k++){const x=k*tickWidth+tickWidth/2,h=9+rnd(k+1,i+2)*6;marks+=`<line x1="${x}" y1="21" x2="${x}" y2="${21-h}" stroke="${categoryPalette[i%7]}" opacity="${.55+rnd(k+3,i+5)*.45}" class="fade" style="animation-delay:${i*.08+k*.012}s"/>`;if(k%5===4)marks+=`<circle cx="${x}" cy="26" r=".8" fill="#98a7b7"/>`;}
     if(tail>0)marks+=`<line data-fraction="${tail}" x1="${n*tickWidth}" x2="${v*tickWidth}" y1="18" y2="18" stroke="${categoryPalette[i%7]}" stroke-width="2" class="fade" style="animation-delay:${.4+i*.08}s"/>`;
-    return `<button class="tick-row" data-open-book="${esc(b.book_id)}" data-seconds="${b.reading_seconds}" aria-label="${esc(b.title)}，${esc(duration(b.reading_seconds))}，查看详情"><span class="tick-label">${esc(b.title)}</span><svg viewBox="0 0 490 30" aria-hidden="true"><line x1="0" x2="480" y1="21" y2="21" stroke="#d7ceba" stroke-width=".6"/>${marks}</svg><span class="tick-time">${esc(duration(b.reading_seconds))}</span></button>`;
+    return `<button class="tick-row" data-open-book="${esc(b.book_id)}" data-seconds="${b.reading_seconds}" aria-label="${esc(b.title)}，${esc(duration(b.reading_seconds))}，查看详情"><span class="tick-label">${esc(b.title)}</span><svg viewBox="0 0 490 30" aria-hidden="true"><line x1="0" x2="480" y1="21" y2="21" stroke="#e5e7eb" stroke-width=".6"/>${marks}</svg><span class="tick-time">${esc(duration(b.reading_seconds))}</span></button>`;
   }).join(''):'<p class="empty">有逐书数据时，这里会呈现每本书的阅读投入。</p>';
   $('#investmentTable').innerHTML='<table><thead><tr><th>书名</th><th>时长</th><th>秒数</th></tr></thead><tbody>'+timedBooks.map(b=>`<tr><td>${esc(b.title)}</td><td>${esc(duration(b.reading_seconds))}</td><td>${b.reading_seconds}</td></tr>`).join('')+'</tbody></table>';
   revealChart('investment');
@@ -270,7 +270,7 @@
     bookShareTrigger.disabled=state.busy||!books.length;$('#selectAllShareBooks').disabled=state.busy;$('#clearShareBooks').disabled=state.busy;
     if(state.busy||!books.length)closeShareBooks();
     $('#selectedCount').textContent=`已选${state.selection.size}／${pages.length}页`;$('#undoSelection').disabled=!state.undo.length||state.busy;$('#exportGroup').disabled=!state.selection.size||state.busy;$('#exportOne').disabled=state.busy;
-    $$('[data-page]').forEach(el=>{el.checked=state.selection.has(el.dataset.page);el.disabled=state.busy;el.onchange=()=>{if(state.busy)return;recordUndo();el.checked?state.selection.add(el.dataset.page):state.selection.delete(el.dataset.page);drawShare();};});
+    $$('[data-page]').forEach(el=>{el.checked=state.selection.has(el.dataset.page);el.disabled=state.busy||!el.dataset.page.startsWith('book-');el.onchange=()=>{if(state.busy)return;recordUndo();el.checked?state.selection.add(el.dataset.page):state.selection.delete(el.dataset.page);drawShare();};});
     $$('[data-preview]').forEach(el=>{el.disabled=state.busy;el.setAttribute('aria-pressed',String(state.preview===el.dataset.preview));el.onclick=()=>{if(state.busy)return;state.preview=el.dataset.preview;drawShare();};});
     filterShareBooks();updatePreview();
   }
@@ -281,12 +281,16 @@
   function loadImage(src){if(!images.has(src))images.set(src,new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('书封加载失败'));im.src=src;}));return images.get(src);}
   const shareArtwork=window.ReadingShareArtwork.create({data,art,loadImage});
   async function canvasPage(p,ratio){return shareArtwork.render(p,ratio);}
-  async function updatePreview(){const token=++renderToken,p=pages.find(p=>p.id===state.preview)||pages[0];try{const cv=await canvasPage(p,state.ratio);if(token!==renderToken)return;const target=$('#previewCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('#previewTitle').textContent=p.title;}catch(e){if(token===renderToken){$('#previewTitle').textContent='预览失败：'+e.message;}}}
+  async function updatePreview(){const token=++renderToken,p=pages.find(p=>p.id===state.preview)||pages[0],ratio=state.ratio,target=$('#previewCanvas');target.setAttribute('aria-busy','true');$('#previewTitle').textContent='正在排版…';try{const cv=await canvasPage(p,ratio);if(token!==renderToken)return;target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);target.dataset.rendered=p.id+'|'+ratio;target.setAttribute('aria-busy','false');$('#previewTitle').textContent=p.title;}catch(e){if(token===renderToken){target.getContext('2d').clearRect(0,0,target.width,target.height);delete target.dataset.rendered;target.setAttribute('aria-busy','false');$('#previewTitle').textContent='预览失败：'+e.message;}}}
   const blobCanvas = cv=>new Promise((resolve,reject)=>cv.toBlob(b=>b?resolve(b):reject(Error('无法生成PNG')),'image/png'));
   function download(blob,name){const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
   const filename = p => `${data.year}-${String(pages.indexOf(p)+1).padStart(2,'0')}-${p.id.replace(/[^a-zA-Z0-9_-]/g,'-').slice(0,80)||'page'}.png`;
-  async function runExport(task){if(state.busy)return;state.busy=true;$('#ratio').disabled=true;drawShare();$('#exportStatus').textContent='正在准备字体、书封与分享画布…';try{await task();$('#exportStatus').textContent='下载已发起，请查看浏览器下载记录。';}catch(e){$('#exportStatus').textContent='导出失败：'+e.message+'。已保留选择，可以重试。';}finally{state.busy=false;$('#ratio').disabled=false;drawShare();}}
-  $('#exportOne').onclick=()=>runExport(async()=>{const p=pages.find(p=>p.id===state.preview);const cv=await canvasPage(p,state.ratio);download(await blobCanvas(cv),filename(p));});
+  let exportCancelled=false;
+  const cancelExport=document.createElement('button');cancelExport.id='cancelExport';cancelExport.type='button';cancelExport.className='text-button';cancelExport.hidden=true;cancelExport.textContent='取消导出';$('#exportStatus').after(cancelExport);
+  cancelExport.onclick=()=>{exportCancelled=true;cancelExport.disabled=true;$('#exportStatus').textContent='正在结束当前页，所选书籍会保留…';};
+  function checkExport(){if(exportCancelled){const e=Error('已取消');e.name='AbortError';throw e;}}
+  async function runExport(task){if(state.busy)return;state.busy=true;exportCancelled=false;cancelExport.hidden=false;cancelExport.disabled=false;$('#ratio').disabled=true;drawShare();$('#exportStatus').textContent='正在准备字体、书封与分享画布…';try{await task();$('#exportStatus').textContent='下载已发起，请查看浏览器下载记录。';}catch(e){$('#exportStatus').textContent=e.name==='AbortError'?'已取消导出，选择已保留。':'导出失败：'+e.message+'。已保留选择，可以重试。';}finally{state.busy=false;cancelExport.hidden=true;$('#ratio').disabled=false;drawShare();}}
+  $('#exportOne').onclick=()=>runExport(async()=>{const p=pages.find(p=>p.id===state.preview);const cv=await canvasPage(p,state.ratio),blob=await blobCanvas(cv);checkExport();download(blob,filename(p));});
   // Dependency-free stored ZIP. CRC32 + UTF8 filenames; tested against Python zipfile.
   function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let i=0;i<8;i++)c=(c>>>1)^((c&1)?0xedb88320:0);}return(c^0xffffffff)>>>0;}
   async function zip(files){const enc=new TextEncoder(),chunks=[],central=[];let offset=0;const u16=(view,pos,v)=>view.setUint16(pos,v,true),u32=(view,pos,v)=>view.setUint32(pos,v,true);
@@ -294,7 +298,7 @@
       const entry=new Uint8Array(46+name.length),v=new DataView(entry.buffer);u32(v,0,0x02014b50);u16(v,4,20);u16(v,6,20);u16(v,8,0x800);u32(v,16,crc);u32(v,20,bytes.length);u32(v,24,bytes.length);u16(v,28,name.length);u32(v,42,offset);entry.set(name,46);central.push(entry);offset+=local.length+bytes.length;}
     const size=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array(22),v=new DataView(end.buffer);u32(v,0,0x06054b50);u16(v,8,files.length);u16(v,10,files.length);u32(v,12,size);u32(v,16,offset);return new Blob([...chunks,...central,end],{type:'application/zip'});
   }
-  $('#exportGroup').onclick=()=>runExport(async()=>{const chosen=pages.filter(p=>state.selection.has(p.id)),ratio=state.ratio,files=[];for(const [i,p] of chosen.entries()){$('#exportStatus').textContent=`正在生成第${i+1}／${chosen.length}页…`;files.push({name:filename(p),blob:await blobCanvas(await canvasPage(p,ratio))});}download(await zip(files),`${data.year}-reading-share.zip`);});
+  $('#exportGroup').onclick=()=>runExport(async()=>{const chosen=pages.filter(p=>state.selection.has(p.id)),ratio=state.ratio,files=[];for(const [i,p] of chosen.entries()){checkExport();$('#exportStatus').textContent=`正在生成第${i+1}／${chosen.length}页…`;files.push({name:filename(p),blob:await blobCanvas(await canvasPage(p,ratio))});checkExport();}const blob=await zip(files);checkExport();download(blob,`${data.year}-reading-share.zip`);});
   function markdown(){
     const lines=[`# ${data.year}阅读年鉴`,'',`范围：${scope}${data.as_of?'；采集日期：'+data.as_of:''}`,'',`阅读时长：${duration(data.summary.seconds)}`,`读过：${value(data.summary.read)}本；年度汇总读完：${value(data.summary.finished)}本`,''];
     if(data.collection_status&&!data.collection_status.complete)lines.push(data.collection_status.message||'部分材料暂未取得。','');
