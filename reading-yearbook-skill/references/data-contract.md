@@ -2,6 +2,8 @@
 
 仅在调整字段、接新数据源或排查输出时读取。
 
+本文件描述旧私人档案`schema_version: 1.0`，不作为HTML契约。默认HTML使用`reading-html/1.2`，其字段、null语义与历史笔记范围见[HTML年鉴操作](html-yearbook.md)。旧档案中缺逐书年度时长的0默认值不能当作已测得0秒传给新的HTML流程。
+
 ## 顶层
 
 `yearbook-data.json` 必须包含：

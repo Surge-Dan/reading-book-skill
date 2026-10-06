@@ -41,7 +41,7 @@ class DeliveryTests(unittest.TestCase):
     def test_successful_empty_notes_do_not_block_delivery(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);cover=root/'cover.png'
-            cover.write_bytes(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jO1cAAAAASUVORK5CYII='))
+            cover.write_bytes(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAAFElEQVR4nGP8/ukpAwMDEwMYQCkANbAC1LhAEWwAAAAASUVORK5CYII='))
             materials={'year':2026,'books':[{'book_id':'one','notes_scope':'all_time','collection':{'highlights':'complete','thoughts':'complete'},'highlights':[],'thoughts':[],'errors':[]}]}
             result=deliver(snapshot(),materials,{'one':str(cover)},root/'index.html')
             self.assertEqual(result['status'],'complete')

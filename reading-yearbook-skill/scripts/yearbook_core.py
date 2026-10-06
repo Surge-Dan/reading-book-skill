@@ -138,7 +138,7 @@ def normalize_yearbook(raw: dict, year: int) -> dict:
         if note_summary.get("sort"):
             activity.append(note_summary["sort"])
         year_activity = [value for value in activity if _timestamp_parts(value)[0] == year]
-        annual_seconds = annual_read_seconds.get(book_id, 0)
+        annual_seconds = annual_read_seconds.get(book_id)
         if not year_activity and not annual_seconds:
             continue
 

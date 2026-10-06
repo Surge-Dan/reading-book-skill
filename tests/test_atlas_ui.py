@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,6 +9,7 @@ EDGE = Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
 
 
 def main() -> None:
+    from playwright.sync_api import sync_playwright
     console_errors = []
     with sync_playwright() as playwright:
         launch = {"headless": True}

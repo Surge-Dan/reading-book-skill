@@ -167,7 +167,7 @@
     const picked=all.filter(b=>b.selected), rows=collapsed?(picked.length?picked:all).slice(0,4):all;
     $('#expandShelf').hidden=filtered||printing||all.length<=4;$('#expandShelf').setAttribute('aria-expanded',String(state.expanded));$('#expandShelf').textContent=state.expanded?'收起书目 ↑':`展开全部${all.length}本 →`;
     $('#books').classList.toggle('list',state.list);
-    $('#books').innerHTML=rows.length?rows.map(b=>`<article class="book-entry"><button class="book" data-open-book="${esc(b.book_id)}"><span class="cover-wrap">${coverMarkup(b)}</span><h3>${esc(b.title)}</h3><p class="author">${esc(b.author)}</p><p class="book-meta">${esc(statusLabel(b))}${b.progress==null?'':` · ${b.progress}%`}</p></button><div class="book-actions"><button class="text-button" data-open-book="${esc(b.book_id)}">阅读详情 ↗</button><button class="text-button" data-share-book="${esc(b.book_id)}">加入分享</button></div></article>`).join(''):`<p class="empty">${data.books.length?'没有找到对应的书。可以换个关键词，或清除筛选。':data.coverage.complete?'这一年还没有阅读记录。以后读过的书，可以重新同步到这里。':'暂未取得这一年的书目，请检查数据来源或让助手重新同步。'}</p>`;
+    $('#books').innerHTML=rows.length?rows.map(b=>`<article class="book-entry"><button class="book" data-open-book="${esc(b.book_id)}"><span class="cover-wrap">${coverMarkup(b)}</span><h3>${esc(b.title)}</h3><p class="author">${esc(b.author)}</p><p class="book-meta">${esc(statusLabel(b))}${b.progress==null?'':` · ${b.progress}%`}</p></button><div class="book-actions"><button class="text-button" data-open-book="${esc(b.book_id)}">阅读详情 ↗</button><button class="text-button" data-share-book="${esc(b.book_id)}">预览分享卡</button></div></article>`).join(''):`<p class="empty">${data.books.length?'没有找到对应的书。可以换个关键词，或清除筛选。':data.coverage.complete?'这一年还没有阅读记录。以后读过的书，可以重新同步到这里。':'暂未取得这一年的书目，请检查数据来源或让助手重新同步。'}</p>`;
     $('#resultCount').textContent=`${collapsed?'精选':'显示'}${rows.length}／${data.books.length}本${state.category?' · '+state.category:''}`;
     $('#clearFilters').hidden=!state.query&&!state.category&&state.status==='all';
     $$('[data-status]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.status===state.status)));
@@ -184,7 +184,7 @@
   $('#search').addEventListener('input',e=>{if(state.composing||e.isComposing)return;clearTimeout(searchTimer);searchTimer=setTimeout(updateSearch,180);});
   $('#viewSwitch').onclick=()=>{state.list=!state.list;$('#viewSwitch').setAttribute('aria-pressed',String(state.list));$('#viewSwitch').textContent=state.list?'封面视图':'列表视图';drawBooks();};
 
-  function noteHtml(n,b,index,type){return `<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}${n.chapter_title?' · '+esc(n.chapter_title):n.chapter?' · 章节 '+esc(n.chapter):''}</small><button class="text-button" ${type==='划线'?'data-add-quote':'data-add-note'}="${esc(b.book_id)}" data-index="${index}">选这条加入分享</button></div>`;}
+  function noteHtml(n,b,index,type){return `<div class="detail-note">${esc(n.text)}<small>${esc(n.created_at||'日期未记录')}${n.chapter_title?' · '+esc(n.chapter_title):n.chapter?' · 章节 '+esc(n.chapter):''}</small><button class="text-button" ${type==='划线'?'data-add-quote':'data-add-note'}="${esc(b.book_id)}" data-index="${index}">${type==='划线'?'用这句做分享卡':'用这条笔记做分享卡'}</button></div>`;}
   function emptyNotes(b,kind){return b.note_coverage?.[kind]==='complete'?(kind==='highlights'?'已核查：这本书没有划线记录。':'已核查：这本书没有个人想法或点评。'):(kind==='highlights'?'这本书尚未载入完整划线。':'这本书尚未载入完整个人笔记。');}
   function bookDetails(b,printing=false){
     const noteScope=b.note_coverage?.scope==='all_time'?'本书全部历史记录':'年内已载入记录';
@@ -223,7 +223,7 @@
     state.quote=Math.max(0,Math.min(state.quote,rows.length-1));
     const n=rows[state.quote];$('#quotePosition').textContent=`${state.quote+1}／${rows.length}`;
     $('#previousQuote').disabled=state.quote===0;$('#nextQuote').disabled=state.quote===rows.length-1;
-    $('#quote').innerHTML=`<div class="quote-body"><blockquote>${esc(n.text)}</blockquote><p class="attribution">${entryKind==='thought'?'我的笔记 · ': '—'}《${esc(n.book.title)}》</p><p class="quote-scope">${n.book.note_coverage?.scope==='all_time'?'本书历史记录 · ':''}${esc(n.created_at||'日期未记录')}</p><div class="quote-actions"><button id="copyQuote" class="text-button">复制</button><button id="shareQuote" class="text-button">加入分享</button></div></div>`;
+    $('#quote').innerHTML=`<div class="quote-body"><blockquote>${esc(n.text)}</blockquote><p class="attribution">${entryKind==='thought'?'我的笔记 · ': '—'}《${esc(n.book.title)}》</p><p class="quote-scope">${n.book.note_coverage?.scope==='all_time'?'本书历史记录 · ':''}${esc(n.created_at||'日期未记录')}</p><div class="quote-actions"><button id="copyQuote" class="text-button">复制</button><button id="shareQuote" class="text-button">${entryKind==='thought'?'用这条笔记做分享卡':'用这句做分享卡'}</button></div></div>`;
     $('#copyQuote').onclick=()=>copyText(n.text);$('#shareQuote').onclick=()=>addBookShare(n.book.book_id,n.text,entryKind);
   }drawQuote();$('#previousQuote').onclick=()=>{state.quote--;drawQuote();};$('#nextQuote').onclick=()=>{state.quote++;drawQuote();};
 

@@ -16,13 +16,22 @@ GATEWAY_URL = "https://i.weread.qq.com/api/agent/gateway"
 
 
 class WeReadError(RuntimeError):
-    pass
+    def __init__(self, message, kind='temporary'):
+        super().__init__(message)
+        self.kind = kind
+
+    @property
+    def terminal(self):
+        return self.kind in {'auth', 'upgrade', 'parameter', 'stopped'} or any(
+            x in str(self) for x in ('HTTP 401', 'HTTP 403', 'HTTP 422', 'HTTP 499', '升级'))
 
 
 def _unwrap(response: dict) -> dict:
-    if response.get("upgrade_info"):
-        message = response["upgrade_info"].get("message", "微信读书 Skill 需要升级")
-        raise WeReadError(message)
+    if not isinstance(response,dict):raise WeReadError('接口返回不是对象','schema')
+    if "upgrade_info" in response and response["upgrade_info"] is not None:
+        info=response["upgrade_info"]
+        message = (info.get("message") if isinstance(info,dict) else None) or "微信读书 Skill 需要升级"
+        raise WeReadError(message, 'upgrade')
     data = response.get("data")
     return data if isinstance(data, dict) else response
 
@@ -41,7 +50,8 @@ def gateway_call(api_name: str, params: dict, api_key: str, timeout: int = 30, r
                 return _unwrap(json.loads(response.read().decode("utf-8")))
         except urllib.error.HTTPError as exc:
             if exc.code in {401, 403, 422, 499} or attempt == retries:
-                raise WeReadError(f"微信读书接口返回 HTTP {exc.code}；请检查 Key、参数或 Skill 版本。") from None
+                kind = 'auth' if exc.code in {401, 403} else 'upgrade' if exc.code == 499 else 'parameter' if exc.code == 422 else 'temporary'
+                raise WeReadError(f"微信读书接口返回 HTTP {exc.code}；请检查 Key、参数或 Skill 版本。", kind) from None
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             if attempt == retries:
                 raise WeReadError(f"微信读书接口暂时不可用：{type(exc).__name__}") from None

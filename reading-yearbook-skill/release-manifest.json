@@ -1,0 +1,647 @@
+{
+  "version": "2026.10.06",
+  "files": [
+    {
+      "path": "agents/openai.yaml",
+      "sha256": "970e915451558c999a0ebed446b6e8f887be663ef63f0a1cd413e8f7b562ee83",
+      "hash_kind": "text-lf",
+      "bytes": 447
+    },
+    {
+      "path": "assets/card-template.html",
+      "sha256": "926cf0c8a69fb0cfcc18b0232bccc88d5be1f0e949d099a2651a86921b3df4b6",
+      "hash_kind": "text-lf",
+      "bytes": 3061
+    },
+    {
+      "path": "assets/fonts/NotoSansSC.ttf.zlib",
+      "sha256": "3019ae01002f7fb0a1d1c696f109dc89f868524176d4bf53039a1011c8949312",
+      "hash_kind": "binary",
+      "bytes": 11297192
+    },
+    {
+      "path": "assets/fonts/NotoSerifSC.ttf.zlib",
+      "sha256": "6efc2d1db6a201b8560a66a9fb8ced5bb03647cddfefe1236d4c5e20b9a213c0",
+      "hash_kind": "binary",
+      "bytes": 15472522
+    },
+    {
+      "path": "assets/fonts/OFL-Sans.txt",
+      "sha256": "babcfe66c8a098b2fa279bc724a3a342f8124f77ce18941fbcc1bbb39823cded",
+      "hash_kind": "text-lf",
+      "bytes": 4480
+    },
+    {
+      "path": "assets/fonts/OFL-Serif.txt",
+      "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
+      "hash_kind": "text-lf",
+      "bytes": 4350
+    },
+    {
+      "path": "assets/lieflat-LICENSE.txt",
+      "sha256": "ffcca38841adb694b6f380647e15f17c446a4d1656fed51a1e2041d064c94cc8",
+      "hash_kind": "text-lf",
+      "bytes": 4563
+    },
+    {
+      "path": "assets/reading-app.css",
+      "sha256": "c4d750601088163abdef564ea47abc2dd6e42642d98bdc9c5fa2cd5161b2c245",
+      "hash_kind": "text-lf",
+      "bytes": 16400
+    },
+    {
+      "path": "assets/reading-app.js",
+      "sha256": "d340157a2dea2f3ecaff7c615e02b1023e4e8a1b52c86c6a984e67c385502ea3",
+      "hash_kind": "text-lf",
+      "bytes": 42835
+    },
+    {
+      "path": "assets/reading-art.css",
+      "sha256": "4f6c12a249f2c888fb1e8f50b9429ea6dfe0df3a675b231efa50c6baa67820d0",
+      "hash_kind": "text-lf",
+      "bytes": 21325
+    },
+    {
+      "path": "assets/reading-share-art.js",
+      "sha256": "64c9ec85a0cb70e33c7b65b100a24f624f1dc5d920a229e265ef6a2edc4e4806",
+      "hash_kind": "text-lf",
+      "bytes": 27833
+    },
+    {
+      "path": "assets/reading-template.html",
+      "sha256": "77f9fc32a26f853bdeaf3ebb54c5b9ecca899160392a1094d55dba0800da9596",
+      "hash_kind": "text-lf",
+      "bytes": 10650
+    },
+    {
+      "path": "assets/sample-data.json",
+      "sha256": "95b547d27ae15a0a8cfbe9529c70c3967b67fcb58d8ed7c227f906c223797536",
+      "hash_kind": "text-lf",
+      "bytes": 7316
+    },
+    {
+      "path": "assets/yearbook-art/hero-book.png",
+      "sha256": "565b194367f2308b4da54fbc03b5da8557b3206d263b3de5d8cc9c6b99da0209",
+      "hash_kind": "binary",
+      "bytes": 2364139
+    },
+    {
+      "path": "assets/yearbook-art/reading.png",
+      "sha256": "a2a1c82d6347503019880c50a03510f304782d2f6b172f2204eaf02040dcf366",
+      "hash_kind": "binary",
+      "bytes": 55324
+    },
+    {
+      "path": "assets/yearbook-art/README.md",
+      "sha256": "220fd3506b4234bfddaa217470be8d83ec1548db3ea0fde22ac35fb7a861dd85",
+      "hash_kind": "text-lf",
+      "bytes": 769
+    },
+    {
+      "path": "assets/yearbook-art/rhythm.png",
+      "sha256": "8f2e4f1380b997fcf6768ebb8dc875b4828728965bc13daf85c61dd3dff17272",
+      "hash_kind": "binary",
+      "bytes": 63558
+    },
+    {
+      "path": "assets/yearbook-template.html",
+      "sha256": "2586dd4c383ea485f5d228385fbb852125cd5f4a75edfbd085bd9280c90d0774",
+      "hash_kind": "text-lf",
+      "bytes": 10598
+    },
+    {
+      "path": "examples/botanical-demo/assets/plant-shape.svg",
+      "sha256": "55065702e247f312a56a3004c0e917082fdf24769f98dccfb8ee3feeda5a9505",
+      "hash_kind": "text-lf",
+      "bytes": 645
+    },
+    {
+      "path": "examples/botanical-demo/caption.md",
+      "sha256": "6f7f9afb51a87cd09471b54a0a0d16e13a56893f1d809d824233192884677590",
+      "hash_kind": "text-lf",
+      "bytes": 159
+    },
+    {
+      "path": "examples/botanical-demo/deck.html",
+      "sha256": "574b722d6db861cce400eeadd2b2999f15185fd541c6e0ecca9f29edd05dd337",
+      "hash_kind": "text-lf",
+      "bytes": 3121
+    },
+    {
+      "path": "examples/botanical-demo/images/01-cover.png",
+      "sha256": "df479c58513934066671494085c7bc5a91d15f66ef319f9989d7a50db94c4ba4",
+      "hash_kind": "binary",
+      "bytes": 80032
+    },
+    {
+      "path": "examples/botanical-demo/images/02-book-b-sample-004.png",
+      "sha256": "f30756dd6787a90e22b454f5133e2c8ad58b7737fdc16fadd099ea3f2db05105",
+      "hash_kind": "binary",
+      "bytes": 87571
+    },
+    {
+      "path": "examples/botanical-demo/overview.png",
+      "sha256": "0af56224524d67770bc5aac6730ad75a456ffb4d2cead950b8e3f1852ae98d7d",
+      "hash_kind": "binary",
+      "bytes": 55033
+    },
+    {
+      "path": "examples/botanical-demo/share-job.json",
+      "sha256": "8e3649ee97aeeabf04385d10ab80a8b10f7ffe35dc6d8781e073c2518418072a",
+      "hash_kind": "text-lf",
+      "bytes": 6200
+    },
+    {
+      "path": "examples/build_botanical_demo.py",
+      "sha256": "8526595c8db0d96eb5b46aa4ed5c3c31d1cc264d7d3609b6ccecdea7a9207bfe",
+      "hash_kind": "text-lf",
+      "bytes": 5949
+    },
+    {
+      "path": "examples/build_exhibition_demo.py",
+      "sha256": "3ec76320f0366df725c05f6b0986063e4c64fbde9b51087d3c346fae240c0c81",
+      "hash_kind": "text-lf",
+      "bytes": 13504
+    },
+    {
+      "path": "examples/build_share_demo.py",
+      "sha256": "1d73873e75e733fb968f0329e431eeee3504db98f6d304659b21719b5bbdf17b",
+      "hash_kind": "text-lf",
+      "bytes": 7958
+    },
+    {
+      "path": "examples/exhibition-demo/assets/street.jpg",
+      "sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf",
+      "hash_kind": "binary",
+      "bytes": 850687
+    },
+    {
+      "path": "examples/exhibition-demo/caption.md",
+      "sha256": "a6e94a68b290a3f7eaf0f7a01ed6b4d4616c5b16bf90eae4b1fba2ec81c773b8",
+      "hash_kind": "text-lf",
+      "bytes": 199
+    },
+    {
+      "path": "examples/exhibition-demo/deck.html",
+      "sha256": "b1f673e1dbed38a4c5148c4beff8ae28a73420d50240e9b646d7d3b7c9522d43",
+      "hash_kind": "text-lf",
+      "bytes": 22317
+    },
+    {
+      "path": "examples/exhibition-demo/images/01-cover.png",
+      "sha256": "f16a5ad22a6cf931446d4de0e1308e4333245273049996ea18f0b26d66829e67",
+      "hash_kind": "binary",
+      "bytes": 178399
+    },
+    {
+      "path": "examples/exhibition-demo/images/02-overview.png",
+      "sha256": "66b5f754bbf1216d203e84f0901c69da26539e6926ff5017fdcb8b0d8b90ee3d",
+      "hash_kind": "binary",
+      "bytes": 134296
+    },
+    {
+      "path": "examples/exhibition-demo/images/03-book-b-sample-002.png",
+      "sha256": "e0f2ca5e28b3dfac93d8ff6f9ba73654037be755d70192e97ae85c9a3e10024f",
+      "hash_kind": "binary",
+      "bytes": 382151
+    },
+    {
+      "path": "examples/exhibition-demo/images/04-book-b-sample-001.png",
+      "sha256": "f488cfd498e21878d0334eb1013acd6f1f92ababbc874af9a8e3b4e537815bf0",
+      "hash_kind": "binary",
+      "bytes": 103618
+    },
+    {
+      "path": "examples/exhibition-demo/images/05-book-b-sample-005.png",
+      "sha256": "4684f2a9f39bcaa2624871bc513e4af9646fcc15a2d63ef04ca9676c5df10fd8",
+      "hash_kind": "binary",
+      "bytes": 109136
+    },
+    {
+      "path": "examples/exhibition-demo/images/06-book-b-sample-004.png",
+      "sha256": "f17027eaf3c89e32067e93931dfd7dde946fbcc7a41543c381517911cdeedc58",
+      "hash_kind": "binary",
+      "bytes": 121318
+    },
+    {
+      "path": "examples/exhibition-demo/overview.png",
+      "sha256": "8933f090ae86495aa6884b26580a1252e205f057bfa3d6fd02c421735d9ef7f8",
+      "hash_kind": "binary",
+      "bytes": 343695
+    },
+    {
+      "path": "examples/exhibition-demo/share-job.json",
+      "sha256": "666f40751ef159eb4eaebe13227121c5f264de5b0e33dfe6515c3558108dbf5c",
+      "hash_kind": "text-lf",
+      "bytes": 32185
+    },
+    {
+      "path": "examples/exhibition-demo.css",
+      "sha256": "4260a1d39056605fd33260d0e5e43b0929610e3b7a3c932549ce8d7d694bfc7d",
+      "hash_kind": "text-lf",
+      "bytes": 6893
+    },
+    {
+      "path": "examples/material-led-cases.json",
+      "sha256": "83a331b0f6a62d8920256c7a6a59020a2bda6e13e1bc27207eb34499af73ea9b",
+      "hash_kind": "text-lf",
+      "bytes": 2468
+    },
+    {
+      "path": "examples/reading-html-demo/index.html",
+      "sha256": "6e901e392bde75936700bacde051a1ef8a70f63d9cc9dff24dd829baceebb806",
+      "hash_kind": "text-lf",
+      "bytes": 3436814
+    },
+    {
+      "path": "examples/reading-html-demo/README.md",
+      "sha256": "2f7ee9e454a12189122302f4aff72b7a244671746b42fdead58d7e55b5975b82",
+      "hash_kind": "text-lf",
+      "bytes": 724
+    },
+    {
+      "path": "examples/README.md",
+      "sha256": "ee2772fafbf6799c65496b897ace1d87a3c85d00f49546913fc420d0083f1eae",
+      "hash_kind": "text-lf",
+      "bytes": 3084
+    },
+    {
+      "path": "examples/share-demo/assets/atget-organ-player.jpg",
+      "sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf",
+      "hash_kind": "binary",
+      "bytes": 850687
+    },
+    {
+      "path": "examples/share-demo/caption.md",
+      "sha256": "711713768f57bb8fd62aec532a5077c2fe8afcfacce64e0ff674d60baaf90e37",
+      "hash_kind": "text-lf",
+      "bytes": 172
+    },
+    {
+      "path": "examples/share-demo/deck.html",
+      "sha256": "3994a7473d5c44850e4759047c4bf10e478654268a9f820850718fb6e220e2f8",
+      "hash_kind": "text-lf",
+      "bytes": 9752
+    },
+    {
+      "path": "examples/share-demo/images/01-cover.png",
+      "sha256": "c3306cc013e5480425eed4793b546bfb6e98aec8ee8a91ae21ea75104f04c781",
+      "hash_kind": "binary",
+      "bytes": 549562
+    },
+    {
+      "path": "examples/share-demo/images/02-book-b-sample-002.png",
+      "sha256": "189888c02cb7e7c9826573dd91170daa1889a9ad48e3115c2c107f1ee90e0ce3",
+      "hash_kind": "binary",
+      "bytes": 380758
+    },
+    {
+      "path": "examples/share-demo/images/03-book-b-sample-001.png",
+      "sha256": "a31f582091cac281c03032872004badcfec2e6713d6922fb9f06e72964ddd1a5",
+      "hash_kind": "binary",
+      "bytes": 86375
+    },
+    {
+      "path": "examples/share-demo/images/04-book-b-sample-005.png",
+      "sha256": "f054f178a96d81ef1c82bbbcd8fe4259f9878d3a47123277b70486bd57732235",
+      "hash_kind": "binary",
+      "bytes": 80622
+    },
+    {
+      "path": "examples/share-demo/overview.png",
+      "sha256": "2e450c499804d05bdd6e1dbe2e7336ca74d01d94ddf29c3e08867bbf916e41dc",
+      "hash_kind": "binary",
+      "bytes": 278271
+    },
+    {
+      "path": "examples/share-demo/share-job.json",
+      "sha256": "e6c173a6572728df25fec503f1619ea9eae914410cd0a9b32a11ddcca7da9646",
+      "hash_kind": "text-lf",
+      "bytes": 13291
+    },
+    {
+      "path": "examples/visual-proof/brief.md",
+      "sha256": "37e47b4b7934297a1aa20e1438cb18b094587d2d574daf511c1f5afb8bb2b89f",
+      "hash_kind": "text-lf",
+      "bytes": 2841
+    },
+    {
+      "path": "examples/visual-proof/deck.html",
+      "sha256": "476ea7916a6572c2a40735574b3fa2ee88ca06bba2287f53daf628f7cd113fcf",
+      "hash_kind": "text-lf",
+      "bytes": 5089
+    },
+    {
+      "path": "examples/visual-proof/images/01-cover.png",
+      "sha256": "6168235ffb71a5f431586824dadd5a32a86d1e428776f081d145aca7e20888f0",
+      "hash_kind": "binary",
+      "bytes": 72742
+    },
+    {
+      "path": "examples/visual-proof/images/02-choice.png",
+      "sha256": "91d3a35d65b5e25c93322b56e2dc4de78b7dcc316be7334dd9fc607ed431a1d6",
+      "hash_kind": "binary",
+      "bytes": 94016
+    },
+    {
+      "path": "examples/visual-proof/images/mobile-preview.png",
+      "sha256": "415fd97df42ea1951f23f06a55d85c18144dd833ca06ce504c2a70babdba4dde",
+      "hash_kind": "binary",
+      "bytes": 63075
+    },
+    {
+      "path": "examples/visual-proof/render.cjs",
+      "sha256": "b20379ca4737b74cd7700de980da1e2fb371ed7af67a9170a547987e911da484",
+      "hash_kind": "text-lf",
+      "bytes": 4245
+    },
+    {
+      "path": "examples/visual-proof-v2/assets/atget-organ-player.jpg",
+      "sha256": "daf9463833d1b05d3ddeea304bd8531cbd4ad28d11b4517ebaec5a7ba97c3bbf",
+      "hash_kind": "binary",
+      "bytes": 850687
+    },
+    {
+      "path": "examples/visual-proof-v2/assets/atget-source.json",
+      "sha256": "58f69af665ca319e4435c8ffc16970307e74297930d09fbeb8e187593f7a3647",
+      "hash_kind": "text-lf",
+      "bytes": 916
+    },
+    {
+      "path": "examples/visual-proof-v2/brief.md",
+      "sha256": "b162116ebf317c006be0bdd74444a17c8482c92673966c3bd646b143cd564fd3",
+      "hash_kind": "text-lf",
+      "bytes": 2146
+    },
+    {
+      "path": "examples/visual-proof-v2/deck.html",
+      "sha256": "4bf6f043c0a2a185576331a29a87d435060fd89373939418a9461140917f4537",
+      "hash_kind": "text-lf",
+      "bytes": 5920
+    },
+    {
+      "path": "examples/visual-proof-v2/images/01-cover.png",
+      "sha256": "c3306cc013e5480425eed4793b546bfb6e98aec8ee8a91ae21ea75104f04c781",
+      "hash_kind": "binary",
+      "bytes": 549562
+    },
+    {
+      "path": "examples/visual-proof-v2/images/02-city.png",
+      "sha256": "189888c02cb7e7c9826573dd91170daa1889a9ad48e3115c2c107f1ee90e0ce3",
+      "hash_kind": "binary",
+      "bytes": 380758
+    },
+    {
+      "path": "examples/visual-proof-v2/images/mobile-preview.png",
+      "sha256": "86d73c95212dab872fde99b8e3aec1e8a2f12b240957a8b5a0021d90bf203dde",
+      "hash_kind": "binary",
+      "bytes": 217562
+    },
+    {
+      "path": "examples/workflow_fixture.py",
+      "sha256": "db42ca716b228a5baac777962344289eeec8f0e62787293ca2bc9f49c3f4414f",
+      "hash_kind": "text-lf",
+      "bytes": 4055
+    },
+    {
+      "path": "references/art-direction.md",
+      "sha256": "cfc936039a105b8398f97ef1ef0c58aaaafe059737da34c3c12709005d1c0f35",
+      "hash_kind": "text-lf",
+      "bytes": 7741
+    },
+    {
+      "path": "references/card-system.md",
+      "sha256": "dd663a83ac8966e08561eac20d5345473620ebb5989ea5ddbb9a7a2875ebe19e",
+      "hash_kind": "text-lf",
+      "bytes": 1837
+    },
+    {
+      "path": "references/collage-method.md",
+      "sha256": "08e42ecf8ec71ffc07a8a0cdcc227e37548507e93cb50f1f42f3345922b6b8a3",
+      "hash_kind": "text-lf",
+      "bytes": 2555
+    },
+    {
+      "path": "references/data-contract.md",
+      "sha256": "bc3dd9265e983dc25e041f1a9b1e8b791cae92e26c76e3745d688f741ec92f88",
+      "hash_kind": "text-lf",
+      "bytes": 2868
+    },
+    {
+      "path": "references/distillation-method.md",
+      "sha256": "6fcc5f273d6d1cfa13069f095f41649f23fdbfc9e65c10e06f285876c0539be6",
+      "hash_kind": "text-lf",
+      "bytes": 1389
+    },
+    {
+      "path": "references/evidence-rules.md",
+      "sha256": "64ec9cacaba26db914d6583a311c92504d5f17114477f65b23dbb9421b420b5e",
+      "hash_kind": "text-lf",
+      "bytes": 1328
+    },
+    {
+      "path": "references/html-yearbook.md",
+      "sha256": "3709b6e93fd495716a526c686b3972a123f208181e800048f37662eed1bbd8d1",
+      "hash_kind": "text-lf",
+      "bytes": 17773
+    },
+    {
+      "path": "references/output-contract.md",
+      "sha256": "19bbaf77928b0567573580b5be9347c04c1e4d24f3152bcc4648f44a49c5dc7d",
+      "hash_kind": "text-lf",
+      "bytes": 2228
+    },
+    {
+      "path": "references/share-typography.md",
+      "sha256": "6bcafa69a5eb62c27292c7552ebc9dcb84ba09a198dd0d0eff57e430b445272e",
+      "hash_kind": "text-lf",
+      "bytes": 2884
+    },
+    {
+      "path": "references/share-workflow.md",
+      "sha256": "37de594ce7dbe954da3da2267269c9ea60e7c27a08e6195dd24eb4fd1faf2ea4",
+      "hash_kind": "text-lf",
+      "bytes": 12057
+    },
+    {
+      "path": "references/typography.md",
+      "sha256": "8e2cd3565f3e160d1d2558ee2d844cac3db4e84677be131c589ccbf8007f803a",
+      "hash_kind": "text-lf",
+      "bytes": 2370
+    },
+    {
+      "path": "references/visual-capabilities.md",
+      "sha256": "2a03a99dc450da4d3612e097e1ce7185137c7f1f0eb2855e313cfd7b6b880660",
+      "hash_kind": "text-lf",
+      "bytes": 3622
+    },
+    {
+      "path": "references/weread-api.md",
+      "sha256": "42125241b4ba8ad3d7a89c3f69b8b0d1c1b5dbbe17ddd65b42298bf069059f5e",
+      "hash_kind": "text-lf",
+      "bytes": 3201
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "a263adab541ee686061e7be550018c1c93cfc879ae96f93d6132870ab13d313e",
+      "hash_kind": "text-lf",
+      "bytes": 42
+    },
+    {
+      "path": "scripts/art_direction.py",
+      "sha256": "42f7ea6bc4420a41623f31c58acde08d94506ea8950a4a3299c3beb621010889",
+      "hash_kind": "text-lf",
+      "bytes": 8470
+    },
+    {
+      "path": "scripts/build_book_profiles.py",
+      "sha256": "fd1167c3b97b7abc5f74c71914c552481b62f3107757ab4b79aeb4f1de6cb8fe",
+      "hash_kind": "text-lf",
+      "bytes": 655
+    },
+    {
+      "path": "scripts/build_deep_distill.py",
+      "sha256": "bdd3f4cb7c39f9881b0f12e1dbe94fc2546f98b968b0e8007321082281233f20",
+      "hash_kind": "text-lf",
+      "bytes": 11752
+    },
+    {
+      "path": "scripts/build_reading_html.py",
+      "sha256": "49d41f195aaaa6dae53cc057fea6f5ed9ab574194e28c722528ec2d89cadc6ba",
+      "hash_kind": "text-lf",
+      "bytes": 27536
+    },
+    {
+      "path": "scripts/collage_materials.py",
+      "sha256": "6d5d9766705e89e6afd9b8f5ad87820b6d5fe86dff69a7ef0f8a8f5ef044c084",
+      "hash_kind": "text-lf",
+      "bytes": 2594
+    },
+    {
+      "path": "scripts/collect_html_materials.py",
+      "sha256": "3695e325712a3247adb1fb350496ba9425f4cb6ab2bf0f6ffa5179ec405d4d34",
+      "hash_kind": "text-lf",
+      "bytes": 15718
+    },
+    {
+      "path": "scripts/collect_weread_data.py",
+      "sha256": "9918d1d844177f1176d4968703da48207b7b3abb885796ff9dd0a2369a896818",
+      "hash_kind": "text-lf",
+      "bytes": 9332
+    },
+    {
+      "path": "scripts/content_plan.py",
+      "sha256": "1d4799fb6c68cbb3a520d04eb8e264d882625ad90a8d19049d67a19144196f3b",
+      "hash_kind": "text-lf",
+      "bytes": 2742
+    },
+    {
+      "path": "scripts/create_display_lettering.py",
+      "sha256": "6b8c7af69372c3a84960141d3efd8a89a8e63ddb484866d46680c162032fd8f8",
+      "hash_kind": "text-lf",
+      "bytes": 1286
+    },
+    {
+      "path": "scripts/embed_fonts.py",
+      "sha256": "cc68d6ac4a8e6ccc1c308f6fe998007968819679e10dc1455b3c8c47a4dd2714",
+      "hash_kind": "text-lf",
+      "bytes": 2531
+    },
+    {
+      "path": "scripts/export_cards.py",
+      "sha256": "09181ca29c9022b4c041f6f40e650be5fd65b8ec62899ae45ad4fd19214ab0ea",
+      "hash_kind": "text-lf",
+      "bytes": 2525
+    },
+    {
+      "path": "scripts/export_deck.cjs",
+      "sha256": "4d37b4cf7864f2b3275ee576b8528530344455f6fb3d1704fe19550e4a44597d",
+      "hash_kind": "text-lf",
+      "bytes": 20648
+    },
+    {
+      "path": "scripts/generate_reading_html.py",
+      "sha256": "2310f7292ba0711c9df737ffa4bc0dfb5ee7e6a549a85b003799591deb0ccaa6",
+      "hash_kind": "text-lf",
+      "bytes": 15512
+    },
+    {
+      "path": "scripts/html_contract.py",
+      "sha256": "b50efe76bf4f8219ef5a6aa862ae41596702a0ef46a61b5339b63340a3f75dc4",
+      "hash_kind": "text-lf",
+      "bytes": 2273
+    },
+    {
+      "path": "scripts/inspect_artwork.cjs",
+      "sha256": "eadbfa4a63f8416ce7998ee1fbdff34076c3673066160e6fa28ac814e2918db5",
+      "hash_kind": "text-lf",
+      "bytes": 9339
+    },
+    {
+      "path": "scripts/normalize_yearbook.py",
+      "sha256": "d2bad7db1f484cf64587e15c201bafb2f8ff8cf27144908f5edf176143b4b290",
+      "hash_kind": "text-lf",
+      "bytes": 783
+    },
+    {
+      "path": "scripts/render_yearbook.py",
+      "sha256": "261f68f4e2dcb760cfe7ed382a2a30dde428c5857ba785fd0740cd52f4924508",
+      "hash_kind": "text-lf",
+      "bytes": 9720
+    },
+    {
+      "path": "scripts/run_share.py",
+      "sha256": "4f69360acda95b3889e4be19a9a340ae1c98d5d7edc247f0d132a7b0a85a7dca",
+      "hash_kind": "text-lf",
+      "bytes": 28409
+    },
+    {
+      "path": "scripts/run_yearbook.py",
+      "sha256": "0c44f7a42401a11ce98b3f52986cc0621e1284d119a3901e7e549600fa9415ea",
+      "hash_kind": "text-lf",
+      "bytes": 12406
+    },
+    {
+      "path": "scripts/score_books.py",
+      "sha256": "92b7db7faeb7eeaf007b5725fa503c60a8e5199e885773f80d435472b2ce85f1",
+      "hash_kind": "text-lf",
+      "bytes": 668
+    },
+    {
+      "path": "scripts/share_contract.py",
+      "sha256": "7f251d481572a46a93020ff19cd6294f168d5614b71dcb2d582a8f435fa5e402",
+      "hash_kind": "text-lf",
+      "bytes": 8624
+    },
+    {
+      "path": "scripts/skill_release.py",
+      "sha256": "b4263345a3748c00e7589e99c1aa94b30aa9cbeade5e8f207622774e85c1e7b1",
+      "hash_kind": "text-lf",
+      "bytes": 4842
+    },
+    {
+      "path": "scripts/static_graphics.py",
+      "sha256": "b897e6999fc5fabd84e388ab69a1f82d274a68895a01de22771bdb2852530996",
+      "hash_kind": "text-lf",
+      "bytes": 13554
+    },
+    {
+      "path": "scripts/validate_yearbook.py",
+      "sha256": "dee21fbf47bc72cc012525e2a5e7535f61197f2d758dd0a331fefb96a29cd58d",
+      "hash_kind": "text-lf",
+      "bytes": 15639
+    },
+    {
+      "path": "scripts/yearbook_core.py",
+      "sha256": "f0b699c1ed3f8a878f351acf6732b7776af30c7a59f2f74c4642c8c235df3638",
+      "hash_kind": "text-lf",
+      "bytes": 15696
+    },
+    {
+      "path": "SKILL.md",
+      "sha256": "3a280b601cf4abf5295e8a0cd32b8143a62ac7cd57a8a5b8e73897f9a642fc52",
+      "hash_kind": "text-lf",
+      "bytes": 10479
+    }
+  ]
+}

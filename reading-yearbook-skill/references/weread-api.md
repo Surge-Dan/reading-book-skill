@@ -20,8 +20,13 @@ Key 绑定用户身份。不得把 Key 写入输出、日志、异常或命令�
 - `/book/bookmarklist`：返回划线 `updated[]`，当前不导出书签正文。
 - `/review/list/mine`：参数名是小写 `bookid`；使用 `synckey` 游标分页。
 - `/readdata/detail`：年度请求使用 `mode: annually` 和目标年 1 月 1 日时间戳；`totalReadTime`、`readTimes` 均为秒。
+- `readLongest`最多10项，过滤不足5分钟，可能包含`albumInfo`，不能代替全年电子书清单。
+- `isStartReading`和累计`recordReadingTime`可以辅助判断已开始；累计时长不能转为年度时长。
+- `dailyReadTimes`可选，真实返回时才做日历；`preferTime`数组从6点到次日5点，转换后展示。
+- `preferCategory`可能包含默认占位，无真实时长／本数时不当作偏好；`val`不是全年百分比。
+- `wrReadTime/wrListenTime/readRate`有返回阈值，缺失不代表听书为零；`dayAverageReadTime`按自然日平均。
 
-默认只对书架年内更新时间、笔记本年内 `sort` 和年度 `readLongest` 命中的书逐本请求详情，避免对整个书架发起大量调用。候选明显缺失时可显式使用 `--scan-all-shelf`，但要向用户说明耗时和官方接口无法保证覆盖已移出书架且没有笔记的书。
+默认只对书架年内更新时间、笔记本年内 `sort` 和年度 `readLongest` 命中的书逐本请求详情，避免对整个书架发起大量调用。候选明显缺失时，旧采集器`collect_weread_data.py`可显式使用`--scan-all-shelf`；该参数不属于默认`generate_reading_html.py`入口。默认入口超过候选预算时返回范围确认，获准后使用`--allow-large-yearbook`。扩查需说明耗时，接口仍无法保证覆盖已移出书架且没有笔记的书。
 
 官方资料：
 

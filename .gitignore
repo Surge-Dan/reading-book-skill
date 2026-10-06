@@ -3,3 +3,5 @@ __pycache__/
 private/
 output/
 demo-output/
+
+reading-yearbook-skill/.vendor/
