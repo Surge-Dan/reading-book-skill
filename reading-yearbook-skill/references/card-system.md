@@ -1,6 +1,6 @@
 # 卡片系统
 
-这是旧档案模式模板的维护说明，只用于 `render_yearbook.py` 的兼容任务。它的年轮、色板与分类版式不约束默认分享；新分享读 [艺术指导](art-direction.md) 与 [分享操作](share-workflow.md)。
+这是旧档案模式模板的维护说明，只用于 `render_yearbook.py` 的兼容任务。它的年轮、色板与分类版式不约束默认分享；当前分享使用[HTML年鉴流程](html-yearbook.md)中的同一画布。
 
 ## 视觉立场
 

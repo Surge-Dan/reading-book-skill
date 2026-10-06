@@ -1,0 +1,152 @@
+{
+  "year": 2026,
+  "as_of": "2026-10-01",
+  "source_mode": "sample",
+  "verification_status": "sample_verified",
+  "books": [
+    {
+      "book_id": "demo-001",
+      "title": "看见选择",
+      "author": "林舟",
+      "category": "社会科学",
+      "progress": 100,
+      "is_started": true,
+      "annual_reading_seconds": 12960,
+      "selected": true,
+      "finish_time": "2026-02-15",
+      "intro": "这是一份关于社会科学的虚构示例简介，用于检查书籍资料的展示。",
+      "highlights": [
+        {
+          "text": "先把知道的事实写下来，再看看还有多少判断只是自己的猜测。",
+          "created_at": "2026-02-15",
+          "source_id": "h0"
+        }
+      ],
+      "thoughts": []
+    },
+    {
+      "book_id": "demo-002",
+      "title": "缓慢的城市",
+      "author": "周野",
+      "category": "文学",
+      "progress": 100,
+      "is_started": true,
+      "annual_reading_seconds": 10080,
+      "selected": true,
+      "finish_time": "2026-03-15",
+      "intro": "这是一份关于文学的虚构示例简介，用于检查书籍资料的展示。",
+      "highlights": [],
+      "thoughts": [
+        {
+          "text": "走路的时候先别急着拍照。试着记住一条街的声音，下次再来看看。",
+          "created_at": "2026-03-15",
+          "source_id": "n1"
+        }
+      ]
+    },
+    {
+      "book_id": "demo-003",
+      "title": "工作中的尺度",
+      "author": "陈屿",
+      "category": "商业",
+      "progress": 68,
+      "is_started": true,
+      "annual_reading_seconds": 24600,
+      "selected": true,
+      "finish_time": null,
+      "intro": "这是一份关于商业的虚构示例简介，用于检查书籍资料的展示。",
+      "highlights": [
+        {
+          "text": "尺度不是越大越好。先说明问题，再决定一次行动应该改变多大的范围。",
+          "created_at": "2026-04-15",
+          "source_id": "h2"
+        }
+      ],
+      "thoughts": [
+        {
+          "text": "开会前先写清楚这次要做的决定，比多准备几页材料管用。",
+          "created_at": "2026-04-15",
+          "source_id": "n2"
+        }
+      ]
+    },
+    {
+      "book_id": "demo-004",
+      "title": "植物知道时间",
+      "author": "苏禾",
+      "category": "自然科学",
+      "progress": 100,
+      "is_started": true,
+      "annual_reading_seconds": 14400,
+      "selected": true,
+      "finish_time": "2026-05-15",
+      "intro": "这是一份关于自然科学的虚构示例简介，用于检查书籍资料的展示。",
+      "highlights": [],
+      "thoughts": []
+    },
+    {
+      "book_id": "demo-005",
+      "title": "重新学习提问",
+      "author": "顾言",
+      "category": "教育",
+      "progress": 42,
+      "is_started": true,
+      "annual_reading_seconds": 17280,
+      "selected": false,
+      "finish_time": null,
+      "intro": "这是一份关于教育的虚构示例简介，用于检查书籍资料的展示。",
+      "highlights": [
+        {
+          "text": "一个好问题，往往能让我们看清原来没有注意到的前提。",
+          "created_at": "2026-06-15",
+          "source_id": "h4"
+        }
+      ],
+      "thoughts": []
+    },
+    {
+      "book_id": "demo-006",
+      "title": "冬日短篇集",
+      "author": "许川",
+      "category": "文学",
+      "progress": 100,
+      "is_started": true,
+      "annual_reading_seconds": 19440,
+      "selected": false,
+      "finish_time": "2026-07-15",
+      "intro": "这是一份关于文学的虚构示例简介，用于检查书籍资料的展示。",
+      "highlights": [
+        {
+          "text": "有些话当时没说出口，后来就在一页书里认了出来。",
+          "created_at": "2026-07-15",
+          "source_id": "h5"
+        }
+      ],
+      "thoughts": [
+        {
+          "text": "这段让我想起一个很久没联系的朋友。",
+          "created_at": "2026-07-15",
+          "source_id": "n5"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "book_count": 6,
+    "finished_count": 4,
+    "read_days": 108,
+    "note_count": 7,
+    "total_read_seconds": 98760,
+    "monthly_read_seconds": [
+      9000,
+      12600,
+      14400,
+      10800,
+      16200,
+      10800,
+      8640,
+      11340,
+      4980
+    ]
+  }
+}

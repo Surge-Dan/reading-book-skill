@@ -58,7 +58,17 @@ npx skills add Tencent/WeChatReading -g
 
 书目数量和统计根据你的记录生成。年度汇总与已载入书目分别标明，缺失的数据不当作零。
 
-[查看离线HTML示例](reading-yearbook-skill/examples/reading-html-demo/index.html)。示例使用虚构书目和笔记，文字封面不代表真实出版物；真实任务会整理对应书封。
+## 效果预览
+
+下面的网页和分享图由当前代码生成，使用虚构阅读记录，书封为原创示意。真实任务会使用用户自己的数据与对应书封。
+
+![阅读年鉴网页预览](reading-yearbook-skill/examples/reading-html-demo/web-preview.png)
+
+分享图直接使用网页内的渲染器导出。下图展示四种概览页和两张书卡，分别使用原文摘录与个人笔记。
+
+![网页分享区导出的组图预览](reading-yearbook-skill/examples/reading-html-demo/share-overview.png)
+
+[下载示例HTML](reading-yearbook-skill/examples/reading-html-demo/index.html)后可离线打开，体验搜索、详情和分享导出；也可以[查看完整PNG组图](reading-yearbook-skill/examples/reading-html-demo/images/)。
 
 ## 分享与导出
 
@@ -91,18 +101,9 @@ HTML年鉴的PNG和ZIP在浏览器内生成，不需要安装截图工具。导�
 
 修改以你最近确认的网页或图片为准，复用已有材料。只修数据或逻辑时，不更换主题，也不增加界面模块。
 
-也可以只做组图、主题书单或单书卡，按你需要的范围制作。独立组图流程支持自定义尺寸，提供编号PNG和整组预览，附可编辑的`deck.html`。这条流程需要已有Node、Playwright及Chromium或Edge；缺少时保留HTML并说明。
+只需要组图、主题书单或单书卡时，也使用同一套分享渲染器。可以从已有年鉴中选页，或根据提供的材料生成；不切换成另一套模板，也不为凑页数补写内容。
 
-<details>
-<summary>独立组图示例</summary>
-
-下面是虚构材料的设计样例，不代表每次生成都会采用相同版式。
-
-![阅读展览六页预览](reading-yearbook-skill/examples/exhibition-demo/overview.png)
-
-[阅读展览源文件](reading-yearbook-skill/examples/exhibition-demo/deck.html) · [植物单书卡](reading-yearbook-skill/examples/botanical-demo/deck.html) · [素材与重建说明](reading-yearbook-skill/examples/README.md)
-
-</details>
+网页内置导出支持1:1、3:4和4:5。其他尺寸属于额外开发，需要先确认，不能当作现成功能承诺。
 
 ## 数据与使用说明
 
@@ -123,7 +124,7 @@ HTML年鉴的PNG和ZIP在浏览器内生成，不需要安装截图工具。导�
 | [HTML年鉴流程](reading-yearbook-skill/references/html-yearbook.md) | 数据采集、网页与导出说明 |
 | [微信读书接入](reading-yearbook-skill/references/weread-api.md) | 接口与数据口径 |
 | [艺术指导](reading-yearbook-skill/references/art-direction.md) | 内容如何形成画面 |
-| [独立组图流程](reading-yearbook-skill/references/share-workflow.md) | 样张确认、修订与交付 |
+| [当前示例与重建说明](reading-yearbook-skill/examples/README.md) | 网页预览、分享图片与历史样例说明 |
 | [tests/](tests/) | 数据、交互与导出测试 |
 
 图表部分改编自[lieflat-charts](https://github.com/larashero3-dotcom/lieflat-charts)，使用PolyFormNoncommercial1.0.0许可，商业使用须满足对应许可条件。字体使用时遵循各自许可；Noto字体采用OFL许可。

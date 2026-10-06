@@ -1,0 +1,94 @@
+{
+  "status": "pass",
+  "sample_data": true,
+  "ratio": "3:4",
+  "pages": 10,
+  "renderer": "assets/reading-share-art.js",
+  "browser_png_matches_preview": true,
+  "max_premultiplied_channel_delta": 0,
+  "css_matches_builder": true,
+  "no_network": true,
+  "mobile_overflow": false,
+  "images": [
+    {
+      "id": "cover",
+      "title": "封面",
+      "filename": "01-cover.png",
+      "kind": "cover",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "stats",
+      "title": "阅读统计",
+      "filename": "02-stats.png",
+      "kind": "stats",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "distribution",
+      "title": "阅读分布",
+      "filename": "03-distribution.png",
+      "kind": "distribution",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "timeline",
+      "title": "阅读时间线",
+      "filename": "04-timeline.png",
+      "kind": "timeline",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "book-demo-001",
+      "title": "看见选择",
+      "filename": "05-book-demo-001.png",
+      "kind": "book",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "book-demo-002",
+      "title": "缓慢的城市",
+      "filename": "06-book-demo-002.png",
+      "kind": "book",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "book-demo-003",
+      "title": "工作中的尺度",
+      "filename": "07-book-demo-003.png",
+      "kind": "book",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "book-demo-004",
+      "title": "植物知道时间",
+      "filename": "08-book-demo-004.png",
+      "kind": "book",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "book-demo-005",
+      "title": "重新学习提问",
+      "filename": "09-book-demo-005.png",
+      "kind": "book",
+      "width": 900,
+      "height": 1200
+    },
+    {
+      "id": "book-demo-006",
+      "title": "冬日短篇集",
+      "filename": "10-book-demo-006.png",
+      "kind": "book",
+      "width": 900,
+      "height": 1200
+    }
+  ]
+}
