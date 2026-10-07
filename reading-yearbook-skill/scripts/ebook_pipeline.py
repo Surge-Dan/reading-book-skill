@@ -63,7 +63,8 @@ def _analysis_contract(value):
     for category in ('themes','methods','cases','counterexamples','glossary'):
         for item in value[category]:
             if not isinstance(item,dict): raise ValueError('Invalid '+category+' item')
-            for source in item.get('sources',[]):
+            if not isinstance(item.get('sources'),list): raise ValueError('Invalid source evidence list')
+            for source in item['sources']:
                 if not isinstance(source,dict) or not all(isinstance(source.get(k),str) for k in ('element_id','quote','location')):
                     raise ValueError('Invalid source evidence entry')
     for category in ('themes','cases','counterexamples'):
@@ -101,12 +102,15 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
                 +'OUTPUT_CONTRACT:'+contract+'\nFOCUS:'+focus+'\nRULES:\n'+rules+'\nSOURCE_DATA_JSON:\n'+_json(payload))
         key=hashlib.sha256((_json(context)+prompt).encode()).hexdigest(); file=cache/(key+'.json')
         if file.exists():
-            try: answer=json.loads(file.read_text(encoding='utf-8'))
+            try:
+                answer=json.loads(file.read_text(encoding='utf-8'))
+                if contract.startswith('analysis\n'): _analysis_contract(answer)
             except ValueError: answer=None
         else: answer=None
         if not isinstance(answer,dict):
             answer=runner.generate(prompt,cancel_event=cancel_event)
             if not isinstance(answer,dict): raise ValueError('Model output must be a JSON object: '+stage)
+            if contract.startswith('analysis\n'): _analysis_contract(answer)
             _cancel(cancel_event); _write(file,_json(answer))
         done+=1; total=max(total,done); audit.append({'stage':stage,'cache_key':key,'output':answer})
         if progress: progress({'stage':stage,'message':stage,'completed':done,'total':total})

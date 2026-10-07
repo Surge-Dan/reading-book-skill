@@ -136,4 +136,20 @@ class CoreTests(unittest.TestCase):
             self.assertEqual(result['coverage']['chunks_total'],13)
             self.assertEqual(r.calls,11)
 
+    def test_invalid_final_output_is_not_reused_as_valid_cache(self):
+        m=self.module('ebook_pipeline')
+        class Runner:
+            valid=False
+            def info(self): return {'name':'test','available':True}
+            def generate(self,prompt,schema=None,cancel_event=None):
+                if 'OUTPUT_CONTRACT:analysis\n' in prompt:
+                    if not self.valid: return {'schema_version':1}
+                    return {'schema_version':1,'book':{'title':'T','author':''},'overview':'O','themes':[],'methods':[],'cases':[],'counterexamples':[],'glossary':[],'limitations':[]}
+                return {'notes':'N'}
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'b.txt'; p.write_text('正文',encoding='utf-8'); r=Runner(); out=Path(d)/'out'
+            with self.assertRaises(ValueError): m.distill(p,out,r)
+            r.valid=True
+            self.assertEqual(m.distill(p,out,r)['quality_status'],'completed')
+
 if __name__ == '__main__': unittest.main()
