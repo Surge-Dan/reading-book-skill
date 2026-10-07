@@ -14,6 +14,15 @@ def parse_json(text):
     if not isinstance(result,dict): raise ValueError('Model JSON must be an object')
     return result
 
+def parse_claude_output(text):
+    envelope=parse_json(text)
+    if envelope.get('is_error'): raise ValueError('Claude CLI 调用失败，请检查本机登录状态。')
+    structured=envelope.get('structured_output')
+    if isinstance(structured,dict): return structured
+    result=envelope.get('result')
+    if isinstance(result,str): return parse_json(result)
+    raise ValueError('Claude CLI 未返回结构化 JSON 结果。')
+
 class CLIRunner:
     def __init__(self,name,timeout=180): self.name=name; self.timeout=timeout; self.executable=shutil.which(name)
     def info(self):
@@ -30,7 +39,7 @@ class CLIRunner:
                 args=[self.executable,'exec','--skip-git-repo-check','--sandbox','read-only','--ephemeral','-c','web_search="disabled"','-c','features.shell_tool=false','-c','mcp_servers={}','--output-last-message',str(result_path),'-']
             else:
                 result_path=None
-                args=[self.executable,'-p','--output-format','json','--tools','','--strict-mcp-config','--mcp-config','{"mcpServers":{}}','--disable-slash-commands','--no-session-persistence']
+                args=[self.executable,'-p','--output-format','json','--json-schema',json.dumps(schema or {'type':'object','additionalProperties':True}), '--tools','','--strict-mcp-config','--mcp-config','{"mcpServers":{}}','--disable-slash-commands','--no-session-persistence']
             if os.name=='nt' and Path(args[0]).suffix.lower() in ('.cmd','.bat'):
                 # Avoid cmd quoting or shell expansion of ebook text: resolve Node entrypoint.
                 wrapper=Path(args[0]); entry=wrapper.parent/'node_modules'/('@openai/codex/bin/codex.js' if self.name=='codex' else '@anthropic-ai/claude-code/cli.js')
@@ -55,9 +64,7 @@ class CLIRunner:
             if result_path:
                 if not result_path.exists(): raise ValueError('Codex produced no final JSON output')
                 return parse_json(result_path.read_text(encoding='utf-8'))
-            envelope=parse_json(stdout)
-            if envelope.get('is_error'): raise ValueError('Claude CLI reported an error; check local authentication.')
-            return parse_json(envelope['result']) if isinstance(envelope.get('result'),str) else envelope
+            return parse_claude_output(stdout)
 
 def create_runner(name='auto'):
     if name=='auto': name='codex' if shutil.which('codex') else 'claude'

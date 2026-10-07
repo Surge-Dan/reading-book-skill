@@ -9,13 +9,21 @@ from pathlib import Path
 
 class _HTML(HTMLParser):
     def __init__(self):
-        super().__init__(); self.parts=[]; self.hidden=0
+        super().__init__(); self.parts=[]; self.hidden=0; self.stack=[]; self.exclusions=[]
     def handle_starttag(self, tag, attrs):
-        if tag in ('script','style'): self.hidden+=1
-        if tag in ('p','div','h1','h2','h3','li','br','tr'): self.parts.append('\n')
+        identity=(dict(attrs).get('id') or '').strip().lower()
+        marker=identity in ('pg-header','pg-footer')
+        suppress=tag in ('script','style') or marker
+        if marker: self.exclusions.append({'kind':'gutenberg-boilerplate','wrapper_id':identity})
+        if tag not in ('area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'):
+            self.stack.append((tag,suppress))
+            if suppress: self.hidden+=1
+        if not self.hidden and tag in ('p','div','h1','h2','h3','li','br','tr'): self.parts.append('\n')
     def handle_endtag(self, tag):
-        if tag in ('script','style'): self.hidden=max(0,self.hidden-1)
-        if tag in ('p','div','h1','h2','h3','li','tr'): self.parts.append('\n')
+        index=next((i for i in range(len(self.stack)-1,-1,-1) if self.stack[i][0]==tag),None)
+        if index is not None:
+            self.hidden-=sum(suppress for _,suppress in self.stack[index:]); del self.stack[index:]
+        if not self.hidden and tag in ('p','div','h1','h2','h3','li','tr'): self.parts.append('\n')
     def handle_data(self, data):
         if not self.hidden: self.parts.append(data)
 
@@ -30,7 +38,7 @@ def _decode(data):
 
 def parse_document(path):
     path=Path(path); raw=path.read_bytes(); source_hash=hashlib.sha256(raw).hexdigest()
-    elements=[]; warnings=[]; title=path.stem; author=''; encoding=''; chapter=''
+    elements=[]; warnings=[]; exclusions=[]; title=path.stem; author=''; encoding=''; chapter=''
     def add(text,location):
         if text.strip():
             elements.append({'element_id':f'e{len(elements)+1:07d}', 'text':text, 'location':location,'chapter':chapter})
@@ -50,14 +58,18 @@ def parse_document(path):
             container=ET.fromstring(archive.read('META-INF/container.xml'))
             rootfile=next(x for x in container.iter() if x.tag.endswith('rootfile')).attrib['full-path']
             package=ET.fromstring(archive.read(rootfile)); base=posixpath.dirname(rootfile)
-            manifest={x.attrib['id']:x.attrib['href'] for x in package.iter() if x.tag.endswith('}item')}
+            manifest={x.attrib['id']:x.attrib for x in package.iter() if x.tag.endswith('}item')}
+            cover_hrefs={x.attrib.get('href','').split('#')[0] for x in package.iter() if x.tag.endswith('}reference') and x.attrib.get('type')=='cover'}
             for x in package.iter():
                 if x.tag.endswith('}title') and x.text: title=x.text
                 if x.tag.endswith('}creator') and x.text: author=x.text
             for item in (x for x in package.iter() if x.tag.endswith('}itemref')):
-                href=manifest[item.attrib['idref']].split('#')[0]; name=posixpath.normpath(posixpath.join(base,href))
+                entry=manifest[item.attrib['idref']]; href=entry['href'].split('#')[0]; name=posixpath.normpath(posixpath.join(base,href))
                 if name.startswith('../') or name.startswith('/'): raise ValueError('Unsafe EPUB spine path')
+                if 'nav' in entry.get('properties','').split() or href in cover_hrefs:
+                    exclusions.append({'kind':'epub-navigation' if 'nav' in entry.get('properties','').split() else 'epub-cover','document':name}); continue
                 parser=_HTML(); parser.feed(archive.read(name).decode('utf-8-sig')); chapter=name
+                exclusions.extend(dict(exclusion,document=name) for exclusion in parser.exclusions)
                 for paragraph,text in enumerate(''.join(parser.parts).splitlines(),1): add(text+'\n',f'{name}: paragraph {paragraph}')
     elif suffix=='.pdf':
         try:
@@ -73,7 +85,7 @@ def parse_document(path):
             add(text,chapter)
     else: raise ValueError('Supported formats: EPUB, PDF, TXT, MD')
     if not elements: raise ValueError('No readable body text; scanned PDFs require OCR.')
-    return {'book':{'title':title,'author':author},'source_hash':source_hash,'elements':elements,'warnings':warnings,'encoding':encoding}
+    return {'book':{'title':title,'author':author},'source_hash':source_hash,'elements':elements,'warnings':warnings,'exclusions':exclusions,'encoding':encoding}
 
 def build_chunks(document,max_chars=12000):
     if max_chars<1: raise ValueError('max_chars must be positive')
