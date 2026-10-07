@@ -23,6 +23,30 @@ MAX_UPLOAD = 32 * 1024 * 1024
 EXTENSIONS = {'.txt', '.md', '.epub', '.pdf'}
 JOB_ID = re.compile(r'^[a-f0-9]{32}$')
 ACTIVE = {'queued', 'running'}
+STATES = ACTIVE | {'needs_approval', 'completed', 'failed', 'cancelled', 'interrupted'}
+
+
+def public_error(error):
+    if isinstance(error, OSError):
+        return '本地文件读写失败，请让助手检查输出目录与 Skill 安装资源'
+    message = str(error)[:1000]
+    message = re.sub(r"(?:[A-Za-z]:[\\/]|\\\\)[^\n\"']+", '[本地路径]', message)
+    message = re.sub(r"(?<![\w:])/(?:[^\s/]+/)+[^\s,;]*", '[本地路径]', message)
+    return message
+
+
+def valid_saved_job(job, expected_id):
+    if not isinstance(job, dict) or job.get('id') != expected_id or job.get('state') not in STATES:
+        return False
+    if any(not isinstance(job.get(k), str) for k in ('filename', 'created_at', 'suffix', 'focus', 'stage', 'message')):
+        return False
+    if job['suffix'] not in EXTENSIONS or len(job['focus']) > 1000:
+        return False
+    if any(type(job.get(k)) is not int or job[k] < 0 for k in ('completed', 'total')):
+        return False
+    if job['state'] == 'completed' and (not isinstance(job.get('analysis'), dict) or not isinstance(job.get('digest'), str)):
+        return False
+    return True
 
 
 def safe_json(value):
@@ -82,7 +106,7 @@ class JobStore:
                 continue
             try:
                 job = json.loads(state_file.read_text('utf-8'))
-                if job.get('id') != state_file.parent.name:
+                if not valid_saved_job(job, state_file.parent.name):
                     continue
                 if job.get('state') in ACTIVE:
                     job.update(state='interrupted', message='上次服务已停止，可重试并复用已完成阶段')
@@ -189,7 +213,7 @@ class JobStore:
                 elif hasattr(error, 'estimate'):
                     job.update(state='needs_approval', stage='budget', message=str(error), estimate=error.estimate)
                 else:
-                    job.update(state='failed', message='本次蒸馏未完成，可检查提示后重试', error=str(error)[:1000])
+                    job.update(state='failed', message='本次蒸馏未完成，可检查提示后重试', error=public_error(error))
         finally:
             with self.lock:
                 self._save(job)
@@ -250,7 +274,7 @@ def create_server(store, port=0, yearbook=None):
             if self.headers.get('Host') != expected_host:
                 self.send(403, {'error': '只允许本机工作台访问'})
                 return False
-            if api and not hmac.compare_digest(self.headers.get('X-Ebook-Token', ''), store.token):
+            if api and not hmac.compare_digest(self.headers.get('X-Ebook-Token', '').encode('utf-8'), store.token.encode('ascii')):
                 self.send(403, {'error': '连接已过期，请重新打开工作台'})
                 return False
             if mutation and self.headers.get('Origin') != 'http://' + expected_host:
@@ -307,7 +331,7 @@ def create_server(store, port=0, yearbook=None):
             except BusyError as error:
                 self.send(409, {'error': str(error)})
             except (ValueError, OSError) as error:
-                self.send(400, {'error': str(error)})
+                self.send(400, {'error': public_error(error)})
             except KeyError:
                 self.send(404, {'error': '任务不存在'})
 

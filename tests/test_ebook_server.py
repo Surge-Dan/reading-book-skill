@@ -162,6 +162,31 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn('</script><script>alert(1)', page)
         self.assertNotIn('X-Ebook-Token', page.split('window.EBOOK_RESULT=')[0])
 
+    def test_filesystem_error_does_not_expose_private_path(self):
+        secret_path = str(Path(self.tmp.name) / 'private-book' / 'DIGEST.md')
+        def broken(*args, **kwargs):
+            raise FileNotFoundError(2, 'missing', secret_path)
+        self.store.pipeline = broken
+        job = self.store.create('error.txt', b'body')
+        failed = self.wait_state(job['id'], 'failed')
+        self.assertNotIn(secret_path, failed['error'])
+        self.assertIn('本地', failed['error'])
+
+    def test_invalid_saved_job_is_ignored_on_restart(self):
+        job_dir = self.store.jobs_dir / ('a' * 32)
+        job_dir.mkdir()
+        (job_dir / 'state.json').write_text(json.dumps({'id': 'a' * 32, 'state': 'failed'}), 'utf-8')
+        restored = JobStore(Path(self.tmp.name), Runner())
+        try:
+            self.assertEqual(restored.state()['jobs'], [])
+        finally:
+            restored.close()
+
+    def test_non_ascii_token_returns_forbidden(self):
+        with self.assertRaises(urllib.error.HTTPError) as err:
+            self.request('/api/state', token=False, **{'X-Ebook-Token': 'é'})
+        self.assertEqual(err.exception.code, 403)
+
 
 if __name__ == '__main__':
     unittest.main()
