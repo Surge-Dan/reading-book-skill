@@ -3,9 +3,9 @@
   "files": [
     {
       "path": "agents/openai.yaml",
-      "sha256": "970e915451558c999a0ebed446b6e8f887be663ef63f0a1cd413e8f7b562ee83",
+      "sha256": "eef1d5084fce1e07d1c4b2af25887fde88bbe5eae67c842f26e9ef167f7c22dc",
       "hash_kind": "text-lf",
-      "bytes": 442
+      "bytes": 457
     },
     {
       "path": "assets/card-template.html",
@@ -579,9 +579,9 @@
     },
     {
       "path": "references/distillation-method.md",
-      "sha256": "757fbfa3c6f8113c074abf3deef434e9c42bc6bc07f4f098540f755c732656ec",
+      "sha256": "5c32d6438e4f8d6e42bc31576d2d78f1c6b666870376f4099a971f231d5e23f3",
       "hash_kind": "text-lf",
-      "bytes": 4637
+      "bytes": 5117
     },
     {
       "path": "references/evidence-rules.md",
@@ -705,9 +705,9 @@
     },
     {
       "path": "scripts/ebook_pipeline.py",
-      "sha256": "7e5267c05f62ae2c0fa872ca06afe116f380a3490575c16971de855ab3197a35",
+      "sha256": "f15e7bb31bbaf5e5c3cf430dca29e2702d3b1b4f21ed14d7e2d36e7c27419902",
       "hash_kind": "text-lf",
-      "bytes": 37899
+      "bytes": 39622
     },
     {
       "path": "scripts/ebook_runner.py",
@@ -795,9 +795,9 @@
     },
     {
       "path": "scripts/skill_release.py",
-      "sha256": "b2888fea8c460009514fb0c8ef32c6e38769694b8eed40dbb65efa67c02b4913",
+      "sha256": "3371ececbd3019edeceeca83abc6abf582ffe5867708027f0acb27996d7bc2a5",
       "hash_kind": "text-lf",
-      "bytes": 5148
+      "bytes": 5160
     },
     {
       "path": "scripts/static_graphics.py",
@@ -1036,31 +1036,31 @@
     {
       "path": "third_party/cangjie/templates/BOOK_OVERVIEW.md.template",
       "sha256": "1ceaa8815674a53588a07f6bd06294bde70f0808a6c69bdb4a0876bffafc8c75",
-      "hash_kind": "binary",
+      "hash_kind": "text-lf",
       "bytes": 2813
     },
     {
       "path": "third_party/cangjie/templates/DIGEST.md.template",
       "sha256": "34ec8d597cc7b5202080de0a4449802b19ba69c76575fcee91150a937f08fee1",
-      "hash_kind": "binary",
+      "hash_kind": "text-lf",
       "bytes": 2084
     },
     {
       "path": "third_party/cangjie/templates/INDEX.md.template",
       "sha256": "ce0a277ba4a0dfe12ecdf6beead5ee249ed1ff7661fcb6fd153dad76925c0f46",
-      "hash_kind": "binary",
+      "hash_kind": "text-lf",
       "bytes": 1939
     },
     {
       "path": "third_party/cangjie/templates/SKILL.md.template",
       "sha256": "226c65a559187ddaf913460f81f32eff0fb4bd66fcbb6b70748d658929fb7311",
-      "hash_kind": "binary",
+      "hash_kind": "text-lf",
       "bytes": 3402
     },
     {
       "path": "third_party/cangjie/templates/test-prompts.json.template",
       "sha256": "3acd11a781f2e2c6ab2051cea0d9a3994429cb89f487d5d8c95ad59570928be3",
-      "hash_kind": "binary",
+      "hash_kind": "text-lf",
       "bytes": 1961
     },
     {

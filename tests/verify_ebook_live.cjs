@@ -6,6 +6,8 @@ const [url,source,outArg,...flags]=process.argv.slice(2);
 const out=path.resolve(outArg||'demo-output/ebook-live');
 const verify=flags.includes('--verify');
 const resumeId=flags.find(f=>f.startsWith('--resume='))?.slice('--resume='.length);
+const minutes=Number(flags.find(f=>f.startsWith('--minutes='))?.slice('--minutes='.length)||45);
+assert(Number.isInteger(minutes)&&minutes>=1&&minutes<=180,'time budget must be 1–180 minutes');
 fs.mkdirSync(out,{recursive:true});
 const reportFile=path.join(out,'live-report.json');
 (async()=>{
@@ -32,7 +34,7 @@ const reportFile=path.join(out,'live-report.json');
         assert(job&&['failed','cancelled','interrupted'].includes(job.state),'resume job is not retryable');
         await page.locator('#ebookRetry').click();
       }else await page.locator('#ebookFile').setInputFiles(path.resolve(source));
-      const deadline=Date.now()+45*60*1000;let last='';
+      const deadline=Date.now()+minutes*60*1000;let last='';
       while(Date.now()<deadline){
         job=(await state()).jobs.find(j=>resumeId?j.id===resumeId:!before.has(j.id));
         if(job){

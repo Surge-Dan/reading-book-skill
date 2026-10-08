@@ -41,6 +41,15 @@ class ReleaseTests(unittest.TestCase):
             source.write_bytes(b'print("changed")\r\n')
             with self.assertRaisesRegex(ValueError,'版本不匹配'):verify(root)
 
+    def test_vendored_text_template_hash_survives_windows_git_conversion(self):
+        with tempfile.TemporaryDirectory() as tmp, patch('skill_release.REQUIRED', []):
+            root = Path(tmp); source = root / 'DIGEST.md.template'
+            source.write_bytes(b'# Digest\n\n{overview}\n')
+            expected = manifest(root)
+            (root / 'release-manifest.json').write_text(json.dumps(expected), 'utf-8')
+            source.write_bytes(b'# Digest\r\n\r\n{overview}\r\n')
+            self.assertEqual(verify(root)['version'], expected['version'])
+
     def test_svg_and_browser_scripts_survive_git_checkout_line_endings(self):
         with tempfile.TemporaryDirectory() as tmp,patch('skill_release.REQUIRED',[]):
             root=Path(tmp)

@@ -8,11 +8,42 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'reading-yearbook-skill/scripts'))
 from ebook_runner import CLIRunner, create_runner
-from ebook_pipeline import distill
+from ebook_pipeline import distill, _stage_source_gate
 from test_ebook_core import ContractRunner
 
 
 class RunnerTests(unittest.TestCase):
+    def test_source_gate_restores_only_unambiguous_terminal_period(self):
+        citation = {'element_id':'e1','quote':'必以全爭於天下。','location':'model location'}
+        original = '必以全爭於天下，故兵不頓而利可全。'
+        _stage_source_gate({'sources':[citation]}, [{'element_id':'e1','text':original,'location':'chapter 3'}])
+        self.assertEqual(citation['quote'], '必以全爭於天下，')
+        self.assertEqual(citation['source_adjustment']['original_quote'], '必以全爭於天下。')
+        self.assertEqual(citation['location'], 'chapter 3')
+        for text, quote in [('必以全爭於天下？','必以全爭於天下。'),('必以全爭於天下，必以全爭於天下；','必以全爭於天下。'),('必以全爭於天下，','必以全爭于天下。')]:
+            with self.assertRaises(ValueError):
+                _stage_source_gate({'sources':[{'element_id':'e1','quote':quote,'location':'x'}]}, [{'element_id':'e1','text':text,'location':'x'}])
+
+    def test_source_diagnostic_can_recover_only_after_full_contract_validation(self):
+        class Runner(ContractRunner):
+            calls_to_model = 0
+            def generate(self, prompt, schema=None, cancel_event=None):
+                self.calls_to_model += 1
+                value = super().generate(prompt, schema, cancel_event)
+                if 'OUTPUT_CONTRACT:stage0:' in prompt:
+                    value['themes'][0]['sources'][0]['quote'] = '必以全爭於天下。'
+                return value
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / 'book.txt'; source.write_text('必以全爭於天下，故兵不頓而利可全。', 'utf-8')
+            output = Path(tmp) / 'out'; runner = Runner()
+            # Retain a genuine returned stage as failed diagnostics using the
+            # previous strict gate, then exercise the new full validation path.
+            with patch('ebook_pipeline._restore_terminal_punctuation', return_value=None):
+                with self.assertRaises(ValueError): distill(source, output, runner)
+            count = runner.calls_to_model
+            result = distill(source, output, runner)
+            self.assertEqual(result['quality_status'], 'completed')
+            self.assertEqual(runner.calls_to_model-count, 10)
     def test_stage_timeout_is_bounded(self):
         for seconds in (0, 29, 901):
             with self.assertRaisesRegex(ValueError, '30.*900'):

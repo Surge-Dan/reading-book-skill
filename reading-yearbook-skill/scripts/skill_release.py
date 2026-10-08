@@ -51,7 +51,7 @@ def manifest(root=ROOT):
         relative=p.relative_to(root)
         if relative.as_posix() in EXCLUDED or not p.is_file() or any(x in relative.parts for x in ('__pycache__','.vendor','revisions','output','private','.ebook-workbench','.cache','.history','.diagnostics')) or p.name in ('release-manifest.json','validation-report.json'):
             continue
-        kind='text-lf' if p.suffix.lower() in {'.py','.js','.cjs','.svg','.xml','.html','.css','.md','.txt','.json','.yaml','.yml'} else 'binary'
+        kind='text-lf' if p.suffix.lower() in {'.py','.js','.cjs','.svg','.xml','.html','.css','.md','.txt','.json','.yaml','.yml','.template'} else 'binary'
         files.append({'path':relative.as_posix(),'sha256':file_hash(p,kind),'hash_kind':kind,'bytes':p.stat().st_size})
     return {'version':'2026.10.08','files':files}
 

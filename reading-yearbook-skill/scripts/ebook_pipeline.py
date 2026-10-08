@@ -177,6 +177,18 @@ def _stage_contract(stage,value,payload):
     else: fail()
     return value
 
+def _restore_terminal_punctuation(citation,element):
+    quote=citation.get('quote',''); text=element['text']
+    if not isinstance(quote,str) or quote in text or len(quote)<5 or quote[-1] not in '.。': return
+    prefix=quote[:-1]; start=text.find(prefix)
+    if start<0 or text.find(prefix,start+1)>=0: return
+    end=start+len(prefix)
+    if end>=len(text) or text[end] not in ',;，；': return
+    citation['quote']=text[start:end+1]
+    citation['source_adjustment']={'kind':'terminal_punctuation_restored','original_quote':quote,
+        'start':start,'end':end+1,'original_terminal':quote[-1],'source_terminal':text[end],
+        'meaning_verified':False}
+
 def _stage_source_gate(value,elements):
     source={e['element_id']:e for e in elements}
     def visit(node):
@@ -184,7 +196,9 @@ def _stage_source_gate(value,elements):
             for key,data in node.items():
                 if key=='sources':
                     for citation in data:
-                        element=source.get(citation['element_id']); quote=citation['quote']
+                        element=source.get(citation['element_id'])
+                        if element: _restore_terminal_punctuation(citation,element)
+                        quote=citation['quote']
                         limit=(len(quote)>150 if re.search(r'[\u3400-\u9fff]',quote) else len(quote.split())>100)
                         if not element or quote not in element['text'] or limit:
                             error=ValueError('阶段引用无法回查到原书正文，或超过引用长度限制')
@@ -216,6 +230,7 @@ def _validate_sources(analysis,document):
             evidence=item.get('sources',[]); ok=bool(evidence)
             for s in evidence:
                 element=source.get(s.get('element_id'))
+                if element: _restore_terminal_punctuation(s,element)
                 quote=s.get('quote','')
                 if not element or not isinstance(quote,str) or not quote or quote not in element['text']: ok=False
                 elif (len(quote)>150 if re.search(r'[\u3400-\u9fff]',quote) else len(quote.split())>100): ok=False
@@ -276,6 +291,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
                 +'CITATION_RULES: Every quote must be an exact contiguous substring of its cited element. Preserve original script, punctuation and whitespace; do not paraphrase, translate or insert ellipses. Keep each quote at most 150 Chinese characters or 100 English words. Use multiple short citations when necessary.\n'
                 +'OUTPUT_CONTRACT:'+contract+'\nFOCUS:'+focus+'\nRULES:\n'+rules+'\nSOURCE_DATA_JSON:\n'+_json(payload))
         key=hashlib.sha256((_json(context)+prompt).encode()).hexdigest(); file=cache/(key+'.json')
+        diagnostic_file=output/'.diagnostics'/(stage+'-'+key+'.json'); recovered=False
         if file.exists():
             try:
                 answer=json.loads(file.read_text(encoding='utf-8'))
@@ -284,6 +300,15 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
             except ValueError:
                 answer=None; file.unlink(missing_ok=True)
         else: answer=None
+        if answer is None and diagnostic_file.is_file():
+            try:
+                saved=json.loads(diagnostic_file.read_text(encoding='utf-8'))
+                if saved.get('stage')!=stage or saved.get('diagnostic',{}).get('category')!='source_validation': raise ValueError('Not a source diagnostic')
+                if saved.get('cache_key',key)!=key or saved.get('context',context)!=context: raise ValueError('Diagnostic context changed')
+                answer=saved['output']; _stage_contract(stage,answer,payload)
+                _stage_source_gate(answer,document['elements'])
+                _cancel(cancel_event); _write(file,_json(answer)); recovered=True
+            except (ValueError,KeyError,TypeError,OSError): answer=None
         if not isinstance(answer,dict):
             answer=runner.generate(prompt,schema=_stage_schema(stage),cancel_event=cancel_event)
             if not isinstance(answer,dict): raise ValueError('Model output must be a JSON object: '+stage)
@@ -293,10 +318,10 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
             except ValueError as error:
                 # Private debugging output is never considered reusable cache or
                 # a reader result. Preserve it to avoid blind paid-stage repeats.
-                _write(output/'.diagnostics'/(stage+'-'+key+'.json'),_json({'stage':stage,'error':str(error),'diagnostic':getattr(error,'diagnostic',{}),'output':answer}))
+                _write(diagnostic_file,_json({'stage':stage,'cache_key':key,'context':context,'error':str(error),'diagnostic':getattr(error,'diagnostic',{}),'output':answer}))
                 raise
             _cancel(cancel_event); _write(file,_json(answer))
-        done+=1; total=max(total,done); audit.append({'stage':stage,'cache_key':key,'output':answer})
+        done+=1; total=max(total,done); audit.append({'stage':stage,'cache_key':key,'output':answer,'recovered_from_source_diagnostic':recovered})
         if progress: progress({'stage':stage,'message':stage,'completed':done,'total':total})
         return answer
     maps=[]
