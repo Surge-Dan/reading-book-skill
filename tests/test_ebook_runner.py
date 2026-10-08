@@ -1,4 +1,5 @@
 import subprocess
+import json
 import sys
 import tempfile
 import unittest
@@ -73,6 +74,28 @@ class RunnerTests(unittest.TestCase):
                 self.assertIsInstance(schema, dict)
                 self.assertTrue(schema['required'], 'Generic object schema permits an empty successful output')
                 self.assertEqual(set(schema['required']), set(schema['properties']))
+
+    def test_invalid_source_output_is_diagnostic_only_not_reused_cache(self):
+        class Runner(ContractRunner):
+            def generate(self, prompt, schema=None, cancel_event=None):
+                self.assertion_prompt = prompt
+                value = super().generate(prompt, schema, cancel_event)
+                value['themes'][0]['sources'][0]['quote'] = '不存在于正文的引用'
+                return value
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / 'book.txt'
+            source.write_text('原文', 'utf-8')
+            runner = Runner()
+            output = Path(tmp) / 'out'
+            with self.assertRaises(ValueError) as caught:
+                distill(source, output, runner)
+            self.assertFalse(caught.exception.diagnostic['exact_quote_match'])
+            files = list((output / '.diagnostics').glob('*.json'))
+            self.assertEqual(len(files), 1)
+            self.assertEqual(json.loads(files[0].read_text('utf-8'))['stage'], 'stage0-map')
+            self.assertEqual(list((output / '.cache').glob('*.json')), [])
+            self.assertFalse((output / 'analysis.json').exists())
+            self.assertIn('150 Chinese characters', runner.assertion_prompt)
 
 
 if __name__ == '__main__':
