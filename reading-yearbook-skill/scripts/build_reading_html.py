@@ -410,12 +410,15 @@ def build_html(data, output, covers=None, art_assets=None, require_all_covers=Fa
         raise ValueError('未知艺术素材字段：' + ', '.join(sorted(unknown)))
     art = {name: embed_image((art_assets or {}).get(name) or ROOT / 'assets' / 'yearbook-art' / file)
            for name, file in [('hero', 'hero-book.png'), ('reading', 'reading.png'), ('rhythm', 'rhythm.png')]}
-    replacements = {'__DATA__': serialized, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-art.css').read_text('utf-8'),
+    replacements = {'__DATA__': serialized, '__STYLE__': (ROOT / 'assets' / 'reading-app.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'reading-art.css').read_text('utf-8') + '\n' + (ROOT / 'assets' / 'ebook-app.css').read_text('utf-8'),
                     '__ART__': json.dumps(art),
-                    '__APP__': '\n'.join((ROOT/'assets'/name).read_text('utf-8') for name in ('reading-share-art.js','reading-app.js')),
+                    '__APP__': (ROOT / 'assets' / 'reading-app.js').read_text('utf-8'),
+                    '__SHARE_APP__': (ROOT / 'assets' / 'reading-share-art.js').read_text('utf-8'),
+                    '__EBOOK_APP__': (ROOT / 'assets' / 'ebook-app.js').read_text('utf-8'),
+                    '__EBOOK_SECTION__': (ROOT / 'assets' / 'ebook-section.html').read_text('utf-8'),
                     '__LICENSE__': html.escape((ROOT / 'assets' / 'lieflat-LICENSE.txt').read_text('utf-8')+'\n\nNoto Serif SC\n'+(ROOT/'assets/fonts/OFL-Serif.txt').read_text('utf-8')+'\n\nNoto Sans SC\n'+(ROOT/'assets/fonts/OFL-Sans.txt').read_text('utf-8'))}
     # One-pass replacement: user text may itself contain template delimiters.
-    page = re.sub(r'__(?:DATA|STYLE|APP|LICENSE|ART)__', lambda m: replacements[m.group()], template)
+    page = re.sub(r'__(?:DATA|STYLE|APP|SHARE_APP|EBOOK_APP|EBOOK_SECTION|LICENSE|ART)__', lambda m: replacements[m.group()], template)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     atomic_text(output,page)
