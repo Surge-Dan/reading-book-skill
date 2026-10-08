@@ -1,17 +1,35 @@
 {
-  "version": "2026.10.06",
+  "version": "2026.10.08",
   "files": [
     {
       "path": "agents/openai.yaml",
       "sha256": "970e915451558c999a0ebed446b6e8f887be663ef63f0a1cd413e8f7b562ee83",
       "hash_kind": "text-lf",
-      "bytes": 447
+      "bytes": 442
     },
     {
       "path": "assets/card-template.html",
       "sha256": "926cf0c8a69fb0cfcc18b0232bccc88d5be1f0e949d099a2651a86921b3df4b6",
       "hash_kind": "text-lf",
-      "bytes": 3061
+      "bytes": 3057
+    },
+    {
+      "path": "assets/ebook-app.css",
+      "sha256": "ba47f3bdc60adb45fa51ce03572ee50d20821768c684acfe76aca32ee214f76e",
+      "hash_kind": "text-lf",
+      "bytes": 4433
+    },
+    {
+      "path": "assets/ebook-app.js",
+      "sha256": "c7603c7b586386718a0373f4b2b45a23eb17ac20de9b3ebdebda0a5c5747beaf",
+      "hash_kind": "text-lf",
+      "bytes": 19539
+    },
+    {
+      "path": "assets/ebook-section.html",
+      "sha256": "c666c12e0dfa8983ccb8eaa2c54e8d230ea0466ae9e90466cbf04a71942f754c",
+      "hash_kind": "text-lf",
+      "bytes": 3679
     },
     {
       "path": "assets/fonts/NotoSansSC.ttf.zlib",
@@ -29,7 +47,7 @@
       "path": "assets/fonts/OFL-Sans.txt",
       "sha256": "babcfe66c8a098b2fa279bc724a3a342f8124f77ce18941fbcc1bbb39823cded",
       "hash_kind": "text-lf",
-      "bytes": 4480
+      "bytes": 4387
     },
     {
       "path": "assets/fonts/OFL-Serif.txt",
@@ -47,7 +65,7 @@
       "path": "assets/reading-app.css",
       "sha256": "c4d750601088163abdef564ea47abc2dd6e42642d98bdc9c5fa2cd5161b2c245",
       "hash_kind": "text-lf",
-      "bytes": 16400
+      "bytes": 16388
     },
     {
       "path": "assets/reading-app.js",
@@ -63,21 +81,21 @@
     },
     {
       "path": "assets/reading-share-art.js",
-      "sha256": "64c9ec85a0cb70e33c7b65b100a24f624f1dc5d920a229e265ef6a2edc4e4806",
+      "sha256": "45ae373f7026212541224096c3587f3299514f892ae3a6f0746bc5252dcccfe8",
       "hash_kind": "text-lf",
-      "bytes": 27833
+      "bytes": 30969
     },
     {
       "path": "assets/reading-template.html",
-      "sha256": "77f9fc32a26f853bdeaf3ebb54c5b9ecca899160392a1094d55dba0800da9596",
+      "sha256": "deff397533cae14402a0c700d3876a797acb42048484812cf100a66304e38a41",
       "hash_kind": "text-lf",
-      "bytes": 10650
+      "bytes": 10814
     },
     {
       "path": "assets/sample-data.json",
       "sha256": "95b547d27ae15a0a8cfbe9529c70c3967b67fcb58d8ed7c227f906c223797536",
       "hash_kind": "text-lf",
-      "bytes": 7316
+      "bytes": 7164
     },
     {
       "path": "assets/yearbook-art/hero-book.png",
@@ -95,7 +113,7 @@
       "path": "assets/yearbook-art/README.md",
       "sha256": "358135052dcd31729fd738fb24c8a907b11ece4c55d57f3a12bb6fcb41df1678",
       "hash_kind": "text-lf",
-      "bytes": 836
+      "bytes": 830
     },
     {
       "path": "assets/yearbook-art/rhythm.png",
@@ -107,19 +125,19 @@
       "path": "assets/yearbook-template.html",
       "sha256": "2586dd4c383ea485f5d228385fbb852125cd5f4a75edfbd085bd9280c90d0774",
       "hash_kind": "text-lf",
-      "bytes": 10598
+      "bytes": 10532
     },
     {
       "path": "examples/botanical-demo/assets/plant-shape.svg",
       "sha256": "55065702e247f312a56a3004c0e917082fdf24769f98dccfb8ee3feeda5a9505",
       "hash_kind": "text-lf",
-      "bytes": 645
+      "bytes": 636
     },
     {
       "path": "examples/botanical-demo/caption.md",
       "sha256": "6f7f9afb51a87cd09471b54a0a0d16e13a56893f1d809d824233192884677590",
       "hash_kind": "text-lf",
-      "bytes": 159
+      "bytes": 156
     },
     {
       "path": "examples/botanical-demo/deck.html",
@@ -149,7 +167,7 @@
       "path": "examples/botanical-demo/share-job.json",
       "sha256": "8e3649ee97aeeabf04385d10ab80a8b10f7ffe35dc6d8781e073c2518418072a",
       "hash_kind": "text-lf",
-      "bytes": 6200
+      "bytes": 5980
     },
     {
       "path": "examples/build_botanical_demo.py",
@@ -185,13 +203,13 @@
       "path": "examples/exhibition-demo/caption.md",
       "sha256": "a6e94a68b290a3f7eaf0f7a01ed6b4d4616c5b16bf90eae4b1fba2ec81c773b8",
       "hash_kind": "text-lf",
-      "bytes": 199
+      "bytes": 191
     },
     {
       "path": "examples/exhibition-demo/deck.html",
       "sha256": "b1f673e1dbed38a4c5148c4beff8ae28a73420d50240e9b646d7d3b7c9522d43",
       "hash_kind": "text-lf",
-      "bytes": 22317
+      "bytes": 22286
     },
     {
       "path": "examples/exhibition-demo/images/01-cover.png",
@@ -239,7 +257,7 @@
       "path": "examples/exhibition-demo/share-job.json",
       "sha256": "666f40751ef159eb4eaebe13227121c5f264de5b0e33dfe6515c3558108dbf5c",
       "hash_kind": "text-lf",
-      "bytes": 32185
+      "bytes": 31059
     },
     {
       "path": "examples/exhibition-demo.css",
@@ -251,7 +269,7 @@
       "path": "examples/export_html_demo.cjs",
       "sha256": "c5105cce0726d04cb75c1a0c207020b5f81788aeafa7ffc1650fccf23cf72ef5",
       "hash_kind": "text-lf",
-      "bytes": 6162
+      "bytes": 6073
     },
     {
       "path": "examples/material-led-cases.json",
@@ -299,7 +317,7 @@
       "path": "examples/reading-html-demo/demo-data.json",
       "sha256": "f7de30e2cf4ca4f2cac5402483aabe7eccb7e89c3f2605b07494b9f78ffad8d7",
       "hash_kind": "text-lf",
-      "bytes": 4487
+      "bytes": 4335
     },
     {
       "path": "examples/reading-html-demo/images/01-cover.png",
@@ -365,7 +383,7 @@
       "path": "examples/reading-html-demo/index.html",
       "sha256": "5db6dcced90b2ee8d92b1c298ec8cc1f7833991c7682991ae82a6fc56b9a09c7",
       "hash_kind": "text-lf",
-      "bytes": 3646320
+      "bytes": 3645249
     },
     {
       "path": "examples/reading-html-demo/preview-manifest.json",
@@ -377,7 +395,7 @@
       "path": "examples/reading-html-demo/README.md",
       "sha256": "27b9de91e2096995f392b7f3b2ec925b815cd88f078bc7c1efed536afee7d0f4",
       "hash_kind": "text-lf",
-      "bytes": 2279
+      "bytes": 2246
     },
     {
       "path": "examples/reading-html-demo/share-overview.png",
@@ -395,7 +413,7 @@
       "path": "examples/README.md",
       "sha256": "af506d1e258b7ccde3319ec5005b873c5202725efc42a8a1bbc694fc1e50466b",
       "hash_kind": "text-lf",
-      "bytes": 4125
+      "bytes": 4078
     },
     {
       "path": "examples/share-demo/assets/atget-organ-player.jpg",
@@ -407,7 +425,7 @@
       "path": "examples/share-demo/caption.md",
       "sha256": "711713768f57bb8fd62aec532a5077c2fe8afcfacce64e0ff674d60baaf90e37",
       "hash_kind": "text-lf",
-      "bytes": 172
+      "bytes": 165
     },
     {
       "path": "examples/share-demo/deck.html",
@@ -449,7 +467,7 @@
       "path": "examples/share-demo/share-job.json",
       "sha256": "e6c173a6572728df25fec503f1619ea9eae914410cd0a9b32a11ddcca7da9646",
       "hash_kind": "text-lf",
-      "bytes": 13291
+      "bytes": 12820
     },
     {
       "path": "examples/visual-proof/brief.md",
@@ -497,7 +515,7 @@
       "path": "examples/visual-proof-v2/assets/atget-source.json",
       "sha256": "58f69af665ca319e4435c8ffc16970307e74297930d09fbeb8e187593f7a3647",
       "hash_kind": "text-lf",
-      "bytes": 916
+      "bytes": 897
     },
     {
       "path": "examples/visual-proof-v2/brief.md",
@@ -539,49 +557,49 @@
       "path": "references/art-direction.md",
       "sha256": "b9e27996f2d8d01d364678157678a5ed4940949e9c69f437ebf0b20da26d65a8",
       "hash_kind": "text-lf",
-      "bytes": 8114
+      "bytes": 8038
     },
     {
       "path": "references/card-system.md",
       "sha256": "50c0d31799d63c41355fccd2e8df0520dad81d5f6ab02b170eb6b6449d59dbe1",
       "hash_kind": "text-lf",
-      "bytes": 1829
+      "bytes": 1794
     },
     {
       "path": "references/collage-method.md",
       "sha256": "e05b3f0cbf3f3ebc661e9759387856697ee5f8430d048770ef9be38e134c10db",
       "hash_kind": "text-lf",
-      "bytes": 2889
+      "bytes": 2852
     },
     {
       "path": "references/data-contract.md",
       "sha256": "bc3dd9265e983dc25e041f1a9b1e8b791cae92e26c76e3745d688f741ec92f88",
       "hash_kind": "text-lf",
-      "bytes": 2868
+      "bytes": 2823
     },
     {
       "path": "references/distillation-method.md",
-      "sha256": "6fcc5f273d6d1cfa13069f095f41649f23fdbfc9e65c10e06f285876c0539be6",
+      "sha256": "757fbfa3c6f8113c074abf3deef434e9c42bc6bc07f4f098540f755c732656ec",
       "hash_kind": "text-lf",
-      "bytes": 1389
+      "bytes": 4637
     },
     {
       "path": "references/evidence-rules.md",
       "sha256": "64ec9cacaba26db914d6583a311c92504d5f17114477f65b23dbb9421b420b5e",
       "hash_kind": "text-lf",
-      "bytes": 1328
+      "bytes": 1304
     },
     {
       "path": "references/html-yearbook.md",
       "sha256": "1e3285b9fa2b818659792c20c61311b15f8a9ba40f89d8841c2e350585a5c1ce",
       "hash_kind": "text-lf",
-      "bytes": 17913
+      "bytes": 17788
     },
     {
       "path": "references/output-contract.md",
       "sha256": "0602248546631d248e29aa74b32fa8755d6e04b24916e56191df241487e5da8e",
       "hash_kind": "text-lf",
-      "bytes": 2233
+      "bytes": 2188
     },
     {
       "path": "references/share-typography.md",
@@ -593,25 +611,31 @@
       "path": "references/share-workflow.md",
       "sha256": "428da82af6bc01e4f6c0512a0bbae094c2db5cca5a7dd71364b1f967ece9cb14",
       "hash_kind": "text-lf",
-      "bytes": 12411
+      "bytes": 12265
     },
     {
       "path": "references/typography.md",
       "sha256": "8675c5838d7d877edb07fc3b9fbea34bcd571ec8f61df6421050d6c58e0f35d6",
       "hash_kind": "text-lf",
-      "bytes": 2696
+      "bytes": 2667
     },
     {
       "path": "references/visual-capabilities.md",
       "sha256": "a5084c1c63db51aa528f1e4e2c7d5fcd59654daf66f4639f76dcd70e7275576f",
       "hash_kind": "text-lf",
-      "bytes": 3969
+      "bytes": 3919
     },
     {
       "path": "references/weread-api.md",
       "sha256": "42125241b4ba8ad3d7a89c3f69b8b0d1c1b5dbbe17ddd65b42298bf069059f5e",
       "hash_kind": "text-lf",
-      "bytes": 3201
+      "bytes": 3154
+    },
+    {
+      "path": "requirements-ebook.txt",
+      "sha256": "ee123c85100a4f4359f40d2d1c17a3c9ab29940e1933abc4178a83d6ee4c8054",
+      "hash_kind": "text-lf",
+      "bytes": 94
     },
     {
       "path": "requirements.txt",
@@ -629,19 +653,19 @@
       "path": "scripts/build_book_profiles.py",
       "sha256": "fd1167c3b97b7abc5f74c71914c552481b62f3107757ab4b79aeb4f1de6cb8fe",
       "hash_kind": "text-lf",
-      "bytes": 655
+      "bytes": 634
     },
     {
       "path": "scripts/build_deep_distill.py",
       "sha256": "bdd3f4cb7c39f9881b0f12e1dbe94fc2546f98b968b0e8007321082281233f20",
       "hash_kind": "text-lf",
-      "bytes": 11752
+      "bytes": 11521
     },
     {
       "path": "scripts/build_reading_html.py",
-      "sha256": "49d41f195aaaa6dae53cc057fea6f5ed9ab574194e28c722528ec2d89cadc6ba",
+      "sha256": "14567634937e0a9445ebc7a87eb9935052365b1bd8c2c7069ff2219a2e86251b",
       "hash_kind": "text-lf",
-      "bytes": 27536
+      "bytes": 27606
     },
     {
       "path": "scripts/collage_materials.py",
@@ -659,7 +683,7 @@
       "path": "scripts/collect_weread_data.py",
       "sha256": "9918d1d844177f1176d4968703da48207b7b3abb885796ff9dd0a2369a896818",
       "hash_kind": "text-lf",
-      "bytes": 9332
+      "bytes": 9149
     },
     {
       "path": "scripts/content_plan.py",
@@ -674,16 +698,34 @@
       "bytes": 1286
     },
     {
+      "path": "scripts/ebook_document.py",
+      "sha256": "b871228f7ed0621b746438b78c3672a87b762f0f94cd8644c45fb481ace72c88",
+      "hash_kind": "text-lf",
+      "bytes": 6329
+    },
+    {
+      "path": "scripts/ebook_pipeline.py",
+      "sha256": "7e5267c05f62ae2c0fa872ca06afe116f380a3490575c16971de855ab3197a35",
+      "hash_kind": "text-lf",
+      "bytes": 37899
+    },
+    {
+      "path": "scripts/ebook_runner.py",
+      "sha256": "989ac464e0854957a70a0e016316813821665bd28de83736f6ba59c474694923",
+      "hash_kind": "text-lf",
+      "bytes": 6953
+    },
+    {
       "path": "scripts/embed_fonts.py",
       "sha256": "cc68d6ac4a8e6ccc1c308f6fe998007968819679e10dc1455b3c8c47a4dd2714",
       "hash_kind": "text-lf",
-      "bytes": 2531
+      "bytes": 2474
     },
     {
       "path": "scripts/export_cards.py",
       "sha256": "09181ca29c9022b4c041f6f40e650be5fd65b8ec62899ae45ad4fd19214ab0ea",
       "hash_kind": "text-lf",
-      "bytes": 2525
+      "bytes": 2463
     },
     {
       "path": "scripts/export_deck.cjs",
@@ -695,7 +737,7 @@
       "path": "scripts/generate_reading_html.py",
       "sha256": "2310f7292ba0711c9df737ffa4bc0dfb5ee7e6a549a85b003799591deb0ccaa6",
       "hash_kind": "text-lf",
-      "bytes": 15512
+      "bytes": 15315
     },
     {
       "path": "scripts/html_contract.py",
@@ -713,13 +755,13 @@
       "path": "scripts/normalize_yearbook.py",
       "sha256": "d2bad7db1f484cf64587e15c201bafb2f8ff8cf27144908f5edf176143b4b290",
       "hash_kind": "text-lf",
-      "bytes": 783
+      "bytes": 760
     },
     {
       "path": "scripts/render_yearbook.py",
       "sha256": "261f68f4e2dcb760cfe7ed382a2a30dde428c5857ba785fd0740cd52f4924508",
       "hash_kind": "text-lf",
-      "bytes": 9720
+      "bytes": 9573
     },
     {
       "path": "scripts/run_share.py",
@@ -731,13 +773,19 @@
       "path": "scripts/run_yearbook.py",
       "sha256": "0c44f7a42401a11ce98b3f52986cc0621e1284d119a3901e7e549600fa9415ea",
       "hash_kind": "text-lf",
-      "bytes": 12406
+      "bytes": 12186
     },
     {
       "path": "scripts/score_books.py",
       "sha256": "92b7db7faeb7eeaf007b5725fa503c60a8e5199e885773f80d435472b2ce85f1",
       "hash_kind": "text-lf",
-      "bytes": 668
+      "bytes": 646
+    },
+    {
+      "path": "scripts/serve_ebook.py",
+      "sha256": "1b8e1a8c2fab9c9dc592f16a7492ee08ab669b58440c4e61252a5ea96b98a74d",
+      "hash_kind": "text-lf",
+      "bytes": 17509
     },
     {
       "path": "scripts/share_contract.py",
@@ -747,9 +795,9 @@
     },
     {
       "path": "scripts/skill_release.py",
-      "sha256": "b4263345a3748c00e7589e99c1aa94b30aa9cbeade5e8f207622774e85c1e7b1",
+      "sha256": "b2888fea8c460009514fb0c8ef32c6e38769694b8eed40dbb65efa67c02b4913",
       "hash_kind": "text-lf",
-      "bytes": 4842
+      "bytes": 5148
     },
     {
       "path": "scripts/static_graphics.py",
@@ -761,19 +809,265 @@
       "path": "scripts/validate_yearbook.py",
       "sha256": "dee21fbf47bc72cc012525e2a5e7535f61197f2d758dd0a331fefb96a29cd58d",
       "hash_kind": "text-lf",
-      "bytes": 15639
+      "bytes": 15396
     },
     {
       "path": "scripts/yearbook_core.py",
       "sha256": "f0b699c1ed3f8a878f351acf6732b7776af30c7a59f2f74c4642c8c235df3638",
       "hash_kind": "text-lf",
-      "bytes": 15696
+      "bytes": 15388
     },
     {
       "path": "SKILL.md",
-      "sha256": "e3dafc3458157aff15d112e98ee09b9705896298cc9c98772c13e303cd723ec8",
+      "sha256": "ea4dcdcfd43fbe5a3149000c787d9ddd13f0c26a14a857706018aa51d4aaae13",
       "hash_kind": "text-lf",
-      "bytes": 8979
+      "bytes": 9882
+    },
+    {
+      "path": "third_party/cangjie/extractors/case-extractor.md",
+      "sha256": "e02d9cdc96884c22f7a5e39db46b69ce0332de61f1027378b2aaa11f74fb909a",
+      "hash_kind": "text-lf",
+      "bytes": 3378
+    },
+    {
+      "path": "third_party/cangjie/extractors/counter-example-extractor.md",
+      "sha256": "b926fb35a9c75de4c3a085ba48346ab88cf977f0a3760d2ffd2afc8c6aca0e84",
+      "hash_kind": "text-lf",
+      "bytes": 3034
+    },
+    {
+      "path": "third_party/cangjie/extractors/framework-extractor.md",
+      "sha256": "41a27a44bcdbd86071082b4533e4ae0593b6e9619f74736368a88c01698030cc",
+      "hash_kind": "text-lf",
+      "bytes": 3183
+    },
+    {
+      "path": "third_party/cangjie/extractors/glossary-extractor.md",
+      "sha256": "00a8d0d36d9e206cd3759aa3f324812cbce8e17d1944e90d984e1c671212d824",
+      "hash_kind": "text-lf",
+      "bytes": 2781
+    },
+    {
+      "path": "third_party/cangjie/extractors/principle-extractor.md",
+      "sha256": "1d4144aa5339c7a6ad0c4877080ff3ed424d8cb055149a299770c9303a714511",
+      "hash_kind": "text-lf",
+      "bytes": 3075
+    },
+    {
+      "path": "third_party/cangjie/LICENSE",
+      "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+      "hash_kind": "binary",
+      "bytes": 1056
+    },
+    {
+      "path": "third_party/cangjie/methodology/00-overview.md",
+      "sha256": "849a40ca94fa214da1d0390f8143842d097a7e7fd84a74f500b322d444f3618f",
+      "hash_kind": "text-lf",
+      "bytes": 5226
+    },
+    {
+      "path": "third_party/cangjie/methodology/01-stage0-adler.md",
+      "sha256": "90d3f7cdae19808c8766e4e232b08359cabfa626eee7a101050e9cb2f2f3b45f",
+      "hash_kind": "text-lf",
+      "bytes": 3519
+    },
+    {
+      "path": "third_party/cangjie/methodology/02-stage1-parallel-extract.md",
+      "sha256": "9a6cefeae96b14b75e976127fe3fde84025617dc553709aee52ccfedfa616777",
+      "hash_kind": "text-lf",
+      "bytes": 5518
+    },
+    {
+      "path": "third_party/cangjie/methodology/03-stage1.5-triple-verify.md",
+      "sha256": "3b721654a18f4da3a82d0fc45a20d5400d7ec8f10243ae2b516cbd2b89918059",
+      "hash_kind": "text-lf",
+      "bytes": 6947
+    },
+    {
+      "path": "third_party/cangjie/methodology/03b-stage1.6-promotion-gate.md",
+      "sha256": "82059cb2b298f340384f6b355064ff5e2abe9b7811d670ea7b638cb4d368c099",
+      "hash_kind": "text-lf",
+      "bytes": 3424
+    },
+    {
+      "path": "third_party/cangjie/methodology/04-stage2-ria-plus.md",
+      "sha256": "6f43835518e0e138d3f1caea3fc89582cd5c5ebc0e0c5124522f8889317f3be1",
+      "hash_kind": "text-lf",
+      "bytes": 7299
+    },
+    {
+      "path": "third_party/cangjie/methodology/05-stage3-zettelkasten.md",
+      "sha256": "0edf07e2940a0cfadd753a38e92451d9aaa71599c1e0440da13e13046e549a0d",
+      "hash_kind": "text-lf",
+      "bytes": 2061
+    },
+    {
+      "path": "third_party/cangjie/methodology/06-stage4-pressure-test.md",
+      "sha256": "ace40a831b5f02b3ca6bdbef3f97428d5b929708ea8b29d6809f165beba4fab0",
+      "hash_kind": "text-lf",
+      "bytes": 7920
+    },
+    {
+      "path": "third_party/cangjie/methodology/07-stage5-deliver.md",
+      "sha256": "22411940543a71ad3ff10964a8a7ad9fbcf3910320c1b0a46102f50523adbf07",
+      "hash_kind": "text-lf",
+      "bytes": 5146
+    },
+    {
+      "path": "third_party/cangjie/schemas/capability-bundle.schema.json",
+      "sha256": "defb7807916bb9b7a6caad9686570d1e1352b25495abf1dd97513d2949990181",
+      "hash_kind": "text-lf",
+      "bytes": 2237
+    },
+    {
+      "path": "third_party/cangjie/schemas/capability.schema.json",
+      "sha256": "16f56d937c9f7917e07fabaf09b819d90bf1eb589136818493a0662c27878104",
+      "hash_kind": "text-lf",
+      "bytes": 3844
+    },
+    {
+      "path": "third_party/cangjie/schemas/change-set.schema.json",
+      "sha256": "be1bb385fe36c42fa8911909c24a1307a2625efed77420a6f82ae6c229aacbaf",
+      "hash_kind": "text-lf",
+      "bytes": 1561
+    },
+    {
+      "path": "third_party/cangjie/schemas/contracts/chunk.schema.json",
+      "sha256": "c06ba57632aeb933c791f9f264ecb015e8b16f0c3ee3d30c89238b073433d211",
+      "hash_kind": "text-lf",
+      "bytes": 1035
+    },
+    {
+      "path": "third_party/cangjie/schemas/contracts/source-document.schema.json",
+      "sha256": "75f01d240c012839430302afd0a3f9b0c6c4c197e87f0a8c88b46c73e7ec6641",
+      "hash_kind": "text-lf",
+      "bytes": 2054
+    },
+    {
+      "path": "third_party/cangjie/schemas/dependency-graph.schema.json",
+      "sha256": "86295872221b5bd8a2d6d87ca38e5c6175ad8b792ddeaff74f56e52624741344",
+      "hash_kind": "text-lf",
+      "bytes": 1444
+    },
+    {
+      "path": "third_party/cangjie/schemas/eval-suite.schema.json",
+      "sha256": "4ca697b9a0a46f4ac7255589db1077cc36b84bed587a15a7c840acd0d04233a0",
+      "hash_kind": "text-lf",
+      "bytes": 2969
+    },
+    {
+      "path": "third_party/cangjie/schemas/failure-case.schema.json",
+      "sha256": "a9584160758e689a9943d4436892ad5b1155c484938cae049f91a232d1592be0",
+      "hash_kind": "text-lf",
+      "bytes": 1577
+    },
+    {
+      "path": "third_party/cangjie/schemas/output-decision.schema.json",
+      "sha256": "78a399819b0b80ef07f3fb27ad25b10a795d2b29e8b4095087aea18bbfeec207",
+      "hash_kind": "text-lf",
+      "bytes": 1156
+    },
+    {
+      "path": "third_party/cangjie/schemas/registry-entry-v1.schema.json",
+      "sha256": "0d7c34f7a9bc96957eb18a15341c5bee341132cd187aa67644abe60bf2a8c35c",
+      "hash_kind": "text-lf",
+      "bytes": 2063
+    },
+    {
+      "path": "third_party/cangjie/schemas/registry-entry-v2.schema.json",
+      "sha256": "3f09403cbf3d9e65dacb29ee031b30da8db16a5e5b7d2c9bf480e1d5cd0d06de",
+      "hash_kind": "text-lf",
+      "bytes": 2901
+    },
+    {
+      "path": "third_party/cangjie/schemas/registry-entry.schema.json",
+      "sha256": "a4521d0ae7932ea84fb60023a4c37128c00f624954297fa7eefa6fddf4aedd43",
+      "hash_kind": "text-lf",
+      "bytes": 536
+    },
+    {
+      "path": "third_party/cangjie/schemas/source-manifest.schema.json",
+      "sha256": "2a7fff8c73021dc242d91634d1146d70d1371f50239ebe58d6c5e2c3b8d385ed",
+      "hash_kind": "text-lf",
+      "bytes": 2087
+    },
+    {
+      "path": "third_party/cangjie/scripts/cangjie_common.py",
+      "sha256": "f320eaa1e72361cc521de0c36e646273467c3762d0e4e01fbbf867f124053e2e",
+      "hash_kind": "text-lf",
+      "bytes": 7282
+    },
+    {
+      "path": "third_party/cangjie/scripts/compile_pack.py",
+      "sha256": "0531458bc1baae00d32d4f409738def25afaf51c38a57dec49511d87de8987b9",
+      "hash_kind": "text-lf",
+      "bytes": 6191
+    },
+    {
+      "path": "third_party/cangjie/scripts/compile_single.py",
+      "sha256": "1f5d8279f6582dadf20d53d0eb19274c3b43869ee2729bb36f3adcd8f2a13ca2",
+      "hash_kind": "text-lf",
+      "bytes": 10034
+    },
+    {
+      "path": "third_party/cangjie/scripts/run_output_evals.py",
+      "sha256": "99631ce29a1994b2ab292ebf503d70bc1eeaeb4ede06034444fb4d130537a75d",
+      "hash_kind": "text-lf",
+      "bytes": 12988
+    },
+    {
+      "path": "third_party/cangjie/scripts/run_trigger_evals.py",
+      "sha256": "06dadfc102fbe94ee0bbc637e433428062af9d0f5f29f81ee48367072a0b64e7",
+      "hash_kind": "text-lf",
+      "bytes": 6798
+    },
+    {
+      "path": "third_party/cangjie/scripts/select_output_strategy.py",
+      "sha256": "422702d52fa935d76b827eee564ae798aa1f3a0fde6031f160f1fd6b66e71d74",
+      "hash_kind": "text-lf",
+      "bytes": 4553
+    },
+    {
+      "path": "third_party/cangjie/scripts/validate_skill_pack.py",
+      "sha256": "7e93c1b0866dcc005a7634ba1b50833eb8ff57c69840618b40fd0e3f2c2c1d65",
+      "hash_kind": "text-lf",
+      "bytes": 3950
+    },
+    {
+      "path": "third_party/cangjie/templates/BOOK_OVERVIEW.md.template",
+      "sha256": "1ceaa8815674a53588a07f6bd06294bde70f0808a6c69bdb4a0876bffafc8c75",
+      "hash_kind": "binary",
+      "bytes": 2813
+    },
+    {
+      "path": "third_party/cangjie/templates/DIGEST.md.template",
+      "sha256": "34ec8d597cc7b5202080de0a4449802b19ba69c76575fcee91150a937f08fee1",
+      "hash_kind": "binary",
+      "bytes": 2084
+    },
+    {
+      "path": "third_party/cangjie/templates/INDEX.md.template",
+      "sha256": "ce0a277ba4a0dfe12ecdf6beead5ee249ed1ff7661fcb6fd153dad76925c0f46",
+      "hash_kind": "binary",
+      "bytes": 1939
+    },
+    {
+      "path": "third_party/cangjie/templates/SKILL.md.template",
+      "sha256": "226c65a559187ddaf913460f81f32eff0fb4bd66fcbb6b70748d658929fb7311",
+      "hash_kind": "binary",
+      "bytes": 3402
+    },
+    {
+      "path": "third_party/cangjie/templates/test-prompts.json.template",
+      "sha256": "3acd11a781f2e2c6ab2051cea0d9a3994429cb89f487d5d8c95ad59570928be3",
+      "hash_kind": "binary",
+      "bytes": 1961
+    },
+    {
+      "path": "third_party/cangjie/UPSTREAM.json",
+      "sha256": "d13a7c701238af799627f50a8180e4b5635b3cb76a20b19fa512c8d26593150e",
+      "hash_kind": "text-lf",
+      "bytes": 4515
     }
   ]
 }

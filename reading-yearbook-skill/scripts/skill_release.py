@@ -16,7 +16,11 @@ REQUIRED = ['SKILL.md','scripts/generate_reading_html.py','scripts/collect_html_
     'assets/reading-app.css','assets/reading-art.css',
     'assets/lieflat-LICENSE.txt','assets/yearbook-art/hero-book.png','assets/yearbook-art/reading.png',
     'assets/yearbook-art/rhythm.png','assets/fonts/NotoSerifSC.ttf.zlib','assets/fonts/NotoSansSC.ttf.zlib',
-    'assets/fonts/OFL-Serif.txt','assets/fonts/OFL-Sans.txt']
+    'assets/fonts/OFL-Serif.txt','assets/fonts/OFL-Sans.txt',
+    'scripts/serve_ebook.py','scripts/ebook_document.py','scripts/ebook_runner.py','scripts/ebook_pipeline.py',
+    'assets/ebook-app.js','assets/ebook-app.css','assets/ebook-section.html',
+    'references/distillation-method.md','requirements-ebook.txt',
+    'third_party/cangjie/UPSTREAM.json','third_party/cangjie/LICENSE']
 
 
 def check_resources(root=ROOT):
@@ -45,11 +49,11 @@ def manifest(root=ROOT):
     files=[]
     for p in sorted(root.rglob('*')):
         relative=p.relative_to(root)
-        if relative.as_posix() in EXCLUDED or not p.is_file() or any(x in relative.parts for x in ('__pycache__','.vendor','revisions')) or p.name in ('release-manifest.json','validation-report.json'):
+        if relative.as_posix() in EXCLUDED or not p.is_file() or any(x in relative.parts for x in ('__pycache__','.vendor','revisions','output','private','.ebook-workbench','.cache','.history','.diagnostics')) or p.name in ('release-manifest.json','validation-report.json'):
             continue
         kind='text-lf' if p.suffix.lower() in {'.py','.js','.cjs','.svg','.xml','.html','.css','.md','.txt','.json','.yaml','.yml'} else 'binary'
         files.append({'path':relative.as_posix(),'sha256':file_hash(p,kind),'hash_kind':kind,'bytes':p.stat().st_size})
-    return {'version':'2026.10.06','files':files}
+    return {'version':'2026.10.08','files':files}
 
 
 def file_hash(path,kind='binary'):

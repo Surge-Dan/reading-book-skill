@@ -1,0 +1,2 @@
+# Optional PDF text extraction. EPUB, TXT and MD use Python standard libraries.
+pypdf>=5.0,<7

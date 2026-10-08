@@ -34,7 +34,7 @@ def main():
         assert len(payload['books'])==count and all(b['cover'].startswith('data:image/') for b in payload['books'])
         assert 'data:font/woff2;base64,' not in html
         assert 'ReadingInsights' not in html and 'PolyForm Noncommercial' in html
-        expected_css=(installed/'assets/reading-app.css').read_text('utf-8')+'\n'+(installed/'assets/reading-art.css').read_text('utf-8')
+        expected_css='\n'.join((installed/'assets'/name).read_text('utf-8') for name in ('reading-app.css','reading-art.css','ebook-app.css'))
         assert re.search(r'<style>(.*?)</style>',html,re.S).group(1).strip()==expected_css.strip()
         assert 'display-reading' in html and 'hero-art' in html and 'bookShareTrigger' in html
         print(json.dumps({'count':count,'status':'pass','bytes':status['bytes']},ensure_ascii=False))
