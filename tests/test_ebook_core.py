@@ -179,6 +179,53 @@ class CoreTests(unittest.TestCase):
             self.assertFalse((out/'DIGEST.md').exists()); self.assertFalse((out/'methods').exists())
             self.assertTrue(list((out/'.history').rglob('old.md')))
 
+    def test_archive_rejects_redirected_history_before_moving_any_output(self):
+        m=self.module('ebook_pipeline')
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d)/'out'; out.mkdir(); outside=Path(d)/'outside'; outside.mkdir()
+            (out/'analysis.json').write_text('completed'); (out/'DIGEST.md').write_text('completed')
+            original=Path.is_symlink
+            with patch.object(Path,'is_symlink',lambda path: True if path==out/'.history' else original(path)):
+                with self.assertRaises(ValueError): m._archive_generation(out)
+            self.assertTrue((out/'analysis.json').exists()); self.assertTrue((out/'DIGEST.md').exists())
+            self.assertFalse((out/'.history').exists()); self.assertEqual(list(outside.iterdir()),[])
+
+    def test_archive_rejects_resolved_junction_escape_before_mkdir(self):
+        m=self.module('ebook_pipeline')
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d)/'out'; out.mkdir(); outside=Path(d)/'outside'; outside.mkdir()
+            (out/'analysis.json').write_text('completed'); original=Path.resolve
+            with patch.object(Path,'resolve',lambda path,*a,**k: outside if path==out/'.history' else original(path,*a,**k)):
+                with self.assertRaises(ValueError): m._archive_generation(out)
+            self.assertTrue((out/'analysis.json').exists()); self.assertFalse((out/'.history').exists())
+
+    def test_archive_checks_late_owned_link_before_moving_earlier_files(self):
+        m=self.module('ebook_pipeline')
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d)/'out'; out.mkdir(); (out/'analysis.json').write_text('completed'); (out/'methods').mkdir()
+            original=Path.is_symlink
+            with patch.object(Path,'is_symlink',lambda path: True if path==out/'methods' else original(path)):
+                with self.assertRaises(ValueError): m._archive_generation(out)
+            self.assertTrue((out/'analysis.json').exists()); self.assertFalse((out/'.history').exists())
+
+    def test_reference_candidates_are_delivered_with_summary_and_sources(self):
+        m=self.module('ebook_pipeline')
+        class Runner(ContractRunner):
+            def generate(self,prompt,*args,**kwargs):
+                result=super().generate(prompt,*args,**kwargs)
+                if 'OUTPUT_CONTRACT:extraction' in prompt:
+                    payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
+                    if payload['extractor_kind']=='principle': result['candidates']=[{'id':'r1','title':'参考原则','type':'principle','summary':'有来源但缺乏独立执行步骤的参考解释','task_ids':[],'sources':[self.source]}]
+                if 'OUTPUT_CONTRACT:verification' in prompt: result['candidates']=[{'id':'r1','status':'reference','reason':'有阅读价值但无可执行步骤','task_ids':[],'sources':[self.source]}]
+                return result
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'b.txt'; p.write_text('原文',encoding='utf-8'); out=Path(d)/'out'
+            analysis=m.distill(p,out,Runner())
+            self.assertEqual(analysis['references'][0]['summary'],'有来源但缺乏独立执行步骤的参考解释')
+            self.assertEqual(analysis['references'][0]['sources'][0]['quote'],'原文')
+            text=(out/'DIGEST.md').read_text(encoding='utf-8')
+            self.assertIn('参考原则',text); self.assertIn('有来源但缺乏独立执行步骤的参考解释',text)
+
     def test_digest_is_self_contained_with_steps_and_source_anchors(self):
         m=self.module('ebook_pipeline')
         with tempfile.TemporaryDirectory() as d:

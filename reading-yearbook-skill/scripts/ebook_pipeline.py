@@ -36,12 +36,29 @@ def _cancel(event):
 
 def _archive_generation(output):
     """Move exactly engine-owned outputs out of the active namespace on retry."""
+    output=Path(output)
+    root=output.resolve()
+    def checked(path):
+        junction=getattr(path,'is_junction',None)
+        if path.is_symlink() or (junction and junction()) or not path.resolve().is_relative_to(root):
+            raise ValueError('输出归档路径被符号链接或 junction 重定向，无法安全归档')
+    checked(output)
     owned=[output/name for name in ('analysis.json','DIGEST.md','BOOK_OVERVIEW.md','GLOSSARY.md','validation-report.json','methods') if (output/name).exists()]
     if owned:
-        history=output/'.history'/uuid.uuid4().hex; history.mkdir(parents=True)
+        history_root=output/'.history'; history=history_root/uuid.uuid4().hex
+        # Complete source and destination preflight before any directory creation
+        # or moves; resolving existing junctions also works on older Python.
+        checked(history_root); checked(history)
         for path in owned:
-            if path.is_symlink(): raise ValueError('输出目录存在符号链接，无法安全归档')
-            path.rename(history/path.name)
+            checked(path); checked(history/path.name)
+        history.mkdir(parents=True)
+        moved=[]
+        try:
+            for path in owned:
+                path.rename(history/path.name); moved.append(path)
+        except BaseException:
+            for path in reversed(moved): (history/path.name).rename(path)
+            raise
 
 def _stage_contract(stage,value,payload):
     """Validate every stage before persistence; cached invalid objects are retried."""
@@ -324,10 +341,15 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
                 trials.append({'method_id':method['id'],'case':case,'baseline':b,'actual':a,'judgment':g,'passed':case_pass,'comparative_outcome':comparison,'claimed_task_utility':method['verification'].get('task_utility'),'semantic_model_judgment':True})
             method['verification'].update(status='validated' if passed else 'needs_review',pressure_passed=passed,source_check='exact_quote_match',semantic_evaluation='model_judged_not_independent_human_validation')
     stage_gaps=[gap for entry in audit for gap in entry['output'].get('gaps',[])]
+    extracted={c['id']:c for group in extracts.values() for batch in group for c in batch['candidates']}
+    analysis['references']=[{'id':c['id'],'title':extracted[c['id']]['title'],'summary':extracted[c['id']]['summary'],
+                             'sources':c['sources'],'source_verified':True,'verification':{'status':'reference','reason':c['reason']}}
+                            for c in verified['candidates'] if c['status']=='reference']
     disposition=[dict(c) for c in verified['candidates']]; task_audit=[dict(t) for t in verified['task_audit']]
     for candidate in disposition:
         destinations=[m for m in analysis['methods'] if candidate['id'] in m.get('candidate_ids',[])]
         candidate['delivered_methods']=[m['id'] for m in destinations]
+        candidate['delivered_reference']=candidate['id'] if candidate['status']=='reference' and any(r['id']==candidate['id'] for r in analysis['references']) else None
         candidate['final_status']=('validated' if destinations and all(m['verification'].get('status')=='validated' for m in destinations) else 'needs_review') if candidate['status']=='validated' else candidate['status']
     final_status={c['id']:c['final_status'] for c in disposition}
     for task in task_audit:
@@ -358,7 +380,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
 
 def _render_outputs(output,analysis,overview,audit,trials,invalid):
     sources={}
-    for category in ('themes','methods','cases','counterexamples','glossary'):
+    for category in ('themes','methods','cases','counterexamples','glossary','references'):
         for item in analysis[category]:
             for source in item['sources']:
                 entry=sources.setdefault(source['element_id'],[])
@@ -383,6 +405,8 @@ def _render_outputs(output,analysis,overview,audit,trials,invalid):
         entry=['','### '+item['term'],'','原书用法的 AI 解释：'+item['definition'],'',links(item)]
         digest+=entry; glossary+=entry
     digest+=['','## 候选去向审计']
+    for reference in analysis['references']:
+        digest+=['','### '+reference['title'],'','参考材料（不作为可执行方法）：'+reference['summary'],'',links(reference),'','保留理由：'+reference['verification']['reason']]
     for candidate in analysis['coverage']['candidate_dispositions']:
         digest+=['',candidate['id']+' — '+candidate['status']+'：'+candidate['reason']]
     digest+=['','## 局限与待核查',*analysis['limitations'],'','## 原文来源索引']
