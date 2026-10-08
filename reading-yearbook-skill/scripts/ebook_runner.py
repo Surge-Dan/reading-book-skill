@@ -2,6 +2,7 @@
 import json
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -24,7 +25,10 @@ def parse_claude_output(text):
     raise ValueError('Claude CLI 未返回结构化 JSON 结果。')
 
 class CLIRunner:
-    def __init__(self,name,timeout=180): self.name=name; self.timeout=timeout; self.executable=shutil.which(name)
+    def __init__(self,name,timeout=180):
+        if type(timeout) is not int or not 30 <= timeout <= 900:
+            raise ValueError('模型阶段超时应为 30 到 900 秒')
+        self.name=name; self.timeout=timeout; self.executable=shutil.which(name); self.last_diagnostic={}
     def info(self):
         directory=Path(os.environ.get('CODEX_HOME',str(Path.home()/'.codex'))) if self.name=='codex' else Path(os.environ.get('CLAUDE_CONFIG_DIR',str(Path.home()/'.claude')))
         config=directory/('config.toml' if self.name=='codex' else 'settings.json')
@@ -50,23 +54,40 @@ class CLIRunner:
             if schema: instruction+='\nJSON schema: '+json.dumps(schema,ensure_ascii=False)
             process=subprocess.Popen(args,cwd=directory,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,encoding='utf-8',creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
             started=time.monotonic(); first=True
+            def diagnostic(stdout,stderr):
+                # The CLI may echo its entire prompt. Only recognize its own
+                # prefixed warning/error lines, never retain raw stream contents.
+                messages='\n'.join(line for line in stderr.splitlines() if re.match(r'^(?:\S+\s+)?(?:ERROR|WARN)\s+(?:codex_|claude(?:-code)?\b)',line)).lower()
+                category='unclassified'
+                for kind,words in (('rate_limit',('429','rate limit')),('authentication',('401','unauthorized','authentication','invalid_api_key')),('network',('connection','reconnecting','stream disconnected','error sending request'))):
+                    if any(word in messages for word in words): category=kind; break
+                self.last_diagnostic={'elapsed_seconds':round(time.monotonic()-started,2),'returncode':process.returncode,
+                    'stdout_bytes':len(stdout.encode('utf-8')),'stderr_bytes':len(stderr.encode('utf-8')),
+                    'final_json_present':bool(result_path and result_path.is_file()),'category':category}
+                return self.last_diagnostic
+            def failure(message,details):
+                hints={'rate_limit':'模型服务返回限流提示','authentication':'模型服务返回认证提示','network':'模型服务返回连接异常提示'}
+                if details['category'] in hints: message+='（'+hints[details['category']]+'）'
+                error=ValueError(message); error.diagnostic=details; return error
             while True:
                 try:
-                    stdout,_=process.communicate(input=instruction if first else None,timeout=.2); break
+                    stdout,stderr=process.communicate(input=instruction if first else None,timeout=.2); break
                 except subprocess.TimeoutExpired: first=False
                 if (cancel_event and cancel_event.is_set()) or time.monotonic()-started>self.timeout:
                     if os.name=='nt': subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     else: process.kill()
-                    process.communicate()
+                    stdout,stderr=process.communicate()
+                    details=diagnostic(stdout,stderr)
                     if cancel_event and cancel_event.is_set(): raise InterruptedError('Cancelled')
-                    raise ValueError('模型阶段超时，可重新执行以复用已完成阶段，或调整每批正文大小。')
-            if process.returncode: raise ValueError(f'{self.name} CLI 调用失败（退出码 {process.returncode}），请检查本机登录状态。')
+                    raise failure('模型阶段超时，可让助手检查连接或调整有限的阶段等待时间；重试会复用已完成阶段。',details)
+            details=diagnostic(stdout,stderr)
+            if process.returncode: raise failure(f'{self.name} CLI 调用失败（退出码 {process.returncode}），请检查本机连接与登录状态。',details)
             if result_path:
                 if not result_path.exists(): raise ValueError('Codex produced no final JSON output')
                 return parse_json(result_path.read_text(encoding='utf-8'))
             return parse_claude_output(stdout)
 
-def create_runner(name='auto'):
+def create_runner(name='auto',timeout=180):
     if name=='auto': name='codex' if shutil.which('codex') else 'claude'
     if name not in ('codex','claude'): raise ValueError('Runner must be auto, codex or claude')
-    return CLIRunner(name)
+    return CLIRunner(name,timeout=timeout)

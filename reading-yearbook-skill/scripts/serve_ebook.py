@@ -166,6 +166,7 @@ class JobStore:
     def _start(self, job, allow_large=False):
         event = threading.Event()
         self.events[job['id']] = event
+        job.pop('diagnostic', None)
         job.update(state='queued', error=None, message='准备继续处理', allow_large=allow_large)
         self._save(job)
         self.executor.submit(self._run, job['id'], event, allow_large)
@@ -214,6 +215,8 @@ class JobStore:
                     job.update(state='needs_approval', stage='budget', message=str(error), estimate=error.estimate)
                 else:
                     job.update(state='failed', message='本次蒸馏未完成，可检查提示后重试', error=public_error(error))
+                    if hasattr(error, 'diagnostic'):
+                        job['diagnostic'] = error.diagnostic
         finally:
             with self.lock:
                 self._save(job)
@@ -342,12 +345,13 @@ def main():
     parser = argparse.ArgumentParser(description='由助手启动年年阅电子书工作台')
     parser.add_argument('--output', type=Path, default=Path('output/books'))
     parser.add_argument('--runner', choices=['auto', 'codex', 'claude'], default='auto')
+    parser.add_argument('--stage-timeout', type=int, default=180, help='每个模型阶段的等待上限，30–900 秒；不自动重试')
     parser.add_argument('--port', type=int, default=0)
     parser.add_argument('--yearbook', type=Path)
     parser.add_argument('--open', action='store_true')
     args = parser.parse_args()
     from ebook_runner import create_runner
-    store = JobStore(args.output, create_runner(args.runner))
+    store = JobStore(args.output, create_runner(args.runner, timeout=args.stage_timeout))
     server = create_server(store, args.port, args.yearbook)
     url = f'http://127.0.0.1:{server.server_port}/'
     atomic_json(store.output / '.ebook-workbench/runtime.json', {'pid': os.getpid(), 'url': url})

@@ -34,6 +34,27 @@ def _rules(*paths): return '\n\n'.join((UPSTREAM/p).read_text(encoding='utf-8') 
 def _cancel(event):
     if event and event.is_set(): raise InterruptedError('Cancelled')
 
+def _stage_schema(stage):
+    """Constrain structured CLI output; deep evidence checks remain authoritative."""
+    if stage in ('stage0-map','stage0'):
+        fields={'summary':'string','genre':'string','scope_note':'string','themes':'array','key_tasks':'array','gaps':'array'}
+    elif stage.startswith('extract-'):
+        fields={'candidates':'array','scanned_chunk_ids':'array','scope_note':'string','gaps':'array'}
+    elif stage=='triple-verification':
+        fields={'candidates':'array','task_audit':'array','gaps':'array'}
+    elif stage in ('ria','organization'):
+        fields={'cards':'array','themes':'array','scope_note':'string','relations':'array','gaps':'array'}
+    elif stage=='analysis':
+        fields={'schema_version':'integer','book':'object','overview':'string','themes':'array','methods':'array','cases':'array','counterexamples':'array','glossary':'array','limitations':'array'}
+    elif stage=='pressure-plan': fields={'test_cases':'array'}
+    elif stage in ('pressure-baseline','pressure-execute','pressure-judge'): fields={'results':'array'}
+    else: raise ValueError('Unknown model stage: '+stage)
+    properties={}
+    for key,kind in fields.items():
+        properties[key]={'type':kind}
+        if kind=='array': properties[key]['items']={'type':'string' if key in ('gaps','scanned_chunk_ids','limitations') else 'object'}
+    return {'type':'object','properties':properties,'required':list(fields),'additionalProperties':True}
+
 def _archive_generation(output):
     """Move exactly engine-owned outputs out of the active namespace on retry."""
     output=Path(output)
@@ -240,7 +261,8 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     if runner is None or not runner.info().get('available'): raise ValueError('未找到可用的本地模型。请先安装 Codex 或 Claude CLI，并完成登录。')
     cache=output/'.cache'; cache.mkdir(parents=True,exist_ok=True)
     # A retry never leaves an earlier formal success behind.
-    context={'source_hash':document['source_hash'],'version':VERSION,'runner':runner.info(),'focus':focus}
+    runner_context=dict(runner.info()); runner_context.pop('timeout',None)
+    context={'source_hash':document['source_hash'],'version':VERSION,'runner':runner_context,'focus':focus}
     done=0; total=estimate['minimum_model_calls']; audit=[]
     def call(stage,rules,payload,contract='notes'):
         nonlocal done,total
@@ -258,7 +280,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
                 answer=None; file.unlink(missing_ok=True)
         else: answer=None
         if not isinstance(answer,dict):
-            answer=runner.generate(prompt,cancel_event=cancel_event)
+            answer=runner.generate(prompt,schema=_stage_schema(stage),cancel_event=cancel_event)
             if not isinstance(answer,dict): raise ValueError('Model output must be a JSON object: '+stage)
             _stage_contract(stage,answer,payload)
             if stage!='analysis' and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
