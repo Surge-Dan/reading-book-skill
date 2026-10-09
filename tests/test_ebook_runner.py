@@ -13,6 +13,26 @@ from test_ebook_core import ContractRunner
 
 
 class RunnerTests(unittest.TestCase):
+    def test_codex_call_disables_optional_external_execution_capabilities(self):
+        commands=[]
+        class Process:
+            pid=123
+            returncode=0
+            def communicate(self, **kwargs): return '', ''
+        def popen(args, **kwargs):
+            commands.append(args)
+            Path(args[args.index('--output-last-message')+1]).write_text('{"ready":true}',encoding='utf-8')
+            return Process()
+        with patch('ebook_runner.shutil.which',return_value='fake-cli.exe'), \
+             patch('ebook_runner.subprocess.Popen',side_effect=popen):
+            self.assertEqual(CLIRunner('codex').generate('inert source'),{'ready':True})
+        options={commands[0][i+1] for i,arg in enumerate(commands[0][:-1]) if arg=='-c'}
+        for feature in ('multi_agent','apps','plugins','hooks','browser_use','computer_use','image_generation','unbounded_connection_retries'):
+            self.assertIn('features.'+feature+'=false',options)
+        self.assertIn('features.shell_tool=false',options)
+        self.assertIn('mcp_servers={}',options)
+        self.assertIn('web_search="disabled"',options)
+
     def test_native_api_403_survives_success_subtype_without_leaking_response(self):
         class Process:
             pid = 123

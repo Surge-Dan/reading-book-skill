@@ -41,6 +41,10 @@ class CLIRunner:
             if self.name=='codex':
                 result_path=Path(directory)/'answer.json'
                 args=[self.executable,'exec','--skip-git-repo-check','--sandbox','read-only','--ephemeral','-c','web_search="disabled"','-c','features.shell_tool=false','-c','mcp_servers={}','--output-last-message',str(result_path),'-']
+                # Command sandboxes do not control connector traffic. Restrict
+                # only this child call; never edit the user's CLI configuration.
+                for feature in ('multi_agent','apps','plugins','hooks','browser_use','computer_use','image_generation','unbounded_connection_retries'):
+                    args[2:2]=['-c','features.'+feature+'=false']
             else:
                 result_path=None
                 args=[self.executable,'-p','--output-format','json','--json-schema',json.dumps(schema or {'type':'object','additionalProperties':True}), '--tools','','--strict-mcp-config','--mcp-config','{"mcpServers":{}}','--disable-slash-commands','--no-session-persistence']
