@@ -300,7 +300,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     runner_context=dict(runner.info()); runner_context.pop('timeout',None)
     context={'source_hash':document['source_hash'],'version':VERSION,'runner':runner_context,'focus':focus}
     done=0; total=estimate['minimum_model_calls']; audit=[]
-    def call(stage,rules,payload,contract='notes'):
+    def call(stage,rules,payload,contract='notes',validate=None):
         nonlocal done,total
         _cancel(cancel_event)
         if progress: progress({'stage':stage,'message':stage,'completed':done,'total':total})
@@ -314,6 +314,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
                 answer=json.loads(file.read_text(encoding='utf-8'))
                 _stage_contract(stage,answer,payload)
                 if stage!='analysis' and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
+                if validate: validate(answer)
             except ValueError:
                 answer=None; file.unlink(missing_ok=True)
         else: answer=None
@@ -324,6 +325,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
                 if saved.get('cache_key',key)!=key or saved.get('context',context)!=context: raise ValueError('Diagnostic context changed')
                 answer=saved['output']; _stage_contract(stage,answer,payload)
                 _stage_source_gate(answer,document['elements'])
+                if validate: validate(answer)
                 _cancel(cancel_event); _write(file,_json(answer)); recovered=True
             except (ValueError,KeyError,TypeError,OSError): answer=None
         if not isinstance(answer,dict):
@@ -332,6 +334,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
             try:
                 _stage_contract(stage,answer,payload)
                 if stage!='analysis' and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
+                if validate: validate(answer)
             except ValueError as error:
                 # Private debugging output is never considered reusable cache or
                 # a reader result. Preserve it to avoid blind paid-stage repeats.
@@ -348,12 +351,14 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     overview=call('stage0',_rules('methodology/01-stage0-adler.md','templates/BOOK_OVERVIEW.md.template'),{'book':document['book'],'all_chunk_maps':maps},overview_contract)
     extracts={}
     extraction_ids=set()
+    def unique_extraction(value):
+        for candidate in value['candidates']:
+            if candidate['id'] in extraction_ids: raise ValueError('提取批次或类别间候选 ID 重复：'+candidate['id'])
     for kind in ('framework','principle','case','counter-example','glossary'):
         extracts[kind]=[]
         for chunk in batches:
-            extracts[kind].append(call('extract-'+kind,_rules('methodology/02-stage1-parallel-extract.md','extractors/'+kind+'-extractor.md'),{'overview':overview,'chunk':chunk,'extractor_kind':kind},'extraction: EXACT JSON {candidates:[{id:unique extractor+chunk ID,title,type,summary,task_ids:[str],sources:[{element_id,quote,location}]}], scanned_chunk_ids:[ALL provided chunk_ids in original order], scope_note:nonempty reason explaining scope/results including zero candidates, gaps:[str]}. Never omit singleton mechanisms; do not let empty candidates imply unexamined coverage.'))
+            extracts[kind].append(call('extract-'+kind,_rules('methodology/02-stage1-parallel-extract.md','extractors/'+kind+'-extractor.md'),{'overview':overview,'chunk':chunk,'extractor_kind':kind},'extraction: EXACT JSON {candidates:[{id:unique extractor+chunk ID,title,type,summary,task_ids:[str],sources:[{element_id,quote,location}]}], scanned_chunk_ids:[ALL provided chunk_ids in original order], scope_note:nonempty reason explaining scope/results including zero candidates, gaps:[str]}. Never omit singleton mechanisms; do not let empty candidates imply unexamined coverage.',validate=unique_extraction))
             for candidate in extracts[kind][-1]['candidates']:
-                if candidate['id'] in extraction_ids: raise ValueError('提取批次或类别间候选 ID 重复：'+candidate['id'])
                 extraction_ids.add(candidate['id'])
     verified=call('triple-verification',_rules('methodology/03-stage1.5-triple-verify.md'),{'overview':overview,'all_extractions':extracts},'verification: EXACT JSON {candidates:[{id,status:validated|reference|needs_review|rejected,reason:concrete V1/V2/V3 decision,task_ids:[str],sources:[{element_id,quote,location}]}], task_audit:[{task_id,status:covered|reference|needs_review|missing,candidate_ids:[str],reason:nonempty}], gaps:[str]}. EVERY input candidate ID gets exactly one disposition; duplicates retained as rejected with canonical ID in reason. EVERY independent overview key task gets exactly one audit; unresolved conditions are needs_review, never covered.')
     card_contract='EXACT JSON {cards:[{candidate_id,id,title,interpretation,trigger,steps:[str],example,boundaries:[str],sources:[{element_id,quote,location}]}], themes:[{title,explanation,sources}], scope_note:nonempty, relations:[{from,to,type,reason}], gaps:[str]}. Preserve all validated candidate_ids exactly once. Include complete R/I/A1/A2/E/B, required inputs, branches, stop rules; examples label source vs synthetic; literary themes instead of invented cards.'

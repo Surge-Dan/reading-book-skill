@@ -284,6 +284,44 @@ class CoreTests(unittest.TestCase):
             self.assertIn('1. check',text); self.assertIn('e0000001',text); self.assertIn('AI',text)
             self.assertNotIn('(methods/',text)
 
+    def test_duplicate_extraction_retry_reuses_valid_stages_after_correction(self):
+        m=self.module('ebook_pipeline')
+        class Runner(ContractRunner):
+            corrected=False
+            def generate(self,prompt,*args,**kwargs):
+                result=super().generate(prompt,*args,**kwargs)
+                if 'OUTPUT_CONTRACT:extraction' in prompt:
+                    payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
+                    if payload['extractor_kind']=='principle':
+                        result['candidates']=[{'id':'r2' if self.corrected else 'c1','title':'另一原则','type':'principle','summary':'不同候选','task_ids':[],'sources':[self.source]}]
+                if 'OUTPUT_CONTRACT:verification' in prompt:
+                    result['candidates'].append({'id':'r2','status':'reference','reason':'仅作参考','task_ids':[],'sources':[self.source]})
+                return result
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'b.txt'; p.write_text('原文',encoding='utf-8'); runner=Runner(methods=True); out=Path(d)/'out'
+            with self.assertRaisesRegex(ValueError,'候选 ID'): m.distill(p,out,runner)
+            files=list((out/'.cache').glob('*.json'))
+            conflict=[f for f in files if any(c.get('title')=='另一原则' for c in json.loads(f.read_text('utf-8')).get('candidates',[]))]
+            valid={f.name:f.read_bytes() for f in files if f not in conflict}
+            with self.subTest(phase='invalid output is not valid cache'): self.assertEqual(conflict,[])
+            runner.corrected=True
+            result=m.distill(p,out,runner)
+            self.assertEqual(result['quality_status'],'completed')
+            self.assertEqual(result['references'][0]['id'],'r2')
+            self.assertEqual(len([call for call in runner.calls if 'OUTPUT_CONTRACT:stage0' in call]),2)
+            framework=lambda call: 'OUTPUT_CONTRACT:extraction' in call and json.loads(call.split('SOURCE_DATA_JSON:\n',1)[1])['extractor_kind']=='framework'
+            self.assertEqual(sum(framework(call) for call in runner.calls),1)
+            self.assertEqual({name:(out/'.cache'/name).read_bytes() for name in valid},valid)
+            # Simulate a conflicting cache written by the previous implementation.
+            principle=next(f for f in (out/'.cache').glob('*.json') if any(c.get('title')=='另一原则' for c in json.loads(f.read_text('utf-8')).get('candidates',[])))
+            legacy=json.loads(principle.read_text('utf-8')); legacy['candidates'][0]['id']='c1'
+            principle.write_text(json.dumps(legacy,ensure_ascii=False),encoding='utf-8')
+            calls_before=len(runner.calls)
+            self.assertEqual(m.distill(p,out,runner)['quality_status'],'completed')
+            self.assertEqual(len(runner.calls),calls_before+1)
+            self.assertEqual(json.loads(principle.read_text('utf-8'))['candidates'][0]['id'],'r2')
+            self.assertEqual({name:(out/'.cache'/name).read_bytes() for name in valid},valid)
+
     def test_pressure_cache_retries_after_invalid_plan(self):
         m=self.module('ebook_pipeline')
         class Runner(ContractRunner):
