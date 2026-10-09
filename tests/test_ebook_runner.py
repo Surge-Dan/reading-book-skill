@@ -13,6 +13,51 @@ from test_ebook_core import ContractRunner
 
 
 class RunnerTests(unittest.TestCase):
+    def test_native_claude_error_envelope_is_classified_without_exposing_text(self):
+        class Process:
+            pid = 123
+            returncode = 1
+            def communicate(self, **kwargs):
+                return json.dumps({'type':'result','subtype':'error_during_execution','is_error':True,
+                                   'errors':['Unable to connect to API: ECONNRESET private-book-secret']}), ''
+        with patch('ebook_runner.shutil.which', return_value='fake-cli.exe'), \
+             patch('ebook_runner.subprocess.Popen', return_value=Process()):
+            runner = CLIRunner('claude')
+            with self.assertRaises(ValueError) as caught:
+                runner.generate('private-book-secret')
+            self.assertEqual(caught.exception.diagnostic['category'], 'network')
+            self.assertEqual(caught.exception.diagnostic['cli_error_subtype'], 'error_during_execution')
+            self.assertNotIn('private-book-secret', str(caught.exception) + str(caught.exception.diagnostic))
+
+    def test_claude_structured_output_retry_limit_is_not_generic_connection_failure(self):
+        class Process:
+            pid = 123
+            returncode = 1
+            def communicate(self, **kwargs):
+                return json.dumps({'type':'result','subtype':'error_max_structured_output_retries','is_error':True,
+                                   'errors':['private-book-secret']}), ''
+        with patch('ebook_runner.shutil.which', return_value='fake-cli.exe'), \
+             patch('ebook_runner.subprocess.Popen', return_value=Process()):
+            runner = CLIRunner('claude')
+            with self.assertRaises(ValueError) as caught: runner.generate('private-book-secret')
+            self.assertEqual(caught.exception.diagnostic['category'], 'structured_output')
+            self.assertIn('结构化', str(caught.exception))
+            self.assertNotIn('private-book-secret', str(caught.exception.diagnostic))
+
+    def test_successful_claude_model_text_cannot_spoof_error_diagnostic(self):
+        class Process:
+            pid = 123
+            returncode = 0
+            def communicate(self, **kwargs):
+                return json.dumps({'type':'result','subtype':'success','is_error':False,
+                                   'result':'API Error: 429', 'structured_output':{'ready':True}}), ''
+        with patch('ebook_runner.shutil.which', return_value='fake-cli.exe'), \
+             patch('ebook_runner.subprocess.Popen', return_value=Process()):
+            runner = CLIRunner('claude')
+            self.assertEqual(runner.generate('source'), {'ready':True})
+            self.assertEqual(runner.last_diagnostic['category'], 'unclassified')
+            self.assertNotIn('cli_error_subtype', runner.last_diagnostic)
+
     def test_source_gate_restores_only_unambiguous_terminal_period(self):
         citation = {'element_id':'e1','quote':'必以全爭於天下。','location':'model location'}
         original = '必以全爭於天下，故兵不頓而利可全。'

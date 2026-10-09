@@ -58,15 +58,31 @@ class CLIRunner:
                 # The CLI may echo its entire prompt. Only recognize its own
                 # prefixed warning/error lines, never retain raw stream contents.
                 messages='\n'.join(line for line in stderr.splitlines() if re.match(r'^(?:\S+\s+)?(?:ERROR|WARN)\s+(?:codex_|claude(?:-code)?\b)',line)).lower()
+                subtype=None
+                if self.name=='claude':
+                    try: envelope=json.loads(stdout)
+                    except (ValueError,TypeError): envelope=None
+                    # Only the native CLI error envelope, never successful model
+                    # content, can supply an error category. Retain enums only.
+                    if isinstance(envelope,dict) and envelope.get('type')=='result' and envelope.get('is_error') is True:
+                        allowed={'error_during_execution','error_max_turns','error_max_budget_usd','error_max_structured_output_retries'}
+                        subtype=envelope.get('subtype') if envelope.get('subtype') in allowed else 'unknown'
+                        errors=envelope.get('errors',[])
+                        if not isinstance(errors,list): errors=[]
+                        messages+='\n'+'\n'.join(e for e in errors if isinstance(e,str)).lower()
+                        if isinstance(envelope.get('result'),str): messages+='\n'+envelope['result'].lower()
                 category='unclassified'
-                for kind,words in (('rate_limit',('429','rate limit')),('authentication',('401','unauthorized','authentication','invalid_api_key')),('network',('connection','reconnecting','stream disconnected','error sending request'))):
+                for kind,words in (('rate_limit',('429','rate limit','usage limit')),('authentication',('401','unauthorized','authentication','invalid_api_key','not logged in','oauth token expired')),('network',('connection','reconnecting','stream disconnected','error sending request','unable to connect to api','econnreset','econnrefused','etimedout','fetch failed'))):
                     if any(word in messages for word in words): category=kind; break
+                if subtype=='error_max_structured_output_retries': category='structured_output'
+                elif subtype in ('error_max_turns','error_max_budget_usd'): category='cli_budget'
                 self.last_diagnostic={'elapsed_seconds':round(time.monotonic()-started,2),'returncode':process.returncode,
                     'stdout_bytes':len(stdout.encode('utf-8')),'stderr_bytes':len(stderr.encode('utf-8')),
                     'final_json_present':bool(result_path and result_path.is_file()),'category':category}
+                if subtype: self.last_diagnostic['cli_error_subtype']=subtype
                 return self.last_diagnostic
             def failure(message,details):
-                hints={'rate_limit':'模型服务返回限流提示','authentication':'模型服务返回认证提示','network':'模型服务返回连接异常提示'}
+                hints={'rate_limit':'模型服务返回限流提示','authentication':'模型服务返回认证提示','network':'模型服务返回连接异常提示','structured_output':'模型结构化结果重试达到上限','cli_budget':'本机 CLI 回合或费用上限已达到'}
                 if details['category'] in hints: message+='（'+hints[details['category']]+'）'
                 error=ValueError(message); error.diagnostic=details; return error
             while True:
@@ -82,6 +98,7 @@ class CLIRunner:
                     raise failure('模型阶段超时，可让助手检查连接或调整有限的阶段等待时间；重试会复用已完成阶段。',details)
             details=diagnostic(stdout,stderr)
             if process.returncode: raise failure(f'{self.name} CLI 调用失败（退出码 {process.returncode}），请检查本机连接与登录状态。',details)
+            if details.get('cli_error_subtype'): raise failure('Claude CLI 返回错误，未生成有效阶段结果。',details)
             if result_path:
                 if not result_path.exists(): raise ValueError('Codex produced no final JSON output')
                 return parse_json(result_path.read_text(encoding='utf-8'))
