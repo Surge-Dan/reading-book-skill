@@ -13,6 +13,22 @@ from test_ebook_core import ContractRunner
 
 
 class RunnerTests(unittest.TestCase):
+    def test_native_api_403_survives_success_subtype_without_leaking_response(self):
+        class Process:
+            pid = 123
+            returncode = 1
+            def communicate(self, **kwargs):
+                return json.dumps({'type':'result','subtype':'success','is_error':True,
+                                   'result':'API Error: 403 {"error":{"type":"api_error","message":"private-book-secret"}}'}), ''
+        with patch('ebook_runner.shutil.which', return_value='fake-cli.exe'), \
+             patch('ebook_runner.subprocess.Popen', return_value=Process()):
+            runner = CLIRunner('claude')
+            with self.assertRaises(ValueError) as caught: runner.generate('source')
+            self.assertEqual(caught.exception.diagnostic['category'], 'permission')
+            self.assertEqual(caught.exception.diagnostic['api_status'], 403)
+            self.assertEqual(caught.exception.diagnostic['cli_error_subtype'], 'success')
+            self.assertNotIn('private-book-secret', str(caught.exception) + str(caught.exception.diagnostic))
+
     def test_native_claude_error_envelope_is_classified_without_exposing_text(self):
         class Process:
             pid = 123

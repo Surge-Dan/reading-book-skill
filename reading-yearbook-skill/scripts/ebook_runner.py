@@ -58,31 +58,35 @@ class CLIRunner:
                 # The CLI may echo its entire prompt. Only recognize its own
                 # prefixed warning/error lines, never retain raw stream contents.
                 messages='\n'.join(line for line in stderr.splitlines() if re.match(r'^(?:\S+\s+)?(?:ERROR|WARN)\s+(?:codex_|claude(?:-code)?\b)',line)).lower()
-                subtype=None
+                subtype=None; api_status=None
                 if self.name=='claude':
                     try: envelope=json.loads(stdout)
                     except (ValueError,TypeError): envelope=None
                     # Only the native CLI error envelope, never successful model
                     # content, can supply an error category. Retain enums only.
                     if isinstance(envelope,dict) and envelope.get('type')=='result' and envelope.get('is_error') is True:
-                        allowed={'error_during_execution','error_max_turns','error_max_budget_usd','error_max_structured_output_retries'}
+                        allowed={'success','error_during_execution','error_max_turns','error_max_budget_usd','error_max_structured_output_retries'}
                         subtype=envelope.get('subtype') if envelope.get('subtype') in allowed else 'unknown'
                         errors=envelope.get('errors',[])
                         if not isinstance(errors,list): errors=[]
                         messages+='\n'+'\n'.join(e for e in errors if isinstance(e,str)).lower()
                         if isinstance(envelope.get('result'),str): messages+='\n'+envelope['result'].lower()
+                        status=re.search(r'\bapi error:\s*(\d{3})\b',messages)
+                        if status and 100<=int(status.group(1))<=599: api_status=int(status.group(1))
                 category='unclassified'
                 for kind,words in (('rate_limit',('429','rate limit','usage limit')),('authentication',('401','unauthorized','authentication','invalid_api_key','not logged in','oauth token expired')),('network',('connection','reconnecting','stream disconnected','error sending request','unable to connect to api','econnreset','econnrefused','etimedout','fetch failed'))):
                     if any(word in messages for word in words): category=kind; break
                 if subtype=='error_max_structured_output_retries': category='structured_output'
                 elif subtype in ('error_max_turns','error_max_budget_usd'): category='cli_budget'
+                elif api_status==403: category='permission'
                 self.last_diagnostic={'elapsed_seconds':round(time.monotonic()-started,2),'returncode':process.returncode,
                     'stdout_bytes':len(stdout.encode('utf-8')),'stderr_bytes':len(stderr.encode('utf-8')),
                     'final_json_present':bool(result_path and result_path.is_file()),'category':category}
                 if subtype: self.last_diagnostic['cli_error_subtype']=subtype
+                if api_status: self.last_diagnostic['api_status']=api_status
                 return self.last_diagnostic
             def failure(message,details):
-                hints={'rate_limit':'模型服务返回限流提示','authentication':'模型服务返回认证提示','network':'模型服务返回连接异常提示','structured_output':'模型结构化结果重试达到上限','cli_budget':'本机 CLI 回合或费用上限已达到'}
+                hints={'rate_limit':'模型服务返回限流提示','authentication':'模型服务返回认证提示','network':'模型服务返回连接异常提示','structured_output':'模型结构化结果重试达到上限','cli_budget':'本机 CLI 回合或费用上限已达到','permission':'模型服务拒绝请求（HTTP 403），请检查账号权限或服务可用性'}
                 if details['category'] in hints: message+='（'+hints[details['category']]+'）'
                 error=ValueError(message); error.diagnostic=details; return error
             while True:
