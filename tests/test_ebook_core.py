@@ -88,9 +88,12 @@ class CoreTests(unittest.TestCase):
             p=Path(d)/'book.epub'
             with zipfile.ZipFile(p,'w') as z:
                 z.writestr('META-INF/container.xml','<container><rootfile full-path="book.opf"/></container>')
-                z.writestr('book.opf','<package xmlns="urn:test"><metadata><title>T</title></metadata><manifest><item id="a" href="a.xhtml"/><item id="b" href="b.xhtml"/></manifest><spine><itemref idref="b"/><itemref idref="a"/></spine></package>')
+                z.writestr('book.opf','<package xmlns="urn:test"><metadata><title>原书元数据</title></metadata><manifest><item id="a" href="a.xhtml"/><item id="b" href="b.xhtml"/></manifest><spine><itemref idref="b"/><itemref idref="a"/></spine></package>')
                 z.writestr('a.xhtml','<p>first</p>'); z.writestr('b.xhtml','<p>second</p>')
             doc=m.parse_document(p); self.assertEqual(doc['elements'][0]['text'],'second\n')
+            pipeline=self.module('ebook_pipeline')
+            result=pipeline.distill(p,Path(d)/'out',ContractRunner(),source_name='上传文件名.epub')
+            self.assertEqual(result['book']['title'],'原书元数据')
             with zipfile.ZipFile(p,'a') as z: z.writestr('../escape','bad')
             with self.assertRaisesRegex(ValueError,'Unsafe'): m.parse_document(p)
 
@@ -216,15 +219,61 @@ class CoreTests(unittest.TestCase):
                 if 'OUTPUT_CONTRACT:extraction' in prompt:
                     payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
                     if payload['extractor_kind']=='principle': result['candidates']=[{'id':'r1','title':'参考原则','type':'principle','summary':'有来源但缺乏独立执行步骤的参考解释','task_ids':[],'sources':[self.source]}]
-                if 'OUTPUT_CONTRACT:verification' in prompt: result['candidates']=[{'id':'r1','status':'reference','reason':'有阅读价值但无可执行步骤','task_ids':[],'sources':[self.source]}]
+                if 'OUTPUT_CONTRACT:stage0' in prompt: result['key_tasks']=[{'id':'t1','title':'理解参考原则','sources':[self.source]}]
+                if 'OUTPUT_CONTRACT:verification' in prompt:
+                    result['candidates']=[{'id':'r1','status':'reference','reason':'有阅读价值但无可执行步骤','task_ids':['t1'],'sources':[self.source]}]
+                    result['task_audit']=[{'task_id':'t1','status':'reference','candidate_ids':['r1'],'reason':'仅供理解参考'}]
                 return result
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'b.txt'; p.write_text('原文',encoding='utf-8'); out=Path(d)/'out'
             analysis=m.distill(p,out,Runner())
             self.assertEqual(analysis['references'][0]['summary'],'有来源但缺乏独立执行步骤的参考解释')
             self.assertEqual(analysis['references'][0]['sources'][0]['quote'],'原文')
+            self.assertEqual(analysis['coverage']['task_audit'][0]['status'],'reference')
+            self.assertTrue(analysis['coverage']['complete'])
             text=(out/'DIGEST.md').read_text(encoding='utf-8')
             self.assertIn('参考原则',text); self.assertIn('有来源但缺乏独立执行步骤的参考解释',text)
+
+    def test_reference_task_rejects_rejected_and_mixed_candidate_mappings(self):
+        m=self.module('ebook_pipeline')
+        source={'element_id':'e1','quote':'原文','location':'line 1'}
+        payload={'overview':{'key_tasks':[{'id':'t1'}]},'all_extractions':{'principle':[{'candidates':[{'id':'r1'},{'id':'x1'}]}]}}
+        candidates=[{'id':'r1','status':'reference','reason':'参考材料','task_ids':['t1'],'sources':[source]},
+                    {'id':'x1','status':'rejected','reason':'无价值','task_ids':['t1'],'sources':[source]}]
+        for ids in (['x1'],['r1','x1']):
+            with self.subTest(ids=ids):
+                value={'candidates':candidates,'task_audit':[{'task_id':'t1','status':'reference','candidate_ids':ids,'reason':'参考覆盖'}],'gaps':[]}
+                with self.assertRaises(ValueError): m._stage_contract('triple-verification',value,payload)
+
+    def test_reference_coverage_requires_every_candidate_to_be_delivered(self):
+        m=self.module('ebook_pipeline')
+        disposition=[{'id':'r1','final_status':'reference'},{'id':'r2','final_status':'reference'},{'id':'x1','final_status':'rejected'}]
+        for ids,delivered,expected in [(['r1'],['r1'],'reference'),(['r1'],[],'needs_review'),(['r1','r2'],['r1'],'needs_review'),(['r1','x1'],['r1'],'needs_review')]:
+            with self.subTest(ids=ids,delivered=delivered):
+                tasks=[{'task_id':'t1','status':'reference','candidate_ids':ids,'reason':'参考覆盖'}]
+                m._reconcile_task_audit(tasks,disposition,[{'id':cid} for cid in delivered])
+                self.assertEqual(tasks[0]['status'],expected)
+
+    def test_duplicate_extraction_ids_fail_before_verification(self):
+        m=self.module('ebook_pipeline')
+        class Runner(ContractRunner):
+            def generate(self,prompt,*args,**kwargs):
+                result=super().generate(prompt,*args,**kwargs)
+                if 'OUTPUT_CONTRACT:extraction' in prompt:
+                    payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
+                    if payload['extractor_kind']=='principle':
+                        result['candidates']=[{'id':'c1','title':'另一原则','type':'principle','summary':'不同候选','task_ids':['t1'],'sources':[self.source]}]
+                return result
+        for text in ('原文','原文'*7000):
+            with self.subTest(scope='category' if len(text)==2 else 'batch'),tempfile.TemporaryDirectory() as d:
+                p=Path(d)/'b.txt'; p.write_text(text,encoding='utf-8'); runner=Runner(methods=True)
+                with self.assertRaisesRegex(ValueError,'候选 ID'):
+                    m.distill(p,Path(d)/'out',runner)
+                self.assertFalse(any('OUTPUT_CONTRACT:verification' in call for call in runner.calls))
+                # Reused extraction replies must go through the same global gate.
+                with self.assertRaisesRegex(ValueError,'候选 ID'):
+                    m.distill(p,Path(d)/'out',runner)
+                self.assertFalse(any('OUTPUT_CONTRACT:verification' in call for call in runner.calls))
 
     def test_digest_is_self_contained_with_steps_and_source_anchors(self):
         m=self.module('ebook_pipeline')

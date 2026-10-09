@@ -109,6 +109,18 @@ class ServerTests(unittest.TestCase):
                 self.request(path, body, **opts)
             self.assertEqual(error.exception.code, 403)
 
+    def test_original_upload_stem_is_used_for_filename_title_fallback(self):
+        from test_ebook_core import ContractRunner
+        self.store.pipeline=None
+        self.store.runner=ContractRunner()
+        for name,title in [('folder/原书标题.txt','原书标题'),('folder/原书标题.md','原书标题'),('C:\\fakepath\\原:书?标题.txt','原-书-标题')]:
+            with self.subTest(name=name):
+                job=self.store.create(name,'原文'.encode('utf-8'))
+                done=self.wait_state(job['id'],'completed')
+                self.assertEqual(done['analysis']['book']['title'],title)
+                self.assertIn('# '+title,done['digest'])
+                self.assertTrue((self.store.jobs_dir/job['id']/('source'+Path(name).suffix)).is_file())
+
     def test_cancel_single_task_and_retry(self):
         _, _, data = self.request('/api/jobs?name=a.txt', b'body')
         job_id = json.loads(data)['job']['id']

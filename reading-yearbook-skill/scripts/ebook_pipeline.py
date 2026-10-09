@@ -158,10 +158,12 @@ def _stage_contract(stage,value,payload):
             candidate_ids.add(candidate['id'])
         if candidate_ids!=expected: fail()
         audits=rows('task_audit'); task_ids=set()
+        candidate_status={c['id']:c['status'] for c in candidates}
         for task in audits:
             text(task,'task_id'); text(task,'reason'); strings(task,'candidate_ids')
             if task['task_id'] in task_ids or task.get('status') not in ('covered','reference','needs_review','missing') or not set(task['candidate_ids']).issubset(candidate_ids): fail()
             if task['status'] in ('covered','reference') and not task['candidate_ids']: fail()
+            if task['status']=='reference' and any(candidate_status[cid]!='reference' for cid in task['candidate_ids']): fail()
             task_ids.add(task['task_id'])
         if task_ids!={t['id'] for t in payload['overview']['key_tasks']}: fail()
     elif stage in ('ria','organization'):
@@ -271,10 +273,25 @@ def _analysis_contract(value):
     if not value['overview'].strip() or not (value['themes'] or value['methods']): raise ValueError('整书分析为空：需要有来源主题或实际方法，文学书不硬造方法')
     return value
 
-def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allow_large=False):
+def _reconcile_task_audit(task_audit,disposition,references):
+    final_status={c['id']:c['final_status'] for c in disposition}
+    delivered_references={r['id'] for r in references}
+    for task in task_audit:
+        ids=task['candidate_ids']
+        if task['status']=='covered' and not (ids and all(final_status.get(cid)=='validated' for cid in ids)):
+            task.update(status='needs_review',reason=task['reason']+'；最终方法未通过来源/执行/路由验证')
+        elif task['status']=='reference' and not (ids and all(final_status.get(cid)=='reference' and cid in delivered_references for cid in ids)):
+            task.update(status='needs_review',reason=task['reason']+'；参考候选未完整交付或状态不符合参考覆盖')
+
+def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allow_large=False,source_name=None):
     output=Path(output_dir); formal=output/'analysis.json'
     _archive_generation(output)
-    _cancel(cancel_event); upstream_manifest(); document=parse_document(path); chunks=build_chunks(document); batches=_model_batches(chunks)
+    _cancel(cancel_event); upstream_manifest(); document=parse_document(path)
+    if source_name and Path(path).suffix.lower() in ('.txt','.md','.pdf') and document['book']['title']==Path(path).stem:
+        stem=Path(source_name.replace('\\','/').rsplit('/',1)[-1]).stem
+        safe_stem=re.sub(r'[<>:"/\\|?*\x00-\x1f]','-',stem).strip(' .')[:200]
+        if safe_stem: document['book']['title']=safe_stem
+    chunks=build_chunks(document); batches=_model_batches(chunks)
     estimate={'characters':sum(len(e['text']) for e in document['elements']),'chunks':len(chunks),'model_batches':len(batches),'minimum_model_calls':len(batches)*6+5,'pressure_model_calls':4,'pipeline':VERSION}
     if (estimate['characters']>100000 or estimate['minimum_model_calls']>65) and not allow_large: raise BudgetRequired(estimate)
     if runner is None or not runner.info().get('available'): raise ValueError('未找到可用的本地模型。请先安装 Codex 或 Claude CLI，并完成登录。')
@@ -330,10 +347,14 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
         maps.append(call('stage0-map',_rules('methodology/01-stage0-adler.md'),{'book':document['book'],'chunk':chunk},overview_contract))
     overview=call('stage0',_rules('methodology/01-stage0-adler.md','templates/BOOK_OVERVIEW.md.template'),{'book':document['book'],'all_chunk_maps':maps},overview_contract)
     extracts={}
+    extraction_ids=set()
     for kind in ('framework','principle','case','counter-example','glossary'):
         extracts[kind]=[]
         for chunk in batches:
             extracts[kind].append(call('extract-'+kind,_rules('methodology/02-stage1-parallel-extract.md','extractors/'+kind+'-extractor.md'),{'overview':overview,'chunk':chunk,'extractor_kind':kind},'extraction: EXACT JSON {candidates:[{id:unique extractor+chunk ID,title,type,summary,task_ids:[str],sources:[{element_id,quote,location}]}], scanned_chunk_ids:[ALL provided chunk_ids in original order], scope_note:nonempty reason explaining scope/results including zero candidates, gaps:[str]}. Never omit singleton mechanisms; do not let empty candidates imply unexamined coverage.'))
+            for candidate in extracts[kind][-1]['candidates']:
+                if candidate['id'] in extraction_ids: raise ValueError('提取批次或类别间候选 ID 重复：'+candidate['id'])
+                extraction_ids.add(candidate['id'])
     verified=call('triple-verification',_rules('methodology/03-stage1.5-triple-verify.md'),{'overview':overview,'all_extractions':extracts},'verification: EXACT JSON {candidates:[{id,status:validated|reference|needs_review|rejected,reason:concrete V1/V2/V3 decision,task_ids:[str],sources:[{element_id,quote,location}]}], task_audit:[{task_id,status:covered|reference|needs_review|missing,candidate_ids:[str],reason:nonempty}], gaps:[str]}. EVERY input candidate ID gets exactly one disposition; duplicates retained as rejected with canonical ID in reason. EVERY independent overview key task gets exactly one audit; unresolved conditions are needs_review, never covered.')
     card_contract='EXACT JSON {cards:[{candidate_id,id,title,interpretation,trigger,steps:[str],example,boundaries:[str],sources:[{element_id,quote,location}]}], themes:[{title,explanation,sources}], scope_note:nonempty, relations:[{from,to,type,reason}], gaps:[str]}. Preserve all validated candidate_ids exactly once. Include complete R/I/A1/A2/E/B, required inputs, branches, stop rules; examples label source vs synthetic; literary themes instead of invented cards.'
     ria=call('ria',_rules('methodology/04-stage2-ria-plus.md','templates/SKILL.md.template'),{'overview':overview,'verified':verified},'ria: '+card_contract)
@@ -341,6 +362,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     contract='analysis\nRequired schema: '+_json({'schema_version':1,'book':{'title':'str','author':'str'},'overview':'str','themes':[{'title':'str','explanation':'str','sources':[]}],'methods':[{'id':'safe-id','title':'str','interpretation':'str','trigger':'str','steps':['str'],'example':'str','boundaries':['str'],'sources':[{'element_id':'str','quote':'exact source substring','location':'str'}],'verification':{'status':'validated|reference|needs_review','V1':False,'V2':False,'V3':False,'source_sufficiency':{'reason':'concrete cited rule/conditions/inputs support'},'walkthrough':{'input':'fixed actual input','steps':['executed steps'],'output':'worked result'},'task_utility':'specific measurable task gain'}}],'cases':[],'counterexamples':[],'glossary':[{'term':'str','definition':'str','sources':[]}],'limitations':['str']})
     contract+='\nEvery method additionally has candidate_ids:[upstream validated IDs]. Preserve all organized cards and source-based themes; no empty analysis. Verification concrete records are required, do not replace them with booleans alone.'
     analysis=_analysis_contract(call('analysis',_rules('methodology/07-stage5-deliver.md','templates/DIGEST.md.template'),{'book':document['book'],'overview':overview,'organized':organized,'verified':verified},contract))
+    analysis['book']=dict(document['book'])
     invalid=_validate_sources(analysis,document)
     trials=[]; eligible=[]
     for method in analysis['methods']:
@@ -409,10 +431,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
         candidate['delivered_methods']=[m['id'] for m in destinations]
         candidate['delivered_reference']=candidate['id'] if candidate['status']=='reference' and any(r['id']==candidate['id'] for r in analysis['references']) else None
         candidate['final_status']=('validated' if destinations and all(m['verification'].get('status')=='validated' for m in destinations) else 'needs_review') if candidate['status']=='validated' else candidate['status']
-    final_status={c['id']:c['final_status'] for c in disposition}
-    for task in task_audit:
-        if task['status']=='covered' and not all(final_status.get(cid)=='validated' for cid in task['candidate_ids']):
-            task.update(status='needs_review',reason=task['reason']+'；最终方法未通过来源/执行/路由验证')
+    _reconcile_task_audit(task_audit,disposition,analysis['references'])
     unresolved=[t['task_id'] for t in task_audit if t['status'] in ('missing','needs_review')]
     delivered={cid for method in analysis['methods'] for cid in method.get('candidate_ids',[])}
     missing_cards=[c['id'] for c in disposition if c['status']=='validated' and c['id'] not in delivered]

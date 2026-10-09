@@ -193,7 +193,8 @@ class JobStore:
                 from ebook_pipeline import distill
                 pipeline = distill
             result = pipeline(job_dir / ('source' + job['suffix']), deep, self.runner,
-                              progress=progress, cancel_event=event, focus=job['focus'], allow_large=allow_large)
+                              progress=progress, cancel_event=event, focus=job['focus'], allow_large=allow_large,
+                              **({'source_name':job['filename']} if self.pipeline is None else {}))
             if event.is_set():
                 raise InterruptedError('已取消')
             digest = (deep / 'DIGEST.md').read_text('utf-8')
