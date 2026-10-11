@@ -18,6 +18,7 @@ REQUIRED = ['SKILL.md','scripts/generate_reading_html.py','scripts/collect_html_
     'assets/yearbook-art/rhythm.png','assets/fonts/NotoSerifSC.ttf.zlib','assets/fonts/NotoSansSC.ttf.zlib',
     'assets/fonts/OFL-Serif.txt','assets/fonts/OFL-Sans.txt',
     'scripts/serve_ebook.py','scripts/ebook_document.py','scripts/ebook_runner.py','scripts/ebook_pipeline.py',
+    'scripts/ebook_verification.py',
     'assets/ebook-app.js','assets/ebook-app.css','assets/ebook-section.html',
     'references/distillation-method.md','requirements-ebook.txt',
     'third_party/cangjie/UPSTREAM.json','third_party/cangjie/LICENSE']
