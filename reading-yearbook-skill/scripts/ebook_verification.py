@@ -87,7 +87,7 @@ def validate_batch(value,payload):
         if target and target['status']=='rejected': fail()
     return value
 
-def merge_verification(candidates,batches,closing,overview,gaps):
+def merge_verification(candidates,batches,closing,overview,gaps,duplicate_evidence=None,document=None):
     original={c['id']:c for c in candidates}; decisions={}
     for batch in batches:
         for row in batch['candidates']:
@@ -101,6 +101,19 @@ def merge_verification(candidates,batches,closing,overview,gaps):
         if not text(cid) or cid not in decisions or cid in adjusted or not text(change.get('reason')): fail()
         adjusted.add(cid); status=change.get('status')
         if status not in ('validated','reference','needs_review','rejected') or (status=='validated' and decisions[cid]['status']!='validated'): fail()
+        canonical=change.get('canonical_id')
+        if canonical is not None and canonical!=decisions[cid].get('canonical_id'):
+            # A lightweight catalog or a full book alone does not give the
+            # closing model both complete candidate records for a new relation.
+            evidence=duplicate_evidence or {}
+            records=rows(evidence.get('candidates',[])); elements=rows(evidence.get('evidence_elements',[]))
+            for member in (cid,canonical):
+                if not text(member) or member not in original: fail()
+                matches=[record for record in records if record.get('id')==member]
+                if len(matches)!=1 or matches[0]!=original[member]: fail()
+            if not isinstance(document,dict): fail()
+            required=evidence_package([cid,canonical],candidates,{'groups':[]},document,[])['evidence_elements']
+            if any(element not in elements for element in required): fail()
         decisions[cid].update(change)
     for cid,row in decisions.items():
         canonical=row.get('canonical_id')

@@ -4,6 +4,130 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'reading-yearbook-skill/scripts'))
 
 class VerificationTests(unittest.TestCase):
+    def test_new_global_cross_batch_relation_requires_full_records_and_cited_evidence(self):
+        import copy
+        import ebook_verification as v
+        candidates=[self.candidate('c1','e1'),self.candidate('c2','e2')]
+        alignment={'groups':[{'candidate_ids':[c['id']],'canonical_id':c['id'],'reason':'独立待核'} for c in candidates]}
+        document={'elements':[{'element_id':'e1','text':'原文条件一'},{'element_id':'e2','text':'原文条件二'}]}
+        packages=[v.evidence_package([c['id']],candidates,alignment,document,[]) for c in candidates]
+        batches=[v.validate_batch({'candidates':[dict(p['candidates'][0],status='reference',reason='保留参考')],'gaps':['本批限制']},p) for p in packages]
+        closing={'adjustments':[{'id':'c2','status':'rejected','reason':'同一机制','canonical_id':'c1','coverage_reason':'输入、执行、条件和收益均被完整覆盖'}],'task_audit':[{'task_id':'t1','status':'reference','candidate_ids':['c1'],'reason':'实际保留代表'}],'gaps':['全局限制']}
+        evidence=v.evidence_package(['c1','c2'],candidates,alignment,document,[])
+        result=v.merge_verification(candidates,batches,closing,{'key_tasks':[{'id':'t1'}]},['原始限制'],evidence,document)
+        self.assertEqual(result['candidates'][0]['original_candidate_ids'],['c1','c2'])
+        self.assertEqual(result['candidates'][0]['sources'],candidates[0]['sources']+candidates[1]['sources'])
+        self.assertEqual(result['gaps'],['原始限制','本批限制','全局限制'])
+        for field in ('summary','task_ids','sources'):
+            incomplete=copy.deepcopy(evidence); incomplete['candidates'][1].pop(field)
+            with self.subTest(field=field),self.assertRaises(ValueError): v.merge_verification(candidates,batches,closing,{'key_tasks':[{'id':'t1'}]},[],incomplete,document)
+        missing=copy.deepcopy(evidence); missing['evidence_elements'][1]['text']='原文'
+        with self.assertRaises(ValueError): v.merge_verification(candidates,batches,closing,{'key_tasks':[{'id':'t1'}]},[],missing,document)
+
+    def test_cross_batch_same_mechanism_merges_but_similar_titles_remain(self):
+        import ebook_verification as v
+        candidates=[self.candidate('c'+str(i),'e'+str(i)) for i in range(17)]
+        candidates[0]['summary']=candidates[16]['summary']='固定输入逐项检查机制'
+        candidates[1]['summary']='基于变化趋势提前预警机制'
+        alignment={'groups':[{'candidate_ids':['c0','c16'],'canonical_id':'c0','reason':'同一检查机制'}]+[{'candidate_ids':['c'+str(i)],'canonical_id':'c'+str(i),'reason':'不同机制'} for i in range(1,16)]}
+        document={'elements':[{'element_id':'e'+str(i),'text':'原文'} for i in range(17)]}
+        packages=v.verification_batches(candidates,alignment,document,[])
+        self.assertEqual([len(p['assigned_ids']) for p in packages],[16,1])
+        batches=[]
+        for package in packages:
+            decisions=[dict(c,status='reference',reason='独立机制保留') for c in package['candidates'] if c['id'] in package['assigned_ids']]
+            for row in decisions:
+                if row['id']=='c16': row.update(status='rejected',canonical_id='c0',coverage_reason='相同检查输入、步骤、条件和结果完整覆盖')
+            batches.append(v.validate_batch({'candidates':decisions,'gaps':[]},package))
+        closing={'adjustments':[],'task_audit':[{'task_id':'t1','status':'reference','candidate_ids':['c0','c1'],'reason':'两种不同机制保留'}],'gaps':[]}
+        result=v.merge_verification(candidates,batches,closing,{'key_tasks':[{'id':'t1'}]},[])
+        self.assertEqual(result['candidates'][0]['original_candidate_ids'],['c0','c16'])
+        self.assertEqual(result['candidates'][1]['status'],'reference')
+        self.assertNotIn('original_candidate_ids',result['candidates'][1])
+
+    def test_new_global_duplicate_without_bilateral_evidence_is_not_cached_and_resumes(self):
+        import tempfile,json
+        import ebook_pipeline
+        from test_ebook_core import ContractRunner
+        class Runner(ContractRunner):
+            merge=True
+            def generate(self,prompt,*args,**kwargs):
+                result=super().generate(prompt,*args,**kwargs)
+                payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
+                if 'OUTPUT_CONTRACT:extraction' in prompt and payload['extractor_kind']=='framework':
+                    result['candidates']=[dict(self_outer.candidate(cid,'e0000001'),sources=[self.source]) for cid in ('c1','c2')]
+                if 'OUTPUT_CONTRACT:batched-v1-batch' in prompt:
+                    for row in result['candidates']: row.update(status='reference',reason='保留独立机制参考')
+                if 'OUTPUT_CONTRACT:batched-v1-global' in prompt:
+                    self_outer.assertEqual(payload['duplicate_evidence']['candidates'],[])
+                    result={'adjustments':[{'id':'c2','status':'rejected','reason':'重复','canonical_id':'c1','coverage_reason':'相同机制全部覆盖'}] if self.merge else [],'task_audit':[{'task_id':'t1','status':'reference','candidate_ids':['c1'],'reason':'保留参考'}],'gaps':[]}
+                return result
+        self_outer=self
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'book.txt'; path.write_text('原文',encoding='utf-8'); output=Path(directory)/'out'; runner=Runner(gaps=True)
+            with self.assertRaises(ValueError): ebook_pipeline.distill(path,output,runner)
+            before={p.name:p.read_bytes() for p in (output/'.cache').glob('*.json')}
+            self.assertEqual(len(before),9)
+            self.assertEqual(len(list((output/'.diagnostics').glob('batched-v1-global*.json'))),1)
+            runner.merge=False; count=len(runner.calls); updates=[]
+            ebook_pipeline.distill(path,output,runner,progress=updates.append)
+            self.assertEqual(len(runner.calls)-count,4)
+            self.assertEqual(before,{name:(output/'.cache'/name).read_bytes() for name in before})
+
+    def test_global_failure_estimate_excludes_revalidated_cached_batches(self):
+        import tempfile,json
+        import ebook_pipeline
+        from test_ebook_core import ContractRunner
+        class Runner(ContractRunner):
+            broken=True
+            candidate_count=33
+            def generate(self,prompt,*args,**kwargs):
+                result=super().generate(prompt,*args,**kwargs)
+                payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
+                if 'OUTPUT_CONTRACT:extraction' in prompt and payload['extractor_kind']=='framework':
+                    result['candidates']=[dict(self_outer.candidate('c'+str(i),'e0000001'),sources=[self.source]) for i in range(self.candidate_count)]
+                if 'OUTPUT_CONTRACT:batched-v1-batch' in prompt:
+                    for row in result['candidates']: row.update(status='reference',reason='保留参考')
+                if self.broken and 'OUTPUT_CONTRACT:batched-v1-global' in prompt: result['task_audit']=[]
+                return result
+        self_outer=self
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'book.txt'; path.write_text('原文',encoding='utf-8'); output=Path(directory)/'out'; runner=Runner(gaps=True)
+            with self.assertRaises(ValueError): ebook_pipeline.distill(path,output,runner)
+            runner.broken=False; updates=[]; count=len(runner.calls)
+            ebook_pipeline.distill(path,output,runner,progress=updates.append)
+            estimate=next(u['estimate'] for u in updates if u['stage']=='batched-v1-plan')
+            self.assertEqual(estimate['remaining_model_calls'],4)
+            self.assertEqual(estimate.get('cached_verification_batches'),3)
+            self.assertEqual(estimate.get('maximum_additional_model_calls'),8)
+            self.assertEqual(estimate.get('logical_remaining_stages'),7)
+            self.assertEqual(len(runner.calls)-count,4)
+            # A forged cached citation must be counted as a paid regeneration,
+            # using the same complete source gate as the subsequent call.
+            for file in (output/'.cache').glob('*.json'):
+                saved=json.loads(file.read_text(encoding='utf-8'))
+                if saved.get('candidates') and saved['candidates'][0]['id']=='c16' and saved['candidates'][0].get('status'):
+                    saved['candidates'][0]['sources'][0]['quote']='伪造引文'
+                    file.write_text(json.dumps(saved,ensure_ascii=False),encoding='utf-8'); break
+            updates=[]; count=len(runner.calls)
+            ebook_pipeline.distill(path,output,runner,progress=updates.append)
+            estimate=next(u['estimate'] for u in updates if u['stage']=='batched-v1-plan')
+            self.assertEqual(estimate['cached_verification_batches'],2)
+            self.assertEqual(estimate['remaining_model_calls'],5)
+            self.assertEqual(len(runner.calls)-count,1)
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'book.txt'; path.write_text('原文',encoding='utf-8'); output=Path(directory)/'out'; runner=Runner(gaps=True); runner.candidate_count=961
+            with self.assertRaises(ValueError): ebook_pipeline.distill(path,output,runner,allow_large=True)
+            runner.broken=False; updates=[]; count=len(runner.calls)
+            # The logical total exceeds 65, but the authorized cached batch
+            # sequence requires only the closing stage and downstream reserve.
+            ebook_pipeline.distill(path,output,runner,progress=updates.append)
+            estimate=next(u['estimate'] for u in updates if u['stage']=='batched-v1-plan')
+            self.assertGreater(estimate['minimum_model_calls'],65)
+            self.assertEqual(estimate['cached_verification_batches'],61)
+            self.assertEqual(estimate['maximum_additional_model_calls'],8)
+            self.assertEqual(len(runner.calls)-count,4)
+
     def candidate(self,cid='c1',element='e1'):
         return {'id':cid,'title':'相同标题','type':'framework','summary':'不同机制 '+cid,'task_ids':['t1'],'sources':[{'element_id':element,'quote':'原文','location':'chapter'}]}
 
