@@ -32,6 +32,12 @@ class ContractRunner:
             return {'summary':'原书骨架','genre':'methodology' if self.methods else 'literary','scope_note':'基于所有正文批次识别主题与适用范围','themes':[theme],'key_tasks':[task] if self.methods or self.gaps else [],'gaps':gaps}
         if 'OUTPUT_CONTRACT:extraction' in prompt:
             return {'candidates':[candidate] if self.methods and payload['extractor_kind']=='framework' else [],'scanned_chunk_ids':payload['chunk']['chunk_ids'],'scope_note':'全批次扫描完成，无其他本类候选','gaps':gaps}
+        if 'OUTPUT_CONTRACT:batched-v1-alignment' in prompt:
+            return {'groups':[{'candidate_ids':[c['id']],'canonical_id':c['id'],'reason':'独立机制，未证明重复'} for c in payload['catalog']],'gaps':gaps}
+        if 'OUTPUT_CONTRACT:batched-v1-batch' in prompt:
+            return {'candidates':[dict(c,status='validated' if c['id']=='c1' else 'reference',reason='来源充分并完成演练',verification=dict(method['verification'],walkthrough=dict(method['verification']['walkthrough'],completion_standard='无遗漏'))) for c in payload['candidates'] if c['id'] in payload['assigned_ids']],'gaps':gaps}
+        if 'OUTPUT_CONTRACT:batched-v1-global' in prompt:
+            return {'adjustments':[],'task_audit':[{'task_id':t['id'],'status':'covered' if self.methods else 'reference' if payload['catalog'] else 'missing','candidate_ids':['c1'] if self.methods else [payload['catalog'][0]['id']] if payload['catalog'] else [],'reason':'逐项核查'} for t in payload['overview']['key_tasks']],'gaps':gaps}
         if 'OUTPUT_CONTRACT:verification' in prompt:
             return {'candidates':[dict(candidate,status='validated',reason='来源充分并完成演练')] if self.methods else [],'task_audit':[{'task_id':'t1','status':'covered' if self.methods else 'missing','candidate_ids':['c1'] if self.methods else [],'reason':'逐项核查'}] if self.methods or self.gaps else [],'gaps':gaps}
         if 'OUTPUT_CONTRACT:ria' in prompt or 'OUTPUT_CONTRACT:organization' in prompt:
@@ -220,9 +226,9 @@ class CoreTests(unittest.TestCase):
                     payload=json.loads(prompt.split('SOURCE_DATA_JSON:\n',1)[1])
                     if payload['extractor_kind']=='principle': result['candidates']=[{'id':'r1','title':'参考原则','type':'principle','summary':'有来源但缺乏独立执行步骤的参考解释','task_ids':[],'sources':[self.source]}]
                 if 'OUTPUT_CONTRACT:stage0' in prompt: result['key_tasks']=[{'id':'t1','title':'理解参考原则','sources':[self.source]}]
-                if 'OUTPUT_CONTRACT:verification' in prompt:
+                if 'OUTPUT_CONTRACT:batched-v1-batch' in prompt:
                     result['candidates']=[{'id':'r1','status':'reference','reason':'有阅读价值但无可执行步骤','task_ids':['t1'],'sources':[self.source]}]
-                    result['task_audit']=[{'task_id':'t1','status':'reference','candidate_ids':['r1'],'reason':'仅供理解参考'}]
+                    result['candidates'][0]['task_ids']=[]
                 return result
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'b.txt'; p.write_text('原文',encoding='utf-8'); out=Path(d)/'out'
@@ -372,7 +378,7 @@ class CoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'b.txt'; p.write_text('原文',encoding='utf-8'); r=ContractRunner(methods=True)
             result=m.distill(p,Path(d)/'out',r)
-            self.assertEqual(len(r.calls),15)
+            self.assertEqual(len(r.calls),17)
             self.assertEqual(result['methods'][0]['verification']['status'],'validated')
 
     def test_short_chapters_are_batched_without_cost_pause(self):

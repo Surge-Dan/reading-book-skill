@@ -37,7 +37,7 @@ class ServerTests(unittest.TestCase):
         def pipeline(path, output_dir, runner, progress=None, cancel_event=None,
                      focus='', allow_large=False):
             self.calls.append((path.read_bytes(), focus, allow_large))
-            progress({'stage': 'extract', 'message': '已读取一章', 'completed': 1, 'total': 2})
+            progress({'stage': 'extract', 'message': '已读取一章', 'completed': 1, 'total': 2,'estimate':{'verification_batches':2,'shared_context_characters':300}})
             self.started.set()
             while not self.release.wait(.01):
                 if cancel_event.is_set():
@@ -87,6 +87,7 @@ class ServerTests(unittest.TestCase):
         job = self.store.get(job_id)
         self.assertEqual(job['completed'], 1)
         self.assertEqual(job['stage'], 'extract')
+        self.assertEqual(job.get('estimate',{}).get('verification_batches'),2)
         self.release.set()
         done = self.wait_state(job_id, 'completed')
         self.assertEqual(done['digest'], '书本精华')

@@ -175,7 +175,7 @@ class JobStore:
         def progress(update):
             with self.lock:
                 if not event.is_set():
-                    fields = {k: update[k] for k in ('stage', 'message', 'completed', 'total') if k in update}
+                    fields = {k: update[k] for k in ('stage', 'message', 'completed', 'total', 'estimate') if k in update}
                     self.jobs[job_id].update(fields)
                     self._save(self.jobs[job_id])
 
