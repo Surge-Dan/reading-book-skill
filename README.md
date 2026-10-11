@@ -77,7 +77,7 @@ npx skills add Tencent/WeChatReading -g
 
 内置 [仓颉 2.5.0](https://github.com/kangarooking/cangjie-skill/tree/a28de55ba881b9928956a55048f743f7a9e3b23e) 原始方法与模板，保留 MIT。复用核心流程不等于任意书籍、模型都得到相同答案；结果保留核验状态与出处，模型评价不冒充独立人工审查。本版不包含书本 Skill 一键编译安装。
 
-当前电子书模块状态为 `implemented_unverified`：网页交互与导出已通过受控浏览器测试；真实公版整书上传已跑到模型调用，但未通过引用核验，完整蒸馏成功链及效果对照仍未验收。不要把网页测试通过理解为整书质量已经确认。详见[验收记录](docs/superpowers/reports/2026-10-08-ebook-acceptance.md)。
+当前电子书模块状态为 `implemented_unverified`：网页交互与导出已通过受控浏览器测试；真实公版整书已通过导图、综合理解与框架提取的结构／来源门，后续原则提取曾因超时及连接异常未完成。完整蒸馏成功链及效果对照仍未验收，不要把网页测试通过理解为整书质量已经确认。详见[验收记录](docs/superpowers/reports/2026-10-08-ebook-acceptance.md)。
 
 ## 效果预览
 
