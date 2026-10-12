@@ -112,7 +112,10 @@ class CLIRunner:
                 return parse_json(result_path.read_text(encoding='utf-8'))
             return parse_claude_output(stdout)
 
-def create_runner(name='auto',timeout=180):
+def create_runner(name='agent',timeout=180):
+    if name=='agent':
+        from ebook_agent_bridge import AgentRunner
+        return AgentRunner(timeout=timeout)
     if name=='auto': name='codex' if shutil.which('codex') else 'claude'
     if name not in ('codex','claude'): raise ValueError('Runner must be auto, codex or claude')
     return CLIRunner(name,timeout=timeout)

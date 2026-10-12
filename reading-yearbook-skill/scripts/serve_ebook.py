@@ -22,11 +22,13 @@ ROOT = Path(__file__).resolve().parents[1]
 MAX_UPLOAD = 32 * 1024 * 1024
 EXTENSIONS = {'.txt', '.md', '.epub', '.pdf'}
 JOB_ID = re.compile(r'^[a-f0-9]{32}$')
-ACTIVE = {'queued', 'running'}
+ACTIVE = {'queued', 'running', 'awaiting_agent', 'awaiting_response'}
 STATES = ACTIVE | {'needs_approval', 'completed', 'failed', 'cancelled', 'interrupted'}
 
 
 def public_error(error):
+    if isinstance(error, InterruptedError):
+        return str(error)[:1000]
     if isinstance(error, OSError):
         return '本地文件读写失败，请让助手检查输出目录与 Skill 安装资源'
     message = str(error)[:1000]
@@ -97,10 +99,13 @@ class JobStore:
         self.runner = runner
         self.pipeline = pipeline
         self.token = secrets.token_urlsafe(32)
+        self.agent_token = secrets.token_urlsafe(32)
+        self.agent_mode = runner.info().get('mode') == 'current-agent-instructed-tools'
         self.lock = threading.RLock()
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='ebook')
         self.jobs = {}
         self.events = {}
+        self.runners = {}
         for state_file in self.jobs_dir.glob('*/state.json'):
             if not JOB_ID.fullmatch(state_file.parent.name):
                 continue
@@ -156,6 +161,7 @@ class JobStore:
             (job_dir / ('source' + suffix)).write_bytes(content)
             name = filename.replace('\\', '/').rsplit('/', 1)[-1][:200]
             job = {'id': job_id, 'filename': name, 'suffix': suffix, 'focus': focus,
+                   'runner_mode': self.runner.info().get('mode','legacy-cli'),
                    'created_at': datetime.now(timezone.utc).isoformat(),
                    'state': 'queued', 'stage': 'queued', 'message': '正在准备正文',
                    'completed': 0, 'total': 0, 'error': None}
@@ -168,20 +174,91 @@ class JobStore:
         self.events[job['id']] = event
         job.pop('diagnostic', None)
         job.update(state='queued', error=None, message='准备继续处理', allow_large=allow_large)
+        if not self.agent_mode and job.get('runner_mode') == 'current-agent-instructed-tools':
+            job.update(state='interrupted', message='此任务属于当前 Agent 模式，请启动原模式继续')
+            self._save(job)
+            return
+        if self.agent_mode:
+            if job.get('runner_mode') != 'current-agent-instructed-tools':
+                job.update(state='interrupted', message='历史任务使用自动 CLI 模式，请显式启动原模式继续')
+                self._save(job)
+                return
+            try:
+                from ebook_document import parse_document
+                document = parse_document(self.jobs_dir / job['id'] / ('source' + job['suffix']))
+                atomic_json(self.jobs_dir / job['id'] / 'parsed-source.json', document)
+            except Exception as error:
+                job.update(state='failed', error=public_error(error), message='正文未能解析，请检查文件')
+                self._save(job)
+                return
+            job.update(state='awaiting_agent', stage='handoff',
+                       message='上传完成。请回到启动此网页的助手对话，说“开始蒸馏”。')
+            self._save(job)
+            return
         self._save(job)
         self.executor.submit(self._run, job['id'], event, allow_large)
 
-    def _run(self, job_id, event, allow_large):
+    def agent_action(self, job_id, action, data):
+        if not self.agent_mode or not isinstance(data, dict):
+            raise ValueError('当前工作台不是当前 Agent 模式')
+        with self.lock:
+            job = self._job(job_id)
+            if action == 'claim':
+                if job.get('runner_mode') != 'current-agent-instructed-tools':
+                    raise ValueError('历史 CLI 任务不能由当前 Agent 领取')
+                if job['state'] != 'awaiting_agent':
+                    raise ValueError('任务不可领取，请检查状态；中断任务需重试')
+                event = self.events[job_id]
+                def notify(update):
+                    with self.lock:
+                        if not event.is_set():
+                            job.update(update)
+                            self._save(job)
+                runner = self.runner.bind(self.jobs_dir / job_id, job_id, data, notify, event)
+                self.runners[job_id] = runner
+                job.update(state='queued', message='当前 Agent 已领取，正在准备正文')
+                self._save(job)
+                self.executor.submit(self._run, job_id, event, job.get('allow_large', False), runner)
+                return {'job': self.get(job_id), 'attempt_id': runner.attempt}
+            runner = self.runners.get(job_id)
+            event = self.events.get(job_id)
+            if not runner or not event or event.is_set():
+                raise ValueError('任务已停止或领取已失效')
+        # Runner callbacks take the store lock: do not hold it across runner calls.
+        if action == 'next':
+            job = self.get(job_id)
+            if job['state'] not in ACTIVE:
+                return {'job': job, 'request': None}
+            request = runner.next(data.get('session'))
+            if request:
+                request = {k: request[k] for k in ('request_id', 'attempt_id', 'stage', 'sequence', 'input_digest')}
+                request.update(request_path=str(runner.directory / 'request.json'), job_dir=str(self.jobs_dir / job_id))
+            return {'job': self.get(job_id), 'request': request}
+        if action == 'submit':
+            return {'status': runner.submit(data.get('session'), data.get('request_id'), data.get('answer'))}
+        if action == 'release':
+            runner.next(data.get('session'))  # Verify owner before revoking.
+            runner.revoke('当前 Agent 已释放任务，请重试')
+            with self.lock:
+                if self.runners.get(job_id) is not runner or self.events.get(job_id) is not event or job['state']=='completed':
+                    raise ValueError('旧尝试已结束，释放操作未影响当前任务')
+                event.set()
+                job.update(state='interrupted', message='当前 Agent 已释放任务，请重试')
+                self._save(job)
+            return {'status': 'released'}
+        raise ValueError('不支持的 Agent 操作')
+
+    def _run(self, job_id, event, allow_large, runner=None):
         def progress(update):
             with self.lock:
-                if not event.is_set():
+                if not event.is_set() and self.events.get(job_id) is event:
                     fields = {k: update[k] for k in ('stage', 'message', 'completed', 'total', 'estimate') if k in update}
                     self.jobs[job_id].update(fields)
                     self._save(self.jobs[job_id])
 
         with self.lock:
             job = self.jobs[job_id]
-            if event.is_set():
+            if event.is_set() or self.events.get(job_id) is not event:
                 return
             job['state'] = 'running'
             self._save(job)
@@ -192,25 +269,30 @@ class JobStore:
             if pipeline is None:
                 from ebook_pipeline import distill
                 pipeline = distill
-            result = pipeline(job_dir / ('source' + job['suffix']), deep, self.runner,
+            result = pipeline(job_dir / ('source' + job['suffix']), deep, runner or self.runner,
                               progress=progress, cancel_event=event, focus=job['focus'], allow_large=allow_large,
                               **({'source_name':job['filename']} if self.pipeline is None else {}))
             if event.is_set():
                 raise InterruptedError('已取消')
+            if runner: runner.check()
             digest = (deep / 'DIGEST.md').read_text('utf-8')
             page = offline_page(result, digest)
             with self.lock:
-                if event.is_set():
+                if event.is_set() or self.events.get(job_id) is not event:
                     raise InterruptedError('已取消')
+                if runner: runner.check()
                 atomic_text(deep / 'index.html', page)
                 job.update(state='completed', stage='complete', message='精华已生成，请查看来源与核验状态',
                            analysis=result, digest=digest, result_url=f'/results/{job_id}.html', error=None)
-        except InterruptedError:
+        except InterruptedError as error:
             with self.lock:
-                job.update(state='cancelled', message='已取消，可重试继续', error=None)
+                if self.events.get(job_id) is event:
+                    job.update(state='cancelled' if event.is_set() and job['state']!='interrupted' else 'interrupted', message=public_error(error), error=None)
         except Exception as error:
             with self.lock:
-                if event.is_set():
+                if self.events.get(job_id) is not event:
+                    pass
+                elif event.is_set():
                     job.update(state='cancelled', message='已取消，可重试继续', error=None)
                 elif hasattr(error, 'estimate'):
                     job.update(state='needs_approval', stage='budget', message=str(error), estimate=error.estimate)
@@ -219,8 +301,11 @@ class JobStore:
                     if hasattr(error, 'diagnostic'):
                         job['diagnostic'] = error.diagnostic
         finally:
+            if runner:
+                runner.revoke('本轮任务已结束，请检查任务状态')
             with self.lock:
-                self._save(job)
+                if self.events.get(job_id) is event:
+                    self._save(job)
 
     def action(self, job_id, action):
         with self.lock:
@@ -228,8 +313,8 @@ class JobStore:
             if action == 'cancel':
                 if job['state'] in ACTIVE:
                     self.events[job_id].set()
-                    if job['state'] == 'queued':
-                        job.update(state='cancelled', message='已取消，可重试继续')
+                    if job['state'] in {'queued', 'awaiting_agent', 'awaiting_response'}:
+                        job.update(state='cancelled', message='已取消；请同时停止对话中的分析。可重试继续')
                     else:
                         job['message'] = '正在停止当前阶段…'
                 elif job['state'] == 'needs_approval':
@@ -273,12 +358,14 @@ def create_server(store, port=0, yearbook=None):
             self.end_headers()
             self.wfile.write(body)
 
-        def authorize(self, api=False, mutation=False):
+        def authorize(self, api=False, mutation=False, agent=False):
             expected_host = f'127.0.0.1:{self.server.server_port}'
             if self.headers.get('Host') != expected_host:
                 self.send(403, {'error': '只允许本机工作台访问'})
                 return False
-            if api and not hmac.compare_digest(self.headers.get('X-Ebook-Token', '').encode('utf-8'), store.token.encode('ascii')):
+            header = 'X-Ebook-Agent-Token' if agent else 'X-Ebook-Token'
+            token = store.agent_token if agent else store.token
+            if api and not hmac.compare_digest(self.headers.get(header, '').encode('utf-8'), token.encode('ascii')):
                 self.send(403, {'error': '连接已过期，请重新打开工作台'})
                 return False
             if mutation and self.headers.get('Origin') != 'http://' + expected_host:
@@ -292,7 +379,7 @@ def create_server(store, port=0, yearbook=None):
                 return
             try:
                 if path == '/':
-                    self.send(200, workbench_page({'apiBase': '', 'token': store.token}, yearbook=yearbook), 'text/html; charset=utf-8')
+                    self.send(200, workbench_page({'apiBase': '', 'token': store.token, 'output': str(store.output)}, yearbook=yearbook), 'text/html; charset=utf-8')
                 elif path == '/api/state':
                     self.send(200, store.state())
                 elif path.startswith('/api/jobs/'):
@@ -310,7 +397,7 @@ def create_server(store, port=0, yearbook=None):
 
         def do_POST(self):
             parsed = urlsplit(self.path)
-            if not self.authorize(api=True, mutation=True):
+            if not self.authorize(api=True, mutation=True, agent=parsed.path.startswith('/api/agent/')):
                 return
             try:
                 length = int(self.headers.get('Content-Length', '-1'))
@@ -321,7 +408,18 @@ def create_server(store, port=0, yearbook=None):
                 body = self.rfile.read(length)
                 if len(body) != length:
                     raise ValueError('文件上传不完整，请重新选择文件')
-                if parsed.path == '/api/jobs':
+                if parsed.path.startswith('/api/agent/'):
+                    from ebook_agent import strict_json
+                    data = strict_json(body.decode('utf-8'))
+                    if parsed.path == '/api/agent/list':
+                        self.send(200, store.state())
+                    else:
+                        match = re.fullmatch(r'/api/agent/([a-f0-9]{32})/(claim|next|submit|release)', parsed.path)
+                        if not match:
+                            self.send(404, {'error': '操作不存在'})
+                            return
+                        self.send(200, store.agent_action(*match.groups(), data))
+                elif parsed.path == '/api/jobs':
                     query = parse_qs(parsed.query)
                     filename = query.get('name', [''])[0]
                     job = store.create(filename, body, query.get('focus', [''])[0])
@@ -334,18 +432,24 @@ def create_server(store, port=0, yearbook=None):
                     self.send(202, {'job': store.action(*match.groups())})
             except BusyError as error:
                 self.send(409, {'error': str(error)})
+            except InterruptedError as error:
+                self.send(409, {'error': public_error(error)})
             except (ValueError, OSError) as error:
                 self.send(400, {'error': public_error(error)})
             except KeyError:
                 self.send(404, {'error': '任务不存在'})
 
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    if store.agent_mode:
+        atomic_json(store.output / '.ebook-workbench/agent-runtime.json', {
+            'url': f'http://127.0.0.1:{server.server_port}', 'token': store.agent_token})
+    return server
 
 
 def main():
     parser = argparse.ArgumentParser(description='由助手启动年年阅电子书工作台')
     parser.add_argument('--output', type=Path, default=Path('output/books'))
-    parser.add_argument('--runner', choices=['auto', 'codex', 'claude'], default='auto')
+    parser.add_argument('--runner', choices=['agent', 'auto', 'codex', 'claude'], default='agent')
     parser.add_argument('--stage-timeout', type=int, default=180, help='每个模型阶段的等待上限，30–900 秒；不自动重试')
     parser.add_argument('--port', type=int, default=0)
     parser.add_argument('--yearbook', type=Path)

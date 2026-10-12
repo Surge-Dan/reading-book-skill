@@ -9,7 +9,7 @@ description: Create reading yearbooks and open a local ebook distillation webpag
 
 ## 路由
 
-- 网页上传电子书／打开年年阅工作台／提炼全书精华：读[电子书蒸馏](references/distillation-method.md)，由助手启动 `scripts/serve_ebook.py` 并打开实际本机 URL。用户在网页上传、查看进度、复制或下载分享图，不让用户执行命令或回聊天框继续触发。独立使用不要求微信读书接口、年份或已有记录。已有年鉴可用 `--yearbook` 接入。静态 HTML 本身不调用 AI，不能承诺脱离本地服务继续生成新结果。
+- 网页上传电子书／打开年年阅工作台／开始蒸馏：读[电子书蒸馏](references/distillation-method.md)，助手启动 `scripts/serve_ebook.py` 默认当前 Agent 模式并打开实际 URL。用户上传后回同一聊天发送一次“开始蒸馏”，助手用自身模型连续处理阶段，网页显示结果、复制与分享图。无需另装模型 CLI，用户不执行命令或填写 JSON；宿主须支持共享本地文件和 Python。可选 CLI 自动模式仅明确要求时使用。独立使用不要求微信读书接口、年份或已有记录。静态 HTML 不能生成新结果。
 - 默认交付HTML阅读年鉴：用户安装Skill并接入有效微信读书接口后，助手完成采集、材料核查、视觉制作和导出验证，给出完整单文件网页；不让用户准备JSON或执行脚本。只读[HTML年鉴操作](references/html-yearbook.md)，运行`generate_reading_html.py`；已有材料先复用。年份未指定默认本年并说明，已有认可方向直接实现；用户提出新的视觉要求时才集中对齐。用户只要组图或单书卡时，仍复用已有年鉴或按指定材料构建，再通过同一分享画布导出；只交付其要求的产物，不自动扩展成全年书单。
 - 初次使用先核查安装目录必需资源及`requirements.txt`依赖，由助手补齐；`skill_release.py`提供发布清单校验与完整本地同步。不能因仓库里的示例网页能打开，就认为已安装Skill可独立运行。Noto字体资源与OFL许可保留；默认沿用已认可的本机字体优先策略，不自动替换或内嵌新字族。
 - 年度排行最多10项且过滤不足5分钟的条目，不作为完整书单接口。候选扩查先检查新请求预算；历史年结合真实完成日期与年内笔记证据，最近阅读时间不能证明此前没读过。覆盖不足交付部分年鉴并说明。`--refresh all`用于用户要求重新同步，视觉修订仍复用材料。
@@ -43,13 +43,13 @@ description: Create reading yearbooks and open a local ebook distillation webpag
 python -X utf8 scripts/generate_reading_html.py --year 2026 --output output/reading-2026/index.html
 python -X utf8 scripts/build_reading_html.py --input 已有材料.json --year 2026 --output output/reading-2026/index.html
 python -X utf8 scripts/skill_release.py
-python -X utf8 scripts/serve_ebook.py --output output/books --runner auto --port 0 --open
+python -X utf8 scripts/serve_ebook.py --output output/books --runner agent --port 0 --open
 ```
 
 ## 内容与成本边界
 
 - 引用保留来源与原文，个人想法、AI 精华与内容简介分开标注，不凭模型记忆补写全书或用户感受。不自动检索或下载全文；只有用户主动上传有权处理的正文时才蒸馏。
-- 电子书会交给本机已登录的 Codex/Claude 模型服务，不是完全离线计算。上传前网页说明该边界；不另行上传到第三方存储或自动发布。每本书的核验状态与覆盖缺口必须保留，不能仅因流程结束就宣称语义完全正确。
+- 默认电子书由当前助手的模型服务处理，消耗宿主账号额度，不是完全离线计算。可选 CLI 才调用本机 Codex/Claude。当前 Agent 无独立盲测上下文，方法状态至多 needs_review；不得把同会话演练称为已证明任务增益。不另行上传第三方存储或自动发布；核验状态和覆盖缺口保留在全部导出。
 - Key只来自环境变量，不进对话、日志或交付；不上传阅读记录，不自动发布。示例明确注明虚构，不能用于填补真实用户的缺失数据。
 - 年鉴说明一次时间范围，采集日期集中放来源区。区分未取得与核查为零、年度汇总与当前阅读进度、已载入与完整全年覆盖。
 - 默认单个助手，只加载当前流程需要的材料。修订复用数据与图片，只处理受影响页面。生图、扩大调研或改变艺术方向先说明工作范围，不自动串联多个设计Skill。

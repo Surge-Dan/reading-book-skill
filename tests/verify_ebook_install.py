@@ -16,7 +16,7 @@ def main():
     env = dict(os.environ)
     env.pop('PYTHONPATH', None)
     command = [sys.executable, '-X', 'utf8', str(installed / 'scripts/serve_ebook.py'),
-               '--output', str(output), '--port', '0', '--runner', 'auto']
+               '--output', str(output), '--port', '0']
     process = subprocess.Popen(command, cwd=output, env=env, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, text=True, encoding='utf-8')
     try:
@@ -32,7 +32,14 @@ def main():
         with urllib.request.urlopen(request, timeout=5) as response:
             state = json.load(response)
         assert state['jobs'] == []
-        assert state['runner']['name'] in ('codex', 'claude')
+        assert state['runner']['name'] == 'agent'
+        assert state['runner']['available'] is True
+        request = urllib.request.Request(url + 'api/jobs?name=short.txt', data=b'Installed-copy source test.',
+                                         headers={'X-Ebook-Token': config['token'], 'Origin': url.rstrip('/')})
+        with urllib.request.urlopen(request, timeout=5) as response:
+            job = json.load(response)['job']
+        assert job['state'] == 'awaiting_agent'
+        assert 'agent-runtime.json' not in html
         # Bad extension must be rejected before any model invocation.
         request = urllib.request.Request(url + 'api/jobs?name=unsupported.exe', data=b'not a book',
                                          headers={'X-Ebook-Token': config['token'], 'Origin': url.rstrip('/')})

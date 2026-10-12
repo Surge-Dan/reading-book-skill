@@ -3,14 +3,14 @@
   <div class="ebook-upload-area">
     <label for="ebookFocus">想用这本书解决什么问题？<span>选填</span></label>
     <input id="ebookFocus" type="text" maxlength="500" placeholder="例如：改进需求评审中的检查流程">
-    <div class="ebook-upload-row"><button id="ebookUpload" type="button" class="button primary">上传电子书</button><input id="ebookFile" class="ebook-file" type="file" accept=".epub,.pdf,.txt,.md" aria-label="选择电子书，选择后开始蒸馏"><span>EPUB / PDF / TXT / MD</span></div>
-    <p class="ebook-small">选择文件后直接开始。正文将在本机解析，并发送到当前 AI 执行入口所连接的模型服务进行分析。扫描 PDF 暂不支持。</p>
-    <div class="ebook-connection-row"><p id="ebookConnection" role="status" aria-live="polite">正在检查工作台连接…</p><button type="button" id="ebookReconnect" class="text-button">重新连接</button></div>
+    <div class="ebook-upload-row"><button id="ebookUpload" type="button" class="button primary">上传电子书</button><input id="ebookFile" class="ebook-file" type="file" accept=".epub,.pdf,.txt,.md" aria-label="选择电子书上传到本机工作台"><span>EPUB / PDF / TXT / MD</span></div>
+    <p id="ebookUploadNote" class="ebook-small">上传后回到当前助手对话，说“开始蒸馏”。正文在本机解析，由当前助手的模型分析，消耗其账号额度。扫描 PDF 暂不支持。</p>
+    <div class="ebook-connection-row"><p id="ebookConnection" role="status" aria-live="polite">正在检查工作台状态…</p><button type="button" id="ebookReconnect" class="text-button">刷新状态</button></div>
   </div>
   <div id="ebookTask" class="ebook-task" hidden>
     <p id="ebookFilename" class="ebook-small"></p><p id="ebookStatus" role="status" aria-live="polite"></p>
     <p id="ebookProgress" class="ebook-small"></p><p id="ebookBudget" class="ebook-small" hidden></p>
-    <div class="ebook-actions"><button id="ebookCancel" type="button" class="text-button" hidden>取消处理</button><button id="ebookRetry" type="button" class="button" hidden>重试并继续</button><button id="ebookApprove" type="button" class="button primary" hidden>确认范围并继续</button></div>
+    <div class="ebook-actions"><button id="ebookStartInstruction" type="button" class="button primary" hidden>复制开始指令</button><button id="ebookCancel" type="button" class="text-button" hidden>取消处理</button><button id="ebookRetry" type="button" class="button" hidden>重试并继续</button><button id="ebookApprove" type="button" class="button primary" hidden>确认范围并继续</button></div>
   </div>
   <div id="ebookResultShell" hidden>
     <div class="ebook-result-heading"><h3 id="ebookBookTitle"></h3><p id="ebookAuthor" class="ebook-small"></p><p id="ebookQuality" class="ebook-quality"></p></div>
