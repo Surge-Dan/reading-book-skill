@@ -332,7 +332,7 @@ window.ReadingShareArtwork = (() => {
   // same page descriptor is used by preview, PNG and ZIP.
   function createDigest({analysis}){
     const fonts=()=>document.fonts.ready;
-    const nonIsolated=Boolean(analysis.evaluation_limit),footerHeight=nonIsolated?132:84;
+    const titleMode=analysis.input_mode==='title',nonIsolated=Boolean(analysis.evaluation_limit)||titleMode,footerHeight=nonIsolated?132:84;
     const exportLimits=nonIsolated?'\n\n核验状态：待核查\n'+analysis.evaluation_limit+'\n覆盖与局限：\n'+[...new Set([...(analysis.limitations||[]),...(analysis.coverage?.warnings||[])])].join('\n'):'';
     const height=ratio=>ratio==='1:1'?900:ratio==='4:5'?1125:1200;
     function wrap(ctx,str,width,size=32,font=SANS,weight=400){ctx.font=`${weight} ${size}px ${font}`;const rows=[];let line='';for(const ch of String(str).replace(/\r/g,'')){if(ch==='\n'){rows.push({text:line});line='';continue;}if(line&&ctx.measureText(line+ch).width>width){rows.push({text:line});line=ch;}else line+=ch;}if(line)rows.push({text:line});return rows;}
@@ -341,7 +341,7 @@ window.ReadingShareArtwork = (() => {
       const text=(str,x,y,size=28,font=SANS,color=C.ink,weight=400,role='content')=>{ctx.font=`${weight} ${size}px ${font}`;ctx.fillStyle=color;ctx.textBaseline='alphabetic';ctx.fillText(str,x,y);const m=ctx.measureText(str);if(str.trim())manifest.text.push({text:str,x:x-m.actualBoundingBoxLeft,y:y-m.actualBoundingBoxAscent,w:m.actualBoundingBoxLeft+m.actualBoundingBoxRight,h:m.actualBoundingBoxAscent+m.actualBoundingBoxDescent,size,role});};
       const rule=y=>{ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();};
       ctx.fillStyle=C.paper;ctx.fillRect(0,0,W,H);ctx.strokeStyle=C.line;ctx.strokeRect(22,22,W-44,H-44);text('年年阅',M,72,28,SERIF,C.ink,600);text('电子书精华 · AI 整理',430,72,24,SANS,C.muted);rule(95);
-      page.rows.forEach((row,i)=>text(row.text,M,160+i*48,row.size||32,(row.weight||400)===600?SERIF:SANS,C.ink,row.weight||400));manifest.blocks.push({x:M,y:122,w:772,h:H-238-(footerHeight-84),cut:false});rule(H-footerHeight);if(nonIsolated){text('待核查 · 非隔离对照演练 · 不证明任务增益',M,H-96,23,SANS,C.muted,400,'footer');text('来源与覆盖缺口请结合原文核查',M,H-64,23,SANS,C.muted,400,'footer');}text(`${page.part} / ${page.parts}`,M,H-(nonIsolated?32:44),24,NUM,C.muted,400,'footer');if(!nonIsolated)text('原文与解释请结合来源阅读',400,H-44,23,SANS,C.muted,400,'footer');return canvas;
+      page.rows.forEach((row,i)=>text(row.text,M,160+i*48,row.size||32,(row.weight||400)===600?SERIF:SANS,C.ink,row.weight||400));manifest.blocks.push({x:M,y:122,w:772,h:H-238-(footerHeight-84),cut:false});rule(H-footerHeight);if(nonIsolated){text(titleMode?'基于公开资料，未核验全文':'待核查 · 非隔离对照演练 · 不证明任务增益',M,H-96,23,SANS,C.muted,400,'footer');text(titleMode?'方法待核查 · 来源类型与出处见结果页':'来源与覆盖缺口请结合原文核查',M,H-64,23,SANS,C.muted,400,'footer');}text(`${page.part} / ${page.parts}`,M,H-(nonIsolated?32:44),24,NUM,C.muted,400,'footer');if(!nonIsolated)text('原文与解释请结合来源阅读',400,H-44,23,SANS,C.muted,400,'footer');return canvas;
     }
     return {pages,render};
   }

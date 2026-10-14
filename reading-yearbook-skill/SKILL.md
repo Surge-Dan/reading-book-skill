@@ -1,6 +1,6 @@
 ---
 name: reading-yearbook-skill
-description: Create reading yearbooks and open a local ebook distillation webpage with upload, Cangjie-style book insights, source verification, copy and share-image exports. Use for 阅读年报、年度阅读档案、电子书蒸馏、上传书本提炼精华、读书分享图 or 单书卡. Keep book quotes, AI interpretation and personal notes distinct.
+description: Create reading yearbooks and a local book distillation webpage with title-based public-source research or ebook upload, Cangjie-style insights, decision guides, copy and share-image exports. Use for 阅读年报、年度阅读档案、按书名蒸馏、电子书蒸馏、上传书本提炼精华、读书分享图 or 单书卡. Keep public-source interpretation, book quotes and personal notes distinct.
 ---
 
 # 年年阅
@@ -9,7 +9,7 @@ description: Create reading yearbooks and open a local ebook distillation webpag
 
 ## 路由
 
-- 网页上传电子书／打开年年阅工作台／开始蒸馏：读[电子书蒸馏](references/distillation-method.md)，助手启动 `scripts/serve_ebook.py` 默认当前 Agent 模式并打开实际 URL。用户上传后回同一聊天发送一次“开始蒸馏”，助手用自身模型连续处理阶段，网页显示结果、复制与分享图。无需另装模型 CLI，用户不执行命令或填写 JSON；宿主须支持共享本地文件和 Python。可选 CLI 自动模式仅明确要求时使用。独立使用不要求微信读书接口、年份或已有记录。静态 HTML 不能生成新结果。
+- 按书名蒸馏／网页上传电子书／打开年年阅工作台／开始蒸馏：读[书籍蒸馏](references/distillation-method.md)，助手启动 `scripts/serve_ebook.py` 默认当前 Agent 模式并打开实际 URL。网页默认输入书名，也可上传正文；提交后回同一聊天发送一次“开始蒸馏”，助手连续处理阶段，网页显示结果、复制与分享图。书名任务的研究阶段另读[公开资料研究](references/title-research.md)，仅在 title-identify/title-research 有界联网；同名书先在网页选择，资料不足不补造。无需另装模型 CLI，用户不执行命令或填写 JSON；宿主须支持共享本地文件和 Python，书名模式还需宿主联网工具。可选 CLI 自动模式仅明确要求时用于上传。默认首页仍为已有年度报告，蒸馏在底部；独立使用不要求微信读书接口、年份或已有记录。静态 HTML 不能生成新结果。
 - 默认交付HTML阅读年鉴：用户安装Skill并接入有效微信读书接口后，助手完成采集、材料核查、视觉制作和导出验证，给出完整单文件网页；不让用户准备JSON或执行脚本。只读[HTML年鉴操作](references/html-yearbook.md)，运行`generate_reading_html.py`；已有材料先复用。年份未指定默认本年并说明，已有认可方向直接实现；用户提出新的视觉要求时才集中对齐。用户只要组图或单书卡时，仍复用已有年鉴或按指定材料构建，再通过同一分享画布导出；只交付其要求的产物，不自动扩展成全年书单。
 - 初次使用先核查安装目录必需资源及`requirements.txt`依赖，由助手补齐；`skill_release.py`提供发布清单校验与完整本地同步。不能因仓库里的示例网页能打开，就认为已安装Skill可独立运行。Noto字体资源与OFL许可保留；默认沿用已认可的本机字体优先策略，不自动替换或内嵌新字族。
 - 年度排行最多10项且过滤不足5分钟的条目，不作为完整书单接口。候选扩查先检查新请求预算；历史年结合真实完成日期与年内笔记证据，最近阅读时间不能证明此前没读过。覆盖不足交付部分年鉴并说明。`--refresh all`用于用户要求重新同步，视觉修订仍复用材料。
@@ -48,7 +48,7 @@ python -X utf8 scripts/serve_ebook.py --output output/books --runner agent --por
 
 ## 内容与成本边界
 
-- 引用保留来源与原文，个人想法、AI 精华与内容简介分开标注，不凭模型记忆补写全书或用户感受。不自动检索或下载全文；只有用户主动上传有权处理的正文时才蒸馏。
+- 引用保留来源，个人想法、AI 精华与内容简介分开标注，不凭模型记忆补写全书或用户感受。书名模式只读取有限公开资料，所有导出注明“未核验全文”；二手转述不当原书引文，不自动检索或下载全文。整书模式仅分析用户提供有权处理的正文。决策速查与章节索引从同一分析对象派生，不能新增未经支持的方法或把演练说成原书案例。
 - 默认电子书由当前助手的模型服务处理，消耗宿主账号额度，不是完全离线计算。可选 CLI 才调用本机 Codex/Claude。当前 Agent 无独立盲测上下文，方法状态至多 needs_review；不得把同会话演练称为已证明任务增益。不另行上传第三方存储或自动发布；核验状态和覆盖缺口保留在全部导出。
 - Key只来自环境变量，不进对话、日志或交付；不上传阅读记录，不自动发布。示例明确注明虚构，不能用于填补真实用户的缺失数据。
 - 年鉴说明一次时间范围，采集日期集中放来源区。区分未取得与核查为零、年度汇总与当前阅读进度、已载入与完整全年覆盖。

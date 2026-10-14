@@ -520,6 +520,8 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     analysis['source_hash']=document['source_hash']; analysis['pipeline_version']=VERSION
     analysis['quality_status']='needs_review' if invalid or not complete or any(m['verification'].get('status') not in ('validated','reference') for m in analysis['methods']) else 'completed'
     analysis['limitations']+=warnings
+    from ebook_title import enrich
+    enrich(analysis, document, 'upload')
     _cancel(cancel_event)
     with tempfile.TemporaryDirectory(prefix='.generation-',dir=output) as temporary:
         staging=Path(temporary)
@@ -547,31 +549,50 @@ def _render_outputs(output,analysis,overview,audit,trials,invalid):
     def links(item):
         return '出处：'+'；'.join(f'[{s["element_id"]} · {s["location"]}](#source-{s["element_id"]})' for s in item['sources'])+'；来源核对：'+('通过' if item.get('source_verified') else '待核查')
     _write(output/'BOOK_OVERVIEW.md','# '+analysis['book']['title']+'\n\n'+analysis['overview']+'\n\n## Stage 0 audit\n\n'+_json(overview))
-    digest=['# '+analysis['book']['title'],'',analysis['overview'],'','状态：'+analysis['quality_status'],'','范围：'+analysis['coverage']['scope_note'],'','正文解释由 AI 基于原书重述；引用原文、合成演练与模型评估分别标注。']
+    title_mode=analysis.get('input_mode')=='title'
+    digest=['# '+analysis['book']['title'],'',analysis['overview'],'','状态：'+analysis['quality_status'],'','范围：'+analysis['coverage']['scope_note'],'',
+            '公开资料转述、AI 解释与应用演练分别标注；资料引文匹配不代表核验过原书全文。' if title_mode else '正文解释由 AI 基于原书重述；引用原文、合成演练与模型评估分别标注。']
+    if analysis['book'].get('edition'): digest+=['','版本：'+analysis['book']['edition']]
+    if analysis['book'].get('identity_url'): digest+=['','身份依据：'+analysis['book']['identity_url']]
+    if analysis.get('structure_index'):
+        digest+=['','## 章节／资料主题索引']
+        digest += ['- '+row['title']+'（证据片段 '+str(len(row['element_ids']))+'）' for row in analysis['structure_index']]
+    if analysis.get('decision_rules'):
+        digest+=['','## 决策速查（AI 整理，关联原方法）']
+        for rule in analysis['decision_rules']:
+            digest+=['','### '+rule['title'],'','使用时机：'+rule['trigger'],'','行动：'+'；'.join(rule['steps']),
+                     '','AI 解释：'+rule['interpretation'],'','边界：'+'；'.join(rule['boundaries']),'','对应方法：'+rule['method_id'],'',links(rule)]
     for item in analysis['themes']: digest+=['','## '+item['title'],'','AI 解释：'+item['explanation'],'',links(item)]
     methods_dir=output/'methods'; methods_dir.mkdir()
     for method in analysis['methods']:
-        sections=['## '+method['title'],'','状态：'+method['verification'].get('status','needs_review'),'','### R — 原书引用',*[s['quote']+' — '+s['location'] for s in method['sources']],'',links(method),'','### I — AI 解释',method['interpretation'],'','### A1 — 案例或明确标注的合成演练',method['example'],'','### A2 — 适用触发',method['trigger'],'','### E — 执行步骤','',*[str(i+1)+'. '+step for i,step in enumerate(method['steps'])],'','### B — 边界','',*['- '+b for b in method['boundaries']]]
+        sections=['## '+method['title'],'','状态：'+method['verification'].get('status','needs_review'),'','### R — '+('公开资料摘录（未核验全文）' if title_mode else '原书引用'),*[s['quote']+' — '+s['location'] for s in method['sources']],'',links(method),'','### I — AI 解释',method['interpretation'],'','### A1 — 案例或明确标注的合成演练',method['example'],'','### A2 — 适用触发',method['trigger'],'','### E — 执行步骤','',*[str(i+1)+'. '+step for i,step in enumerate(method['steps'])],'','### B — 边界','',*['- '+b for b in method['boundaries']]]
         digest+=['']+sections
         _write(methods_dir/(method['id']+'.md'),'\n'.join(sections))
     for label,key in (('案例','cases'),('反例与陷阱','counterexamples')):
         digest+=['','## '+label]
-        if not analysis[key]: digest+=['','原文未提供可确认材料。']
-        for item in analysis[key]: digest+=['','### '+item['title'],'','AI 解释：'+item['explanation'],'',links(item)]
+        if not analysis[key]: digest+=['','实际材料未提供可确认内容。']
+        for item in analysis[key]: digest+=['','### '+item['title'],'','AI 应用演练（不是原书案例）' if item.get('case_origin')=='ai_exercise' else 'AI 整理：资料中的内容','AI 解释：'+item['explanation'],'',links(item)]
     digest+=['','## 术语']
-    glossary=[]
+    glossary=['# '+analysis['book']['title']+' · 术语','','状态：'+analysis['quality_status'],'','范围：'+analysis['coverage']['scope_note']]
     for item in analysis['glossary']:
-        entry=['','### '+item['term'],'','原书用法的 AI 解释：'+item['definition'],'',links(item)]
+        entry=['','### '+item['term'],'',('公开资料中的含义（AI 解释）：' if title_mode else '原书用法的 AI 解释：')+item['definition'],'',links(item)]
         digest+=entry; glossary+=entry
     digest+=['','## 候选去向审计']
     for reference in analysis['references']:
         digest+=['','### '+reference['title'],'','参考材料（不作为可执行方法）：'+reference['summary'],'',links(reference),'','保留理由：'+reference['verification']['reason']]
     for candidate in analysis['coverage']['candidate_dispositions']:
         digest+=['',candidate['id']+' — '+candidate['final_status']+'：'+candidate['reason']]
-    digest+=['','## 局限与待核查',*analysis['limitations'],'','## 原文来源索引']
+    digest+=['','## 局限与待核查',*analysis['limitations'],'','## '+('资料来源索引' if title_mode else '原文来源索引')]
+    for entry in analysis.get('bibliography',[]):
+        digest+=['',entry['id']+' · '+entry['type']+' · '+entry['title']+' · '+entry['accessed_at'],'',entry['url']]
     for element_id,entries in sources.items():
         digest+=['',f'<a id="source-{element_id}"></a>','',f'### {element_id}']
         for source in entries: digest+=['',source['location'],'','> '+source['quote'].replace('\n','\n> ')]
+    glossary+=['','## 资料来源']
+    for entry in analysis.get('bibliography',[]): glossary+=['',entry['id']+' · '+entry['type']+' · '+entry['title'],entry['url']]
+    for item in analysis['glossary']:
+        for source in item['sources']:
+            glossary+=['',f'<a id="source-{source["element_id"]}"></a>','',source['location'],'','> '+source['quote'].replace('\n','\n> ')]
     _write(output/'DIGEST.md','\n'.join(digest)); _write(output/'GLOSSARY.md','\n'.join(glossary))
     _write(output/'validation-report.json',_json({'source_mismatches':invalid,'coverage':analysis['coverage'],'stages':audit,'actual_task_trials':trials,'evaluation_limit':analysis.get('evaluation_limit','Semantic judgments by same configured model in fresh calls; not independent human review.')}))
     _write(output/'analysis.json',_json(analysis))

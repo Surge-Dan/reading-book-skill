@@ -9,6 +9,7 @@ import re
 import secrets
 import threading
 import uuid
+import time
 import webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -22,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAX_UPLOAD = 32 * 1024 * 1024
 EXTENSIONS = {'.txt', '.md', '.epub', '.pdf'}
 JOB_ID = re.compile(r'^[a-f0-9]{32}$')
-ACTIVE = {'queued', 'running', 'awaiting_agent', 'awaiting_response'}
+ACTIVE = {'queued', 'running', 'awaiting_agent', 'awaiting_response', 'needs_book_confirmation'}
 STATES = ACTIVE | {'needs_approval', 'completed', 'failed', 'cancelled', 'interrupted'}
 
 
@@ -42,7 +43,10 @@ def valid_saved_job(job, expected_id):
         return False
     if any(not isinstance(job.get(k), str) for k in ('filename', 'created_at', 'suffix', 'focus', 'stage', 'message')):
         return False
-    if job['suffix'] not in EXTENSIONS or len(job['focus']) > 1000:
+    if (job['suffix'] not in EXTENSIONS and not (job.get('input_mode') == 'title' and job['suffix'] == '')) or len(job['focus']) > 1000:
+        return False
+    if job.get('input_mode') == 'title' and (not isinstance(job.get('book_query'), dict) or
+        any(not isinstance(job['book_query'].get(k), str) or len(job['book_query'][k]) > 200 for k in ('title','author'))):
         return False
     if any(type(job.get(k)) is not int or job[k] < 0 for k in ('completed', 'total')):
         return False
@@ -65,10 +69,26 @@ def workbench_page(config=None, result=None, yearbook=None):
     css = asset('ebook-app.css')
     if yearbook:
         page = Path(yearbook).read_text('utf-8')
-        if 'id="ebook"' not in page:
+        existing = re.search(r'<section\b[^>]*\bid="ebook"[^>]*>', page)
+        if existing:
+            depth = 0
+            for tag in re.finditer(r'<(/?)section\b[^>]*>', page[existing.start():]):
+                depth += -1 if tag.group(1) else 1
+                if depth == 0:
+                    page = page[:existing.start()] + section + page[existing.start()+tag.end():]
+                    break
+        else:
             page = page.replace('</main>', section + '</main>', 1)
-        if 'ebook-app-mounted' not in page:
+        if 'id="ebook-app-mounted"' in page:
+            page = re.sub(r'<script id="ebook-app-mounted">.*?</script>',
+                          lambda _: '<script id="ebook-app-mounted">' + asset('ebook-app.js') + '</script>', page, flags=re.S)
+        else:
             page = page.replace('</body>', '<script id="ebook-app-mounted">' + asset('ebook-app.js') + '</script></body>', 1)
+        artwork = '<script>' + asset('reading-share-art.js') + '</script>'
+        if '<script>/* Editorial share artwork.' in page:
+            page = re.sub(r'<script>/\* Editorial share artwork\..*?</script>', lambda _: artwork, page, flags=re.S)
+        else:
+            page = page.replace('<script id="ebook-app-mounted">', artwork + '<script id="ebook-app-mounted">', 1)
         page = page.replace('</head>', '<style>' + css + '</style></head>', 1)
     else:
         page = ('<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">'
@@ -169,6 +189,25 @@ class JobStore:
             self._start(job)
             return self.get(job_id)
 
+    def create_title(self, title, author='', focus=''):
+        from ebook_title import text
+        title = text(title, '书名', 200)
+        if not isinstance(author, str) or len(author) > 200 or not isinstance(focus, str) or len(focus) > 1000:
+            raise ValueError('作者或应用问题过长')
+        if not self.agent_mode or not self.runner.info().get('available'):
+            raise ValueError('书名模式需要当前助手，请让助手以 agent 模式启动工作台')
+        with self.lock:
+            self._check_busy()
+            job_id = uuid.uuid4().hex
+            (self.jobs_dir / job_id).mkdir()
+            job = {'id':job_id,'input_mode':'title','book_query':{'title':title,'author':author.strip()},
+                   'filename':title,'suffix':'','focus':focus.strip(),
+                   'runner_mode':'current-agent-instructed-tools','created_at':datetime.now(timezone.utc).isoformat(),
+                   'state':'queued','stage':'queued','message':'准备确认书籍','completed':0,'total':0,'error':None}
+            self.jobs[job_id] = job
+            self._start(job)
+            return self.get(job_id)
+
     def _start(self, job, allow_large=False):
         event = threading.Event()
         self.events[job['id']] = event
@@ -181,6 +220,10 @@ class JobStore:
         if self.agent_mode:
             if job.get('runner_mode') != 'current-agent-instructed-tools':
                 job.update(state='interrupted', message='历史任务使用自动 CLI 模式，请显式启动原模式继续')
+                self._save(job)
+                return
+            if job.get('input_mode') == 'title':
+                job.update(state='awaiting_agent', stage='handoff', message='书名已接收。请回同一助手对话说“开始蒸馏”。')
                 self._save(job)
                 return
             try:
@@ -266,12 +309,30 @@ class JobStore:
         deep = job_dir / 'deep'
         try:
             pipeline = self.pipeline
-            if pipeline is None:
-                from ebook_pipeline import distill
-                pipeline = distill
-            result = pipeline(job_dir / ('source' + job['suffix']), deep, runner or self.runner,
-                              progress=progress, cancel_event=event, focus=job['focus'], allow_large=allow_large,
-                              **({'source_name':job['filename']} if self.pipeline is None else {}))
+            if job.get('input_mode') == 'title':
+                from ebook_title import distill_title
+                def choose(books):
+                    with self.lock:
+                        if event.is_set() or self.events.get(job_id) is not event: raise InterruptedError('已取消')
+                        job.update(state='needs_book_confirmation',book_candidates=books,selection_id=uuid.uuid4().hex,
+                                   selected_book=None,message='有同名书，请在网页选择作者或版本后继续')
+                        self._save(job)
+                    while True:
+                        if event.is_set(): raise InterruptedError('已取消')
+                        runner.check()
+                        with self.lock:
+                            selected = job.get('selected_book')
+                            if selected: return next(b for b in books if b['id'] == selected)
+                        time.sleep(.05)
+                result = distill_title(job['book_query'], deep, runner, progress=progress,
+                                       cancel_event=event, focus=job['focus'], choose=choose)
+            else:
+                if pipeline is None:
+                    from ebook_pipeline import distill
+                    pipeline = distill
+                result = pipeline(job_dir / ('source' + job['suffix']), deep, runner or self.runner,
+                                  progress=progress, cancel_event=event, focus=job['focus'], allow_large=allow_large,
+                                  **({'source_name':job['filename']} if self.pipeline is None else {}))
             if event.is_set():
                 raise InterruptedError('已取消')
             if runner: runner.check()
@@ -306,6 +367,20 @@ class JobStore:
             with self.lock:
                 if self.events.get(job_id) is event:
                     self._save(job)
+
+    def select_book(self, job_id, selected, selection_id=None):
+        if not isinstance(selected, str): raise ValueError('书籍选择必须为候选 ID')
+        with self.lock:
+            job = self._job(job_id)
+            if job['state'] != 'needs_book_confirmation' or selection_id != job.get('selection_id'):
+                raise ValueError('书籍选择已失效，请刷新任务')
+            runner = self.runners.get(job_id)
+            if not runner or self.events[job_id].is_set(): raise ValueError('任务已停止')
+            if selected not in {b['id'] for b in job.get('book_candidates', [])}: raise ValueError('书籍不在候选列表中')
+            # Do not acquire the runner lock under the store lock (callbacks invert that order).
+            job.update(selected_book=selected,state='running',message='书籍已选择，继续收集公开资料')
+            self._save(job)
+            return self.get(job_id)
 
     def action(self, job_id, action):
         with self.lock:
@@ -424,6 +499,16 @@ def create_server(store, port=0, yearbook=None):
                     filename = query.get('name', [''])[0]
                     job = store.create(filename, body, query.get('focus', [''])[0])
                     self.send(202, {'job': job})
+                elif parsed.path == '/api/title-jobs':
+                    if len(body) > 8192: raise ValueError('书名请求过大')
+                    from ebook_agent import strict_json
+                    data = strict_json(body.decode('utf-8'))
+                    self.send(202, {'job':store.create_title(data.get('title'), data.get('author',''), data.get('focus',''))})
+                elif re.fullmatch(r'/api/jobs/[a-f0-9]{32}/select-book', parsed.path):
+                    if len(body) > 1024: raise ValueError('书籍选择请求过大')
+                    from ebook_agent import strict_json
+                    data = strict_json(body.decode('utf-8'))
+                    self.send(202, {'job':store.select_book(parsed.path.split('/')[3],data.get('book_id'),data.get('selection_id'))})
                 else:
                     match = re.fullmatch(r'/api/jobs/([a-f0-9]{32})/(cancel|retry|approve)', parsed.path)
                     if not match:

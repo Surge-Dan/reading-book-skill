@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.12",
+  "version": "2026.10.14",
   "files": [
     {
       "path": "agents/openai.yaml",
@@ -15,21 +15,21 @@
     },
     {
       "path": "assets/ebook-app.css",
-      "sha256": "ba47f3bdc60adb45fa51ce03572ee50d20821768c684acfe76aca32ee214f76e",
+      "sha256": "7958b81728502f6ec64528c513d3e2214a135bf41996ec74dd015abf702caa47",
       "hash_kind": "text-lf",
-      "bytes": 4433
+      "bytes": 4884
     },
     {
       "path": "assets/ebook-app.js",
-      "sha256": "33d60d98e9ca0669e345b4bb5ce80d4518612c80ed847ab7b0a7646c1125f68e",
+      "sha256": "693a8c10b5e72d1c692a1af4f6e0740d88fd74b584839c028b6fed746f6778c6",
       "hash_kind": "text-lf",
-      "bytes": 20883
+      "bytes": 25922
     },
     {
       "path": "assets/ebook-section.html",
-      "sha256": "4792b453c34736a8a5dd58f25167b1971ebf391c9fae8d7ded0a9b7b935f282a",
+      "sha256": "8dcd660f152db785298e211058a33b6128b77e6b2741ff4103a7848297dc873a",
       "hash_kind": "text-lf",
-      "bytes": 3817
+      "bytes": 5018
     },
     {
       "path": "assets/fonts/NotoSansSC.ttf.zlib",
@@ -81,9 +81,9 @@
     },
     {
       "path": "assets/reading-share-art.js",
-      "sha256": "200a6c94c6b44ef0305267e41dd7366b6f1f58ced9127c7ffa9327752f17a634",
+      "sha256": "0fbedd128ee4d8f0225623543a28f948d4590eb98c05bb99094aae4b1f39ff79",
       "hash_kind": "text-lf",
-      "bytes": 31586
+      "bytes": 31751
     },
     {
       "path": "assets/reading-template.html",
@@ -579,9 +579,9 @@
     },
     {
       "path": "references/distillation-method.md",
-      "sha256": "7a4ad48a1976892134f956b21b054ffb643d9f5da2f9cb24b18157ac21250920",
+      "sha256": "df22b8c13d11ad3d555bf59043c65767c31919eb501a3975a59610106abcef4d",
       "hash_kind": "text-lf",
-      "bytes": 9911
+      "bytes": 11987
     },
     {
       "path": "references/evidence-rules.md",
@@ -612,6 +612,12 @@
       "sha256": "428da82af6bc01e4f6c0512a0bbae094c2db5cca5a7dd71364b1f967ece9cb14",
       "hash_kind": "text-lf",
       "bytes": 12265
+    },
+    {
+      "path": "references/title-research.md",
+      "sha256": "4ac75e2542d3ef9a07db64f93377ec2bc7521244c685de436f733739cc0d0ab2",
+      "hash_kind": "text-lf",
+      "bytes": 1869
     },
     {
       "path": "references/typography.md",
@@ -717,15 +723,21 @@
     },
     {
       "path": "scripts/ebook_pipeline.py",
-      "sha256": "c8fd819f7798c52bb922690052865d821a587a301963413ccb9910d7ad3db912",
+      "sha256": "aeff7c10a3cdc0b0748765c699f55d2496310e29de0c48743b0858a64b9e96fe",
       "hash_kind": "text-lf",
-      "bytes": 49410
+      "bytes": 51553
     },
     {
       "path": "scripts/ebook_runner.py",
       "sha256": "6d1f52cec65a60051e81dfb5af3e28cc066e3b22e0957165acdff6245f37c7c5",
       "hash_kind": "text-lf",
       "bytes": 9592
+    },
+    {
+      "path": "scripts/ebook_title.py",
+      "sha256": "aaa68d2160fea8b4194d0448ae89ba169c50caa1638afa58c2186b2c38a0ec44",
+      "hash_kind": "text-lf",
+      "bytes": 15264
     },
     {
       "path": "scripts/ebook_verification.py",
@@ -801,9 +813,9 @@
     },
     {
       "path": "scripts/serve_ebook.py",
-      "sha256": "f2107eb187ad764a7ffe636e7c4e33c697c8cbf8377ce6154a2ee728e5e0cb86",
+      "sha256": "845acb4d4b73396587e6291535dd22c3582d74bf24b818a6255256a8df4db4fe",
       "hash_kind": "text-lf",
-      "bytes": 24067
+      "bytes": 29728
     },
     {
       "path": "scripts/share_contract.py",
@@ -813,9 +825,9 @@
     },
     {
       "path": "scripts/skill_release.py",
-      "sha256": "6d65c254ec2cb7e3bcb68e6407fdbf4dff19dc53561651661bbd4a4e01e5a82c",
+      "sha256": "3411df922d6336dbf954f35630acfd80bc04606d596f96e7fb7e02c24856c396",
       "hash_kind": "text-lf",
-      "bytes": 5254
+      "bytes": 5310
     },
     {
       "path": "scripts/static_graphics.py",
@@ -837,9 +849,9 @@
     },
     {
       "path": "SKILL.md",
-      "sha256": "bc0209626751c5b812c3a5ca0a9b7b62e9ff8b265e31dededeb3340c2412cdd2",
+      "sha256": "3a7bcfb54d0d3ab154ade3dc2e93d2031430a445aca00a551ad5adb438359e4e",
       "hash_kind": "text-lf",
-      "bytes": 10080
+      "bytes": 10702
     },
     {
       "path": "third_party/cangjie/extractors/case-extractor.md",

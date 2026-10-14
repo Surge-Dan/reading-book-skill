@@ -1,15 +1,18 @@
 <section id="ebook" class="ebook-workbench chapter" aria-labelledby="ebookTitle">
-  <div class="ebook-heading"><h2 id="ebookTitle">电子书精华</h2><p>读懂一本书，再把有用的几页带走。</p></div>
+  <div class="ebook-heading"><h2 id="ebookTitle">书籍精华</h2><p>输入书名，或上传整书，把值得用的内容带走。</p></div>
   <div class="ebook-upload-area">
+    <div class="ebook-entry-switch" role="group" aria-label="选择蒸馏入口"><button id="ebookTitleTab" type="button" class="text-button" aria-pressed="true" aria-controls="ebookTitlePanel">输入书名</button><button id="ebookUploadTab" type="button" class="text-button" aria-pressed="false" aria-controls="ebookUploadPanel">上传电子书</button></div>
     <label for="ebookFocus">想用这本书解决什么问题？<span>选填</span></label>
     <input id="ebookFocus" type="text" maxlength="500" placeholder="例如：改进需求评审中的检查流程">
-    <div class="ebook-upload-row"><button id="ebookUpload" type="button" class="button primary">上传电子书</button><input id="ebookFile" class="ebook-file" type="file" accept=".epub,.pdf,.txt,.md" aria-label="选择电子书上传到本机工作台"><span>EPUB / PDF / TXT / MD</span></div>
-    <p id="ebookUploadNote" class="ebook-small">上传后回到当前助手对话，说“开始蒸馏”。正文在本机解析，由当前助手的模型分析，消耗其账号额度。扫描 PDF 暂不支持。</p>
+    <div id="ebookTitlePanel" class="ebook-entry-panel"><label for="ebookTitleInput">书名</label><input id="ebookTitleInput" type="text" maxlength="200" placeholder="例如：思考，快与慢"><label for="ebookAuthorInput">作者（选填，减少同名书混淆）</label><input id="ebookAuthorInput" type="text" maxlength="200" placeholder="例如：丹尼尔·卡尼曼"><button id="ebookTitleSubmit" type="button" class="button primary" disabled>按书名蒸馏</button><p class="ebook-small">由当前助手读取公开资料，不需要电子书。结果会标注“未核验全文”，同名书会先请你选择。</p></div>
+    <div id="ebookUploadPanel" class="ebook-entry-panel" hidden><div class="ebook-upload-row"><button id="ebookUpload" type="button" class="button primary">上传电子书</button><input id="ebookFile" class="ebook-file" type="file" accept=".epub,.pdf,.txt,.md" aria-label="选择电子书上传到本机工作台"><span>EPUB / PDF / TXT / MD</span></div>
+    <p id="ebookUploadNote" class="ebook-small">上传后回到当前助手对话，说“开始蒸馏”。正文在本机解析，由当前助手的模型分析，消耗其账号额度。扫描 PDF 暂不支持。</p></div>
     <div class="ebook-connection-row"><p id="ebookConnection" role="status" aria-live="polite">正在检查工作台状态…</p><button type="button" id="ebookReconnect" class="text-button">刷新状态</button></div>
   </div>
   <div id="ebookTask" class="ebook-task" hidden>
     <p id="ebookFilename" class="ebook-small"></p><p id="ebookStatus" role="status" aria-live="polite"></p>
     <p id="ebookProgress" class="ebook-small"></p><p id="ebookBudget" class="ebook-small" hidden></p>
+    <div id="ebookBookChoice" hidden><p>同名书，请确认是哪一本：</p><div id="ebookBookCandidates"></div></div>
     <div class="ebook-actions"><button id="ebookStartInstruction" type="button" class="button primary" hidden>复制开始指令</button><button id="ebookCancel" type="button" class="text-button" hidden>取消处理</button><button id="ebookRetry" type="button" class="button" hidden>重试并继续</button><button id="ebookApprove" type="button" class="button primary" hidden>确认范围并继续</button></div>
   </div>
   <div id="ebookResultShell" hidden>
