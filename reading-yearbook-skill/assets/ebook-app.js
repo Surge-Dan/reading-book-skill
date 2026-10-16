@@ -50,7 +50,8 @@
           // Direct quotations retain their nearby locator; supporting sources stay in the reference section.
           for(const q of paragraph.quotes||[])article.append(el('p','引文出处：'+(q.location||q.element_id||'位置未记录'),'ebook-meta'));
           const body='AI 书评\n\n'+paragraph.text+'\n\n'+(paragraph.sources||[]).map(s=>sourceLabel(paragraph,s)+'：'+(s.quote||'')+'\n来源：'+s.element_id+' · '+(s.location||'')+(s.url?'\n'+s.url:'')).join('\n\n');
-          copyButton(article,body);s.append(article);shareItems.push({id:'review-'+i,kind:'review',title:'我的书评 · '+(i+1),text:body});});
+          const shareText='AI 书评\n\n'+paragraph.text+(paragraph.sources?.length?'\n\n依据：'+paragraph.sources.map(source=>[source.location?.split(' · ')[0],source.element_id].filter(Boolean).join(' · ')).join('；'):'');
+          copyButton(article,body);s.append(article);shareItems.push({id:'review-'+i,kind:'review',title:'我的书评 · '+(i+1),text:shareText});});
       }else if(review?.status==='unavailable')container.append(el('p','书评暂未生成'+(review.reason?' · '+review.reason:''),'ebook-meta ebook-review-unavailable'));
       const refs=section('参考资料','references');
       if(a.bibliography?.length){const d=details(refs,'实际读取的资料');for(const s of a.bibliography){const row=el('p',(sourceTypes[s.type]||'公开资料')+' · '+(s.title||'')+' · '+(s.accessed_at||''));if(s.url)sourceLink(row,s.url,'查看资料');d.append(row);}}

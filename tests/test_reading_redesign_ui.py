@@ -47,7 +47,7 @@ class ReadingRedesignBrowserTests(unittest.TestCase):
 
     def test_reading_structure_review_copy_and_real_share_renderer(self):
         a = analysis_reply()
-        source = dict(a['themes'][0]['sources'][0], source_type='author')
+        source = dict(a['themes'][0]['sources'][0], source_type='author',url='https://example.org/research/'+'long-location/'*30)
         a.update(input_mode='title', methods=[], cases=[], counterexamples=[], glossary=[], references=[],
                  reading_status={'level':'partial','label':'部分解读','reason':'尚缺关键章节'},
                  insights=[{'title':'先检查条件','explanation':'条件决定方法的用处。','sources':[source]}],
@@ -57,7 +57,9 @@ class ReadingRedesignBrowserTests(unittest.TestCase):
             browser = p.chromium.launch(executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless=True)
             try:
                 page = browser.new_page(viewport={'width':375,'height':812}, reduced_motion='reduce')
-                page.set_content(offline_page(a, '测试正文'), wait_until='load')
+                capture = """<script>const realDigest=ReadingShareArtwork.createDigest;ReadingShareArtwork.createDigest=(options)=>{const art=realDigest(options),realPages=art.pages;art.pages=(items,...args)=>{window.renderedShareItems=items;return realPages.call(art,items,...args)};return art;};</script>"""
+                html = offline_page(a, '测试正文').replace('<script id="ebook-app-mounted">',capture+'<script id="ebook-app-mounted">')
+                page.set_content(html, wait_until='load')
                 self.assertEqual(page.locator('#ebookResult > section > h3').all_text_contents(),
                                  ['书籍概览','核心观点','对我的启发','我的书评','参考资料'])
                 self.assertIn('部分解读', page.locator('#ebookQuality').inner_text())
@@ -70,10 +72,13 @@ class ReadingRedesignBrowserTests(unittest.TestCase):
                 page.evaluate("Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.copied=text;}}})")
                 review.get_by_role('button', name='复制这条').first.click()
                 copied = page.evaluate('window.copied')
-                for text in ('AI 书评', '未核验全文', source['element_id'], source['quote']): self.assertIn(text, copied)
+                for text in ('AI 书评', '未核验全文', source['element_id'], source['quote'], source['url']): self.assertIn(text, copied)
                 self.assertEqual(page.locator('[data-ebook-share="review-0"]').count(), 1)
                 page.locator('#ebookShareToggle').click()
                 page.wait_for_function("() => !document.getElementById('ebookExportPng').disabled")
+                share_text = page.evaluate("renderedShareItems.find(item=>item.id==='review-0').text")
+                for text in ('AI 书评','我更在意方法停下来的条件。','依据：',source['element_id']): self.assertIn(text, share_text)
+                for text in (source['quote'],source['url']): self.assertNotIn(text,share_text)
                 self.assertIn('我的书评 · 1', page.locator('#ebookPage').inner_text())
                 self.assertGreater(page.locator('#ebookCanvas').evaluate('(c)=>c.width'), 0)
                 review_page = page.locator('#ebookPage option').filter(has_text='我的书评 · 1').first.get_attribute('value')
