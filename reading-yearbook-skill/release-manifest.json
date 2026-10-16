@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.14",
+  "version": "2026.10.16",
   "files": [
     {
       "path": "agents/openai.yaml",
@@ -15,15 +15,15 @@
     },
     {
       "path": "assets/ebook-app.css",
-      "sha256": "7958b81728502f6ec64528c513d3e2214a135bf41996ec74dd015abf702caa47",
+      "sha256": "c49ebb90847f64c199adb7c23f179f23ad39a59893d4b845cf511d140d8a71cd",
       "hash_kind": "text-lf",
-      "bytes": 4884
+      "bytes": 6285
     },
     {
       "path": "assets/ebook-app.js",
-      "sha256": "693a8c10b5e72d1c692a1af4f6e0740d88fd74b584839c028b6fed746f6778c6",
+      "sha256": "63172cc4ad5cf9c5c6c55025c76c6c557f23b60921c56f6126896b43ab5994cd",
       "hash_kind": "text-lf",
-      "bytes": 25922
+      "bytes": 29028
     },
     {
       "path": "assets/ebook-section.html",
@@ -81,9 +81,9 @@
     },
     {
       "path": "assets/reading-share-art.js",
-      "sha256": "0fbedd128ee4d8f0225623543a28f948d4590eb98c05bb99094aae4b1f39ff79",
+      "sha256": "ea8b90272c8be62ab8e1ebf7ce922eedd0b8fc2a804918e816653d2fce7920e5",
       "hash_kind": "text-lf",
-      "bytes": 31751
+      "bytes": 32066
     },
     {
       "path": "assets/reading-template.html",
@@ -560,6 +560,12 @@
       "bytes": 8038
     },
     {
+      "path": "references/book-review-writing.md",
+      "sha256": "db532fc65c9fc5cc51c71252f6d91ff22d72e4ff6ee440d50408623dabeb40c6",
+      "hash_kind": "text-lf",
+      "bytes": 3007
+    },
+    {
       "path": "references/card-system.md",
       "sha256": "50c0d31799d63c41355fccd2e8df0520dad81d5f6ab02b170eb6b6449d59dbe1",
       "hash_kind": "text-lf",
@@ -579,9 +585,9 @@
     },
     {
       "path": "references/distillation-method.md",
-      "sha256": "df22b8c13d11ad3d555bf59043c65767c31919eb501a3975a59610106abcef4d",
+      "sha256": "bfacfa8568ddd22e578ab69f614aa935657c0f0bf1e04c9acf2948b3633311c9",
       "hash_kind": "text-lf",
-      "bytes": 11987
+      "bytes": 13148
     },
     {
       "path": "references/evidence-rules.md",
@@ -615,9 +621,9 @@
     },
     {
       "path": "references/title-research.md",
-      "sha256": "4ac75e2542d3ef9a07db64f93377ec2bc7521244c685de436f733739cc0d0ab2",
+      "sha256": "823b0d8b64671b01656ec36c77b6c09009cba30a82a06c01eea124a702f17d16",
       "hash_kind": "text-lf",
-      "bytes": 1869
+      "bytes": 3529
     },
     {
       "path": "references/typography.md",
@@ -723,9 +729,15 @@
     },
     {
       "path": "scripts/ebook_pipeline.py",
-      "sha256": "aeff7c10a3cdc0b0748765c699f55d2496310e29de0c48743b0858a64b9e96fe",
+      "sha256": "8edac6eff0991001398a94701ebb58b49e4a08cbf63f93a6f150aaf389afef19",
       "hash_kind": "text-lf",
-      "bytes": 51553
+      "bytes": 55377
+    },
+    {
+      "path": "scripts/ebook_reading.py",
+      "sha256": "5e2391e79fc651dc7d6eb0087decb3bc0b9052dccdfa65a95f3ce9a9d572b0de",
+      "hash_kind": "text-lf",
+      "bytes": 8025
     },
     {
       "path": "scripts/ebook_runner.py",
@@ -735,9 +747,9 @@
     },
     {
       "path": "scripts/ebook_title.py",
-      "sha256": "aaa68d2160fea8b4194d0448ae89ba169c50caa1638afa58c2186b2c38a0ec44",
+      "sha256": "f8579512449f0c3c444a5dcf94eeec5734f0e998a5030db1886d95adbabc3ad8",
       "hash_kind": "text-lf",
-      "bytes": 15264
+      "bytes": 18633
     },
     {
       "path": "scripts/ebook_verification.py",
@@ -825,9 +837,9 @@
     },
     {
       "path": "scripts/skill_release.py",
-      "sha256": "3411df922d6336dbf954f35630acfd80bc04606d596f96e7fb7e02c24856c396",
+      "sha256": "524a45498f3cc51c8dfe19ead57d90d63dc805f259e043330b512d75a7f509d4",
       "hash_kind": "text-lf",
-      "bytes": 5310
+      "bytes": 5373
     },
     {
       "path": "scripts/static_graphics.py",
@@ -849,9 +861,9 @@
     },
     {
       "path": "SKILL.md",
-      "sha256": "3a7bcfb54d0d3ab154ade3dc2e93d2031430a445aca00a551ad5adb438359e4e",
+      "sha256": "11c39b1b17957ac3332e7007eecadec5ba7402133aabad633d9043bf6b73566e",
       "hash_kind": "text-lf",
-      "bytes": 10702
+      "bytes": 11249
     },
     {
       "path": "third_party/cangjie/extractors/case-extractor.md",

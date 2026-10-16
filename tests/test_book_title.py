@@ -21,7 +21,9 @@ def library(test):
 
 
 def evidence():
-    return {'book_key': 'b1', 'searches_used': 1, 'gaps': ['未获得整书'], 'sources': [
+    return {'book_key': 'b1', 'searches_used': 1, 'gaps': ['未获得整书'],
+        'content_map':[{'id':'t1','title':'记录与比较','importance':'core','status':'read','gap':'',
+                        'sources':[{'element_id':'s1-1','quote':'先记录问题，再比较两个方案。','location':'作者资料'}]}], 'sources': [
         {'id': 's1', 'book_key': 'b1', 'url': 'https://example.org/book', 'title': '作者资料',
          'type': 'author', 'accessed_at': '2026-10-14',
          'excerpts': ['先记录问题，再比较两个方案。条件不明确时停止。']}]}
@@ -155,7 +157,13 @@ def analysis_reply():
     source = {'element_id':'s1-1','quote':'先记录问题，再比较两个方案。','location':'作者资料'}
     return {'schema_version':1,'book':{'title':'测试书','author':'作者'},'overview':'先明确条件再选择方案。',
             'themes':[{'title':'记录与比较','explanation':'AI 解释：先收集条件再比较。','sources':[source]}],
-            'methods':[],'cases':[],'counterexamples':[],'glossary':[],'limitations':['没有整书目录']}
+            'methods':[],'cases':[],'counterexamples':[],'glossary':[],'limitations':['没有整书目录'], 'insights':[],
+            'topic_coverage':[{'topic_id':'t1','status':'explained','item_refs':['themes:0'],'reason':'解释记录与比较'}]}
+
+
+def review_reply():
+    return {'status':'ready','reason':'','paragraphs':[{'text':'我在意先把条件弄清这一点。',
+        'sources':analysis_reply()['themes'][0]['sources'],'quotes':[]}]}
 
 
 class TitlePipelineTests(unittest.TestCase):
@@ -168,7 +176,7 @@ class TitlePipelineTests(unittest.TestCase):
             def prepare(self, stage, context, key): self.stage = stage
             def generate(self, *args, **kwargs):
                 return {'title-identify':{'status':'identified','candidates':[candidate()],'searches_used':1},
-                        'title-research':evidence(),'title-analysis':analysis_reply()}[self.stage]
+                        'title-research':evidence(),'title-analysis':analysis_reply(),'reading-review':review_reply()}[self.stage]
             def commit(self, callback): callback()
         def render(*args):
             _render_outputs(*args); event.set()
@@ -184,6 +192,7 @@ class TitlePipelineTests(unittest.TestCase):
             def generate(self, prompt, **kwargs):
                 if self.stage == 'title-identify': return {'status':'identified','candidates':[candidate()],'searches_used':1}
                 if self.stage == 'title-research': return evidence()
+                if self.stage == 'reading-review': return review_reply()
                 result = analysis_reply()
                 if self.bad: result['themes'][0]['sources'][0]['quote'] = '假的引文'
                 return result
@@ -197,6 +206,9 @@ class TitlePipelineTests(unittest.TestCase):
             self.assertEqual(data['book'].get('edition'), '第一版')
             self.assertIn('未核验全文', (Path(tmp)/'good/DIGEST.md').read_text('utf8'))
             self.assertEqual(data['themes'][0]['sources'][0]['source_type'], 'author')
+            self.assertEqual(data['reading_status']['level'],'introduction')
+            self.assertEqual(data['review']['status'],'ready')
+            self.assertIn('我的书评', (Path(tmp)/'good/DIGEST.md').read_text('utf8'))
             reader.bad = True
             with self.assertRaises(ValueError): module.distill_title({'title':'测试书','author':'作者'}, Path(tmp)/'bad', reader)
             self.assertFalse((Path(tmp)/'bad/analysis.json').exists())

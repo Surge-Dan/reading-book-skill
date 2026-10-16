@@ -43,7 +43,11 @@ class ContractRunner:
         if 'OUTPUT_CONTRACT:ria' in prompt or 'OUTPUT_CONTRACT:organization' in prompt:
             return {'cards':[dict(method,candidate_id='c1')] if self.methods else [],'themes':[theme],'scope_note':'文学内容保留主题，不硬造方法','relations':[],'gaps':gaps}
         if 'OUTPUT_CONTRACT:analysis\n' in prompt:
-            return {'schema_version':1,'book':{'title':'T','author':''},'overview':'原书主题与边界','themes':[theme],'methods':[method] if self.methods else [],'cases':[],'counterexamples':[],'glossary':[],'limitations':[]}
+            theme['sources']=[s for t in payload.get('content_map',[]) for s in t['sources']] or [source]
+            return {'schema_version':1,'book':{'title':'T','author':''},'overview':'原书主题与边界','themes':[theme],'methods':[method] if self.methods else [],'cases':[],'counterexamples':[],'glossary':[],'limitations':[], 'insights':[],
+                    'topic_coverage':[{'topic_id':t['id'],'status':'explained','item_refs':['themes:0'],'reason':'解释了实际材料'} for t in payload.get('content_map',[])]}
+        if 'OUTPUT_CONTRACT:reading_review' in prompt:
+            return {'status':'ready','reason':'','paragraphs':[{'text':'我更在意先检查信息这个选择。','sources':[source],'quotes':[]}]}
         if 'OUTPUT_CONTRACT:pressure_suite' in prompt:
             return {'test_cases':[{'id':k,'method_id':'m1','kind':k,'expected_routing':'m1' if k in ('normal','missing_input') else 'none','task':'Perform '+k,'input':{},'checks':['result correct']} for k in ('normal','missing_input','negative','adjacent')]}
         if 'OUTPUT_CONTRACT:baseline_results' in prompt or 'OUTPUT_CONTRACT:execution_results' in prompt:
@@ -378,7 +382,7 @@ class CoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'b.txt'; p.write_text('原文',encoding='utf-8'); r=ContractRunner(methods=True)
             result=m.distill(p,Path(d)/'out',r)
-            self.assertEqual(len(r.calls),17)
+            self.assertEqual(len(r.calls),18)  # Includes the independently cached reading review.
             self.assertEqual(result['methods'][0]['verification']['status'],'validated')
 
     def test_short_chapters_are_batched_without_cost_pause(self):
@@ -387,7 +391,7 @@ class CoreTests(unittest.TestCase):
             p=Path(d)/'b.md'; p.write_text('\n'.join('# Chapter '+str(i)+'\n'+'字'*100 for i in range(13)),encoding='utf-8'); r=ContractRunner()
             result=m.distill(p,Path(d)/'out',r)
             self.assertEqual(result['coverage']['chunks_total'],13)
-            self.assertEqual(len(r.calls),11)
+            self.assertEqual(len(r.calls),12)  # One bounded review, not another extraction pass.
 
     def test_invalid_final_output_is_not_reused_as_valid_cache(self):
         m=self.module('ebook_pipeline')

@@ -9,6 +9,26 @@ from test_book_title import analysis_reply
 
 
 class ReadingRedesignBrowserTests(unittest.TestCase):
+    def test_review_share_keeps_scope_in_footer_without_repeating_full_audit(self):
+        a=analysis_reply()
+        a.update(input_mode='title',evaluation_limit='非隔离对照',limitations=['很长的审计说明'*50])
+        with sync_playwright() as p:
+            browser=p.chromium.launch(executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless=True)
+            try:
+                page=browser.new_page(); page.set_content(offline_page(a,''),wait_until='load')
+                result=page.evaluate("""async()=>{const art=ReadingShareArtwork.createDigest({analysis:EBOOK_RESULT.analysis});
+                    const pages=await art.pages([{id:'review-0',kind:'review',title:'我的书评',text:'AI书评正文。'}],'3:4');
+                    const canvas=await art.render(pages[0],'3:4');
+                    return {rows:pages.flatMap(p=>p.rows.map(r=>r.text)).join(''),footer:canvas.readingLayout.text.filter(t=>t.role==='footer').map(t=>t.text).join('')};}""")
+                self.assertNotIn('很长的审计说明',result['rows'])
+                self.assertIn('未核验全文',result['footer'])
+                self.assertIn('AI 阅读札记',result['footer'])
+                partial=page.evaluate("""async()=>{const a={...EBOOK_RESULT.analysis,input_mode:'upload',evaluation_limit:'',reading_status:{level:'partial'}};
+                    const art=ReadingShareArtwork.createDigest({analysis:a});const pages=await art.pages([{id:'r',kind:'review',title:'书评',text:'正文'}],'3:4');
+                    const canvas=await art.render(pages[0],'3:4');return canvas.readingLayout.text.filter(t=>t.role==='footer').map(t=>t.text).join('');}""")
+                self.assertIn('部分解读',partial)
+            finally: browser.close()
+
     def test_legacy_method_verification_is_visible_without_expanding_details(self):
         a = analysis_reply()
         a.update(quality_status='needs_review', coverage={'complete':False})

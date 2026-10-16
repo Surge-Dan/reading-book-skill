@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import date
 from urllib.parse import urlsplit
 
-VERSION = 'title-1'
+VERSION = 'title-2-reading'
 LABEL = '基于公开资料，未核验全文'
 SOURCE_TYPES = {'author', 'publisher', 'preview', 'interview', 'secondary'}
 
@@ -76,7 +76,7 @@ def source_document(package, book, prior_searches=0, identity_urls=()):
     rows = package.get('sources'); gaps = package.get('gaps')
     if not isinstance(rows, list) or not 1 <= len(rows) <= 8 or not isinstance(gaps, list) or any(not isinstance(g, str) for g in gaps):
         raise ValueError('公开资料不足或超出 8 页范围')
-    elements = []; bibliography = []; seen = set(); urls = set()
+    elements = []; bibliography = []; notes = []; seen = set(); urls = set()
     for row in rows:
         key = text(row.get('id'), 'source id', 80)
         if not re.fullmatch(r'[A-Za-z0-9_-]+', key) or key in seen or row.get('book_key') != book['id']:
@@ -98,10 +98,19 @@ def source_document(package, book, prior_searches=0, identity_urls=()):
                              'source_type': row['type'], 'url': url, 'source_id': key})
         bibliography.append({'id':key,'url':url,'title':title,'type':row['type'],'accessed_at':accessed,
                              'content_hash':hashlib.sha256(json.dumps(excerpts, ensure_ascii=False).encode()).hexdigest()})
-    size = sum(len(e['text']) for e in elements)
+        kind=row.get('content_kind','introduction')
+        if kind not in ('introduction','contents','discussion','excerpt'): raise ValueError('资料内容范围无效')
+        bibliography[-1]['content_kind']=kind
+        note = row.get('notes', '')
+        if not isinstance(note, str) or len(note) > 4000: raise ValueError('资料转述字段无效或过长')
+        if note.strip(): notes.append({'source_id':key,'text':note,'element_ids':[e['element_id'] for e in elements if e['source_id']==key]})
+    size = sum(len(e['text']) for e in elements) + sum(len(n['text']) for n in notes)
     if len(urls | set(identity_urls)) > 8: raise ValueError('身份与内容网页合计超过 8 页预算')
     if size < 20 or size > 12000: raise ValueError('资料过少或超过本轮摘录范围，不能生成完整方法列表')
-    payload = {'book':book,'elements':elements,'bibliography':bibliography,'gaps':gaps}
+    from ebook_reading import validate_map
+    topics = validate_map(package.get('content_map'), elements)
+    payload = {'book':book,'elements':elements,'bibliography':bibliography,'gaps':gaps,
+               'source_notes':notes,'content_map':topics}
     return {**payload,'source_hash':hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()}
 
 
@@ -156,12 +165,12 @@ def distill_title(query, output_dir, runner, progress=None, cancel_event=None, f
             except (ValueError, KeyError, TypeError) as error:
                 atomic_json(output / '.diagnostics' / (key + '.json'), {'stage':stage,'error':str(error),'output':answer})
                 if hasattr(runner,'acknowledge'): runner.acknowledge(False, str(error))
-                raise ValueError(str(error)) from None
+                raise
             def publish(): check(); atomic_json(path, answer)
             if hasattr(runner,'commit'): runner.commit(publish)
             else: publish()
         audit.append({'stage':stage,'cache_key':key})
-        if progress: progress({'stage':stage,'message':'书名资料阶段已完成','completed':len(audit),'total':3})
+        if progress: progress({'stage':stage,'message':'书名资料阶段已完成','completed':len(audit),'total':4})
         return answer
     research_rules = (Path(__file__).resolve().parents[1] / 'references/title-research.md').read_text('utf-8')
     found = call('title-identify', research_rules + '\nIDENTIFY: Use current host search/read tools, not memory alone. '
@@ -173,15 +182,27 @@ def distill_title(query, output_dir, runner, progress=None, cancel_event=None, f
     book = books[0] if len(books) == 1 else (choose(books) if choose else None)
     if not book or book not in books: raise ValueError('同名书需要先选择书籍身份')
     package = call('title-research', research_rules + '\nRESEARCH: Read public content with host tools. Return '
-                   '{book_key,searches_used:int,gaps:[str],sources:[{id,book_key,url,title,type:author|publisher|preview|interview|secondary,'
-                   'accessed_at:YYYY-MM-DD,excerpts:[exact necessary short text]}]}. No search snippets as evidence. '
-                   'Each excerpt <=500 characters, total <=12000, at most 8 unique pages. Missing content: sources:[] and explain gaps, do not invent.',
+                   '{book_key,searches_used:int,gaps:[str],content_map:[{id,title,importance:core|supporting,status:read|missing,sources:[{element_id,quote,location}],gap:str}],'
+                   'sources:[{id,book_key,url,title,type:author|publisher|preview|interview|secondary,'
+                   'accessed_at:YYYY-MM-DD,content_kind:introduction|contents|discussion|excerpt,excerpts:[exact necessary short text],notes:str}]}. No search snippets as evidence. '
+                   'content_kind describes what was actually read: marketing/catalogue is introduction/contents, not substantive discussion or excerpt. '
+                   'First map actual chapters/key topics from available contents, then target important frameworks and arguments within the remaining budget. '
+                   'Record missing topics explicitly. Notes preserve substantive source-based paraphrases and relationships, NEVER fabricated book text; each note stays within actual tool copyright limits. '
+                   'Notes are NOT quotable original text. Map citations refer to source-id-1 etc from excerpts. '
+                   'Each excerpt <=500 characters, each notes <=4000, combined notes+excerpts <=12000, at most 8 unique identity/content pages. '
+                   'Do not reduce research to isolated tiny quotes. Do not invent steps from contents titles. No extra searches/pages without user approval.',
                    {'book':book,'remaining_searches':4-found['searches_used'],'remaining_new_pages':8-len(identity_urls),
                     'already_read_identity_urls':sorted(identity_urls),'focus':focus},
                    lambda value: source_document(value, book, found['searches_used'], identity_urls))
     document = source_document(package, book, found['searches_used'], identity_urls)
     def validate_analysis(value):
+        from ebook_reading import validate_coverage, _sources
         _analysis_contract(value)
+        validate_coverage(value, document['content_map'])
+        if not isinstance(value.get('insights'), list): raise ValueError('缺少启发列表')
+        for item in value['insights']:
+            if not isinstance(item,dict) or not all(isinstance(item.get(k),str) and item[k].strip() for k in ('title','explanation')): raise ValueError('启发字段无效')
+            _sources(item.get('sources'),document['elements'])
         if value['book']['title'] != book['title'] or value['book']['author'] != book['author']:
             raise ValueError('分析书籍与已选身份不一致')
         for key in ('themes','methods','cases','counterexamples','glossary'):
@@ -198,7 +219,12 @@ def distill_title(query, output_dir, runner, progress=None, cancel_event=None, f
         'Return strict JSON: {schema_version:1,book:{title,author},overview:str,themes:[{title,explanation,sources}],'
         'methods:[{id,title,interpretation,trigger,example,steps:[str],boundaries:[str],candidate_ids:[str],verification:{status:needs_review},sources}],'
         'cases:[{title,explanation,case_origin:public_source|ai_exercise,sources}],counterexamples:[{title,explanation,sources}],'
-        'glossary:[{term,definition,sources}],limitations:[str]}. Empty categories stay empty. '
+        'glossary:[{term,definition,sources}],limitations:[str],insights:[{title,explanation,sources}],'
+        'topic_coverage:[{topic_id,status:explained|missing,item_refs:["themes:0" or "methods:0" etc],reason:str}]}. '
+        'Every content_map ID exactly once. Explained topics MUST point to actual delivered items sharing its cited evidence; unresolved topics stay missing. '
+        'Explain author arguments, important independent frameworks, steps and conditions where supported; do not replace them with generic themes. '
+        'Use source_notes as secondary paraphrase context, NEVER as direct book quotations. Insights apply to the focus without inventing user experience. '
+        'The overview explains the book, not a first-person review; review is a separate later stage. Empty categories stay empty. '
         'sources is [{element_id,quote,location}]; every quote must exactly match one supplied element, <=150 Chinese characters or <=100 English words. '
         'Method example must explicitly distinguish sourced example from AI exercise. Record absent steps/conditions as gaps, not author statements.',
         {'book':book,'document':document,'focus':focus}, validate_analysis)
@@ -213,6 +239,11 @@ def distill_title(query, output_dir, runner, progress=None, cancel_event=None, f
             if key == 'cases' and item.get('case_origin') not in ('public_source','ai_exercise'):
                 raise ValueError('案例需区分公开资料与 AI 演练')
             if key == 'methods': item['verification'] = {'status':'needs_review','reason':LABEL+'；未做独立任务增益验证'}
+    from ebook_reading import add_review, reading_status
+    analysis['content_map'] = document['content_map']
+    analysis['reading_status'] = reading_status(analysis,document['content_map'],'title',document['bibliography'])
+    for item in analysis['insights']: item['source_verified'] = True
+    add_review(analysis, document, lambda stage,rules,payload,validate: call(stage,rules+'\nReturn only the specified review JSON.',payload,validate), 'title', focus)
     analysis.update(references=[], quality_status='needs_review', source_hash=document['source_hash'], pipeline_version=VERSION,
                     coverage={'complete':False,'full_text':False,'scope_note':LABEL,'warnings':document['gaps'],
                               'sources_read':len(document['bibliography']),'candidate_dispositions':[]},

@@ -11,7 +11,8 @@ from ebook_document import parse_document, build_chunks
 from ebook_verification import verification_batches
 import ebook_verification as verifier
 
-VERSION='nian-cangjie-2'
+VERSION='nian-cangjie-3-reading'
+SOURCE_VERSION='nian-cangjie-2'  # Unchanged parsing/extraction/verification caches stay reusable.
 UPSTREAM=Path(__file__).resolve().parents[1]/'third_party/cangjie'
 
 def upstream_manifest():
@@ -54,6 +55,7 @@ def _stage_schema(stage):
         fields={'cards':'array','themes':'array','scope_note':'string','relations':'array','gaps':'array'}
     elif stage=='analysis':
         fields={'schema_version':'integer','book':'object','overview':'string','themes':'array','methods':'array','cases':'array','counterexamples':'array','glossary':'array','limitations':'array'}
+    elif stage=='reading-review': fields={'status':'string','reason':'string','paragraphs':'array'}
     elif stage=='pressure-plan': fields={'test_cases':'array'}
     elif stage in ('pressure-baseline','pressure-execute','pressure-judge'): fields={'results':'array'}
     else: raise ValueError('Unknown model stage: '+stage)
@@ -105,6 +107,7 @@ def _stage_contract(stage,value,payload):
             if not isinstance(source,dict): fail()
             for key in ('element_id','quote','location'): text(source,key)
     if not isinstance(value,dict): fail()
+    if stage=='reading-review': return value  # The evidence-bound review validator runs before caching.
     if stage=='batched-v1-alignment': return verifier.validate_alignment(value,payload['catalog'])
     if stage.startswith('batched-v1-batch-'): return verifier.validate_batch(value,payload)
     if stage=='batched-v1-global':
@@ -305,13 +308,13 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
         safe_stem=re.sub(r'[<>:"/\\|?*\x00-\x1f]','-',stem).strip(' .')[:200]
         if safe_stem: document['book']['title']=safe_stem
     chunks=build_chunks(document); batches=_model_batches(chunks)
-    estimate={'characters':sum(len(e['text']) for e in document['elements']),'chunks':len(chunks),'model_batches':len(batches),'minimum_model_calls':len(batches)*6+5,'pressure_model_calls':4,'pipeline':VERSION}
+    estimate={'characters':sum(len(e['text']) for e in document['elements']),'chunks':len(chunks),'model_batches':len(batches),'minimum_model_calls':len(batches)*6+6,'pressure_model_calls':4,'pipeline':VERSION}
     if (estimate['characters']>100000 or estimate['minimum_model_calls']>65) and not allow_large: raise BudgetRequired(estimate)
     if runner is None or not runner.info().get('available'): raise ValueError('未找到可用的本地模型。请先安装 Codex 或 Claude CLI，并完成登录。')
     cache=output/'.cache'; cache.mkdir(parents=True,exist_ok=True)
     # A retry never leaves an earlier formal success behind.
     runner_context=dict(runner.info()); runner_context.pop('timeout',None)
-    context={'source_hash':document['source_hash'],'version':VERSION,'runner':runner_context,'focus':focus}
+    context={'source_hash':document['source_hash'],'version':SOURCE_VERSION,'runner':runner_context,'focus':focus}
     done=0; total=estimate['minimum_model_calls']; audit=[]
     def call(stage,rules,payload,contract='notes',validate=None,probe_cache=False):
         nonlocal done,total
@@ -330,7 +333,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
             try:
                 answer=json.loads(file.read_text(encoding='utf-8'))
                 _stage_contract(stage,answer,payload)
-                if stage!='analysis' and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
+                if stage not in ('analysis','reading-review') and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
                 if validate: validate(answer)
             except ValueError:
                 answer=None
@@ -349,11 +352,14 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
             except (ValueError,KeyError,TypeError,OSError): answer=None
         if not isinstance(answer,dict):
             if hasattr(runner,'prepare'): runner.prepare(stage,context,key)
-            answer=runner.generate(prompt,schema=_stage_schema(stage),cancel_event=cancel_event)
-            if not isinstance(answer,dict): raise ValueError('Model output must be a JSON object: '+stage)
+            from ebook_reading import generate_stage
+            answer=generate_stage(runner,stage,prompt,schema=_stage_schema(stage),cancel_event=cancel_event)
             try:
+                if not isinstance(answer,dict):
+                    if stage=='reading-review' and validate: validate(answer)
+                    raise ValueError('Model output must be a JSON object: '+stage)
                 _stage_contract(stage,answer,payload)
-                if stage!='analysis' and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
+                if stage not in ('analysis','reading-review') and not stage.startswith('pressure-'): _stage_source_gate(answer,document['elements'])
                 if validate: validate(answer)
             except ValueError as error:
                 # Private debugging output is never considered reusable cache or
@@ -389,16 +395,16 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     retained_gaps=list(dict.fromkeys(overview['gaps']+[g for group in extracts.values() for batch in group for g in batch['gaps']]))
     shared={'strategy':verifier.STRATEGY,'overview':overview,'catalog':catalog,'candidate_fingerprint':verifier.fingerprint(candidates),'gaps':retained_gaps}
     rules=_rules('methodology/03-stage1.5-triple-verify.md')
-    total=done+(1 if candidates else 0)+(len(candidates)+15)//16+1+3
+    total=done+(1 if candidates else 0)+(len(candidates)+15)//16+1+4
     alignment=call('batched-v1-alignment',rules,shared,'batched-v1-alignment: EXACT JSON {groups:[{candidate_ids:[str],canonical_id:str,reason:nonempty}],gaps:[str]}. Every catalog ID exactly once, canonical belongs to group. Identify same mechanisms and cross-chapter relations, never group merely by broad categories. Alignment does not reject or validate.') if candidates else {'groups':[],'gaps':[]}
     verification_plan=verification_batches(candidates,alignment,document,chunks)
     shared['alignment']=alignment; shared['gaps']=list(dict.fromkeys(retained_gaps+alignment['gaps']))
-    total=done+len(verification_plan)+1+3
+    total=done+len(verification_plan)+1+4
     batch_contract='batched-v1-batch: EXACT JSON {candidates:[{id,status:validated|reference|needs_review|rejected,reason,task_ids:[str],sources:[{element_id,quote,location}],verification:{V1:bool,V2:bool,V3:bool,source_sufficiency:{reason},walkthrough:{input,steps:[str],output,completion_standard},task_utility},canonical_id:optional str,coverage_reason:required for duplicate rejection}],gaps:[str]}. Only assigned_ids exactly once; preserve original sources and task IDs. Validated requires concrete V1 source basis, V2 fixed input/completion standard and paper walkthrough, V3 inspectable expected gain. Paper walkthrough is not actual pressure testing. Duplicate rejection requires same mechanism and complete coverage evidence; unresolved conditions remain needs_review.'
     cached_plan=[call('batched-v1-batch-'+str(number),rules,dict(shared,**package),batch_contract,probe_cache=True) for number,package in enumerate(verification_plan,1)]
     cached_batches=sum(cached_plan)
-    additional=len(verification_plan)-cached_batches+1+3
-    revised=dict(estimate,stage='batched-v1',candidate_count=len(candidates),verification_batches=len(verification_plan),minimum_model_calls=total,logical_remaining_stages=total-done,cached_verification_batches=cached_batches,remaining_model_calls=additional,maximum_model_calls=total+4,maximum_additional_model_calls=additional+4,estimate_note='已重新验证的批次缓存不计新增调用；全局审计及后续 RIA/组织/分析按 4 次预留，压力测试按最多 4 次预留，后续缓存尚未确定。',shared_context_characters=len(_json(shared)),evidence_characters=[p['evidence_characters'] for p in verification_plan])
+    additional=len(verification_plan)-cached_batches+1+4
+    revised=dict(estimate,stage='batched-v1',candidate_count=len(candidates),verification_batches=len(verification_plan),minimum_model_calls=total,logical_remaining_stages=total-done,cached_verification_batches=cached_batches,remaining_model_calls=additional,maximum_model_calls=total+4,maximum_additional_model_calls=additional+4,estimate_note='已重新验证的批次缓存不计新增调用；全局审计及后续方法/组织/分析/书评按 5 次预留，压力测试按最多 4 次预留，后续缓存尚未确定。',shared_context_characters=len(_json(shared)),evidence_characters=[p['evidence_characters'] for p in verification_plan])
     if progress: progress({'stage':'batched-v1-plan','message':'已安排 '+str(len(verification_plan))+' 批核验','completed':done,'total':total,'estimate':revised})
     if not allow_large and (additional+4>65 or any(p['requires_budget_confirmation'] and not cached for p,cached in zip(verification_plan,cached_plan))):
         raise BudgetRequired(revised)
@@ -421,7 +427,19 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     organized=call('organization',_rules('methodology/05-stage3-zettelkasten.md'),{'overview':overview,'ria':ria,'extracts':extracts},'organization: '+card_contract)
     contract='analysis\nRequired schema: '+_json({'schema_version':1,'book':{'title':'str','author':'str'},'overview':'str','themes':[{'title':'str','explanation':'str','sources':[]}],'methods':[{'id':'safe-id','title':'str','interpretation':'str','trigger':'str','steps':['str'],'example':'str','boundaries':['str'],'sources':[{'element_id':'str','quote':'exact source substring','location':'str'}],'verification':{'status':'validated|reference|needs_review','V1':False,'V2':False,'V3':False,'source_sufficiency':{'reason':'concrete cited rule/conditions/inputs support'},'walkthrough':{'input':'fixed actual input','steps':['executed steps'],'output':'worked result'},'task_utility':'specific measurable task gain'}}],'cases':[],'counterexamples':[],'glossary':[{'term':'str','definition':'str','sources':[]}],'limitations':['str']})
     contract+='\nEvery method additionally has candidate_ids:[upstream validated IDs]. Preserve all organized cards and source-based themes; no empty analysis. Verification concrete records are required, do not replace them with booleans alone.'
-    analysis=_analysis_contract(call('analysis',_rules('methodology/07-stage5-deliver.md','templates/DIGEST.md.template'),{'book':document['book'],'overview':overview,'organized':organized,'verified':verified},contract))
+    from ebook_reading import validate_map, validate_coverage, _sources, add_review, reading_status
+    topics=[{'id':'task-'+t['id'],'title':t['title'],'importance':'core','status':'read','sources':t['sources'],'gap':''} for t in overview['key_tasks']]
+    topics += [{'id':'theme-'+str(i),'title':t['title'],'importance':'core','status':'read','sources':t['sources'],'gap':''} for i,t in enumerate(overview['themes'])]
+    validate_map(topics,document['elements'])
+    contract+='\nAlso return insights:[{title,explanation,sources}] and topic_coverage:[{topic_id,status:explained|missing,item_refs:["themes:0" or "methods:0" etc],reason}]. Every content_map ID exactly once. Explain key author arguments and conditions; missing evidence stays missing. Insights connect the focus to actual material, never invent user experience. Overview is not a first-person review.'
+    def validate_reading(value):
+        _analysis_contract(value); validate_coverage(value,topics)
+        if not isinstance(value.get('insights'),list): raise ValueError('缺少启发列表')
+        for item in value['insights']:
+            if not isinstance(item,dict) or not all(isinstance(item.get(k),str) and item[k].strip() for k in ('title','explanation')): raise ValueError('启发字段无效')
+            _sources(item.get('sources'),document['elements'])
+        _stage_source_gate(value,document['elements'])
+    analysis=_analysis_contract(call('analysis',_rules('methodology/07-stage5-deliver.md','templates/DIGEST.md.template'),{'book':document['book'],'overview':overview,'organized':organized,'verified':verified,'content_map':topics},contract,validate=validate_reading))
     analysis['book']=dict(document['book'])
     merged={c['id']:c for c in verified['candidates'] if c.get('original_candidate_ids')}
     for method in analysis['methods']:
@@ -520,6 +538,12 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     analysis['source_hash']=document['source_hash']; analysis['pipeline_version']=VERSION
     analysis['quality_status']='needs_review' if invalid or not complete or any(m['verification'].get('status') not in ('validated','reference') for m in analysis['methods']) else 'completed'
     analysis['limitations']+=warnings
+    analysis['content_map']=topics
+    analysis['reading_status']=reading_status(analysis,topics,'upload',[])
+    if document['warnings'] or any(t['status']=='missing' for t in task_audit):
+        analysis['reading_status'].update(level='partial',label='正文部分解读')
+    for item in analysis['insights']: item['source_verified']=True
+    add_review(analysis,document,lambda stage,rules,payload,validate: call(stage,rules,payload,'reading_review',validate=validate),'upload',focus)
     from ebook_title import enrich
     enrich(analysis, document, 'upload')
     _cancel(cancel_event)
@@ -541,11 +565,15 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
 
 def _render_outputs(output,analysis,overview,audit,trials,invalid):
     sources={}
-    for category in ('themes','methods','cases','counterexamples','glossary','references'):
-        for item in analysis[category]:
+    for category in ('themes','methods','cases','counterexamples','glossary','references','insights'):
+        for item in analysis.get(category,[]):
             for source in item['sources']:
                 entry=sources.setdefault(source['element_id'],[])
                 if source not in entry: entry.append(source)
+    for paragraph in analysis.get('review',{}).get('paragraphs',[]):
+        for source in paragraph.get('sources',[])+paragraph.get('quotes',[]):
+            entry=sources.setdefault(source['element_id'],[])
+            if source not in entry: entry.append(source)
     def links(item):
         return '出处：'+'；'.join(f'[{s["element_id"]} · {s["location"]}](#source-{s["element_id"]})' for s in item['sources'])+'；来源核对：'+('通过' if item.get('source_verified') else '待核查')
     _write(output/'BOOK_OVERVIEW.md','# '+analysis['book']['title']+'\n\n'+analysis['overview']+'\n\n## Stage 0 audit\n\n'+_json(overview))
@@ -554,35 +582,47 @@ def _render_outputs(output,analysis,overview,audit,trials,invalid):
             '公开资料转述、AI 解释与应用演练分别标注；资料引文匹配不代表核验过原书全文。' if title_mode else '正文解释由 AI 基于原书重述；引用原文、合成演练与模型评估分别标注。']
     if analysis['book'].get('edition'): digest+=['','版本：'+analysis['book']['edition']]
     if analysis['book'].get('identity_url'): digest+=['','身份依据：'+analysis['book']['identity_url']]
-    if analysis.get('structure_index'):
-        digest+=['','## 章节／资料主题索引']
-        digest += ['- '+row['title']+'（证据片段 '+str(len(row['element_ids']))+'）' for row in analysis['structure_index']]
-    if analysis.get('decision_rules'):
-        digest+=['','## 决策速查（AI 整理，关联原方法）']
-        for rule in analysis['decision_rules']:
-            digest+=['','### '+rule['title'],'','使用时机：'+rule['trigger'],'','行动：'+'；'.join(rule['steps']),
-                     '','AI 解释：'+rule['interpretation'],'','边界：'+'；'.join(rule['boundaries']),'','对应方法：'+rule['method_id'],'',links(rule)]
+    if analysis.get('reading_status'): digest+=['',analysis['reading_status']['label']+' · '+analysis['reading_status']['reason']]
+    if analysis['themes']: digest+=['','## 核心观点']
     for item in analysis['themes']: digest+=['','## '+item['title'],'','AI 解释：'+item['explanation'],'',links(item)]
     methods_dir=output/'methods'; methods_dir.mkdir()
+    if analysis['methods']: digest+=['','## 值得带走的方法']
     for method in analysis['methods']:
-        sections=['## '+method['title'],'','状态：'+method['verification'].get('status','needs_review'),'','### R — '+('公开资料摘录（未核验全文）' if title_mode else '原书引用'),*[s['quote']+' — '+s['location'] for s in method['sources']],'',links(method),'','### I — AI 解释',method['interpretation'],'','### A1 — 案例或明确标注的合成演练',method['example'],'','### A2 — 适用触发',method['trigger'],'','### E — 执行步骤','',*[str(i+1)+'. '+step for i,step in enumerate(method['steps'])],'','### B — 边界','',*['- '+b for b in method['boundaries']]]
+        sections=['### '+method['title'],'','状态：'+method['verification'].get('status','needs_review'),'','#### '+('公开资料摘录（未核验全文）' if title_mode else '原书引用'),*[s['quote']+' · '+s['location'] for s in method['sources']],'',links(method),'','#### 方法解释',method['interpretation'],'','#### 案例或应用演练',method['example'],'','#### 什么时候用',method['trigger'],'','#### 怎么做','',*[str(i+1)+'. '+step for i,step in enumerate(method['steps'])],'','#### 容易用错的地方','',*['- '+b for b in method['boundaries']]]
         digest+=['']+sections
         _write(methods_dir/(method['id']+'.md'),'\n'.join(sections))
     for label,key in (('案例','cases'),('反例与陷阱','counterexamples')):
-        digest+=['','## '+label]
-        if not analysis[key]: digest+=['','实际材料未提供可确认内容。']
+        if analysis[key]: digest+=['','## '+label]
         for item in analysis[key]: digest+=['','### '+item['title'],'','AI 应用演练（不是原书案例）' if item.get('case_origin')=='ai_exercise' else 'AI 整理：资料中的内容','AI 解释：'+item['explanation'],'',links(item)]
-    digest+=['','## 术语']
     glossary=['# '+analysis['book']['title']+' · 术语','','状态：'+analysis['quality_status'],'','范围：'+analysis['coverage']['scope_note']]
     for item in analysis['glossary']:
         entry=['','### '+item['term'],'',('公开资料中的含义（AI 解释）：' if title_mode else '原书用法的 AI 解释：')+item['definition'],'',links(item)]
-        digest+=entry; glossary+=entry
-    digest+=['','## 候选去向审计']
+        glossary+=entry
+    if analysis.get('insights'):
+        digest+=['','## 对我的启发']
+        for item in analysis['insights']: digest+=['','### '+item['title'],'',item['explanation'],'',links(item)]
+    review=analysis.get('review',{})
+    if review.get('status')=='ready':
+        digest+=['','## 我的书评','','AI 撰写 · 阅读札记']
+        for paragraph in review['paragraphs']: digest+=['',paragraph['text'],'',links(dict(paragraph,source_verified=True))]
+    digest+=['','## 参考资料','', '<details><summary>资料范围与处理详情</summary>','',*analysis['limitations']]
+    if analysis['glossary']:
+        digest+=['','### 词语解释']
+        for item in analysis['glossary']: digest+=['','#### '+item['term'],'',item['definition'],'',links(item)]
+    if review.get('status')=='unavailable': digest+=['','书评暂未生成：'+review['reason']]
+    if analysis.get('structure_index'):
+        digest+=['','### 章节／资料主题索引']
+        digest += ['- '+row['title']+'（证据片段 '+str(len(row['element_ids']))+'）' for row in analysis['structure_index']]
+    if analysis.get('decision_rules'):
+        digest+=['','### 决策速查（AI 整理，关联原方法）']
+        for rule in analysis['decision_rules']:
+            digest+=['','#### '+rule['title'],'','使用时机：'+rule['trigger'],'','行动：'+'；'.join(rule['steps']),'','AI 解释：'+rule['interpretation'],'','边界：'+'；'.join(rule['boundaries']),'','对应方法：'+rule['method_id'],'',links(rule)]
+    if analysis.get('content_map'): digest+=['','### 关键内容去向','',_json({'content_map':analysis['content_map'],'topic_coverage':analysis.get('topic_coverage',[])})]
     for reference in analysis['references']:
         digest+=['','### '+reference['title'],'','参考材料（不作为可执行方法）：'+reference['summary'],'',links(reference),'','保留理由：'+reference['verification']['reason']]
     for candidate in analysis['coverage']['candidate_dispositions']:
         digest+=['',candidate['id']+' — '+candidate['final_status']+'：'+candidate['reason']]
-    digest+=['','## 局限与待核查',*analysis['limitations'],'','## '+('资料来源索引' if title_mode else '原文来源索引')]
+    digest+=['','</details>','','### '+('资料来源索引' if title_mode else '原文来源索引')]
     for entry in analysis.get('bibliography',[]):
         digest+=['',entry['id']+' · '+entry['type']+' · '+entry['title']+' · '+entry['accessed_at'],'',entry['url']]
     for element_id,entries in sources.items():

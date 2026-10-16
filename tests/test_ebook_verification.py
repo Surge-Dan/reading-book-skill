@@ -71,7 +71,7 @@ class VerificationTests(unittest.TestCase):
             self.assertEqual(len(list((output/'.diagnostics').glob('batched-v1-global*.json'))),1)
             runner.merge=False; count=len(runner.calls); updates=[]
             ebook_pipeline.distill(path,output,runner,progress=updates.append)
-            self.assertEqual(len(runner.calls)-count,4)
+            self.assertEqual(len(runner.calls)-count,5)
             self.assertEqual(before,{name:(output/'.cache'/name).read_bytes() for name in before})
 
     def test_global_failure_estimate_excludes_revalidated_cached_batches(self):
@@ -97,11 +97,11 @@ class VerificationTests(unittest.TestCase):
             runner.broken=False; updates=[]; count=len(runner.calls)
             ebook_pipeline.distill(path,output,runner,progress=updates.append)
             estimate=next(u['estimate'] for u in updates if u['stage']=='batched-v1-plan')
-            self.assertEqual(estimate['remaining_model_calls'],4)
+            self.assertEqual(estimate['remaining_model_calls'],5)
             self.assertEqual(estimate.get('cached_verification_batches'),3)
-            self.assertEqual(estimate.get('maximum_additional_model_calls'),8)
-            self.assertEqual(estimate.get('logical_remaining_stages'),7)
-            self.assertEqual(len(runner.calls)-count,4)
+            self.assertEqual(estimate.get('maximum_additional_model_calls'),9)
+            self.assertEqual(estimate.get('logical_remaining_stages'),8)
+            self.assertEqual(len(runner.calls)-count,5)
             # A forged cached citation must be counted as a paid regeneration,
             # using the same complete source gate as the subsequent call.
             for file in (output/'.cache').glob('*.json'):
@@ -113,7 +113,7 @@ class VerificationTests(unittest.TestCase):
             ebook_pipeline.distill(path,output,runner,progress=updates.append)
             estimate=next(u['estimate'] for u in updates if u['stage']=='batched-v1-plan')
             self.assertEqual(estimate['cached_verification_batches'],2)
-            self.assertEqual(estimate['remaining_model_calls'],5)
+            self.assertEqual(estimate['remaining_model_calls'],6)
             self.assertEqual(len(runner.calls)-count,1)
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'book.txt'; path.write_text('原文',encoding='utf-8'); output=Path(directory)/'out'; runner=Runner(gaps=True); runner.candidate_count=961
@@ -125,8 +125,8 @@ class VerificationTests(unittest.TestCase):
             estimate=next(u['estimate'] for u in updates if u['stage']=='batched-v1-plan')
             self.assertGreater(estimate['minimum_model_calls'],65)
             self.assertEqual(estimate['cached_verification_batches'],61)
-            self.assertEqual(estimate['maximum_additional_model_calls'],8)
-            self.assertEqual(len(runner.calls)-count,4)
+            self.assertEqual(estimate['maximum_additional_model_calls'],9)
+            self.assertEqual(len(runner.calls)-count,5)
 
     def candidate(self,cid='c1',element='e1'):
         return {'id':cid,'title':'相同标题','type':'framework','summary':'不同机制 '+cid,'task_ids':['t1'],'sources':[{'element_id':element,'quote':'原文','location':'chapter'}]}
@@ -360,7 +360,7 @@ class VerificationTests(unittest.TestCase):
                 runner.broken=None
                 if event: event.clear()
                 count=len(runner.calls); ebook_pipeline.distill(path,output,runner,cancel_event=event)
-                self.assertEqual(len(runner.calls)-count,6 if broken=='batched-v1-batch' else 4)
+                self.assertEqual(len(runner.calls)-count,7 if broken=='batched-v1-batch' else 5)
                 self.assertEqual(before,{name:(output/'.cache'/name).read_bytes() for name in before})
 
     def test_first_seven_prompts_keys_and_cache_bytes_match_review_base(self):

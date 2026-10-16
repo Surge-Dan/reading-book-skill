@@ -65,7 +65,8 @@ class TitleBrowserTests(unittest.TestCase):
             try:
                 page = browser.new_page(); page.set_content(offline_page(a, '未核验全文'), wait_until='load')
                 page.evaluate("Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.copied=text;}}})")
-                decision = page.locator('#ebookResult section').filter(has=page.get_by_role('heading',name='决策速查',exact=True))
+                decision = page.locator('#ebookResult details').filter(has=page.locator('summary',has_text='决策速查'))
+                decision.locator(':scope > summary').click()
                 decision.get_by_role('button',name='复制这条').click()
                 with self.subTest('decision source'):
                     copied = page.evaluate('window.copied')
