@@ -9,6 +9,24 @@ from test_book_title import analysis_reply
 
 
 class ReadingRedesignBrowserTests(unittest.TestCase):
+    def test_legacy_method_verification_is_visible_without_expanding_details(self):
+        a = analysis_reply()
+        a.update(quality_status='needs_review', coverage={'complete':False})
+        a.pop('reading_status', None)
+        a['methods'] = [{'title':title,'interpretation':'保留使用条件。','verification':{'status':status}}
+                        for title,status in [('尚未检查的方法','needs_review'),('仅供参考的方法','reference'),('检查完成的方法','validated')]]
+        with sync_playwright() as p:
+            browser = p.chromium.launch(executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless=True)
+            try:
+                page = browser.new_page()
+                page.set_content(offline_page(a, ''), wait_until='load')
+                self.assertIn('待核查', page.locator('#ebookQuality').inner_text())
+                for title,label in [('尚未检查的方法','待核查'),('仅供参考的方法','参考内容'),('检查完成的方法','通过来源与任务核验')]:
+                    article = page.locator('[data-reading-section="methods"] article').filter(has=page.get_by_role('heading',name=title,exact=True))
+                    self.assertIn(label,article.inner_text())
+                    self.assertFalse(article.locator('details').last.evaluate('(e)=>e.open'))
+            finally: browser.close()
+
     def test_review_and_title_stage_names_are_readable(self):
         with sync_playwright() as p:
             browser = p.chromium.launch(executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless=True)
