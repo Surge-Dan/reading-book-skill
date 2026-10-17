@@ -375,7 +375,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
         if progress: progress({'stage':stage,'message':message,'completed':done,'total':total})
         return answer
     maps=[]
-    overview_contract='stage0: EXACT JSON {summary:nonempty str, genre:nonempty str, scope_note:nonempty source-based scope and critical limitations, themes:[{title,explanation,sources:[{element_id,quote,location}]}], key_tasks:[{id:stable unique ID,title,sources:[{element_id,quote,location}]}], gaps:[str]}. At least one grounded theme or key task; do not invent methods for literature. Global synthesis must retain ALL independent map key task IDs; critical/interpretive/applicability observations go in summary/scope_note, unresolved issues in gaps.'
+    overview_contract='stage0: EXACT JSON {summary:nonempty str, genre:nonempty str, scope_note:nonempty source-based scope and critical limitations, themes:[{title,explanation,sources:[{element_id,quote,location}]}], key_tasks:[{id:stable unique ID,title,sources:[{element_id,quote,location}]}], gaps:[str]}. At least one grounded theme or key task; do not invent methods for literature. Global synthesis must retain ALL independent map key task IDs; critical/interpretive/applicability observations go in summary/scope_note, unresolved issues in gaps. In summary/themes preserve evidenced characters, their relationships and choices, narrative or argument progression, and author stated purpose where relevant; not just practical techniques. Carry these details into global synthesis, not only chapter labels.'
     for chunk in batches:
         maps.append(call('stage0-map',_rules('methodology/01-stage0-adler.md'),{'book':document['book'],'chunk':chunk},overview_contract))
     overview=call('stage0',_rules('methodology/01-stage0-adler.md','templates/BOOK_OVERVIEW.md.template'),{'book':document['book'],'all_chunk_maps':maps},overview_contract)
@@ -427,19 +427,21 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
     organized=call('organization',_rules('methodology/05-stage3-zettelkasten.md'),{'overview':overview,'ria':ria,'extracts':extracts},'organization: '+card_contract)
     contract='analysis\nRequired schema: '+_json({'schema_version':1,'book':{'title':'str','author':'str'},'overview':'str','themes':[{'title':'str','explanation':'str','sources':[]}],'methods':[{'id':'safe-id','title':'str','interpretation':'str','trigger':'str','steps':['str'],'example':'str','boundaries':['str'],'sources':[{'element_id':'str','quote':'exact source substring','location':'str'}],'verification':{'status':'validated|reference|needs_review','V1':False,'V2':False,'V3':False,'source_sufficiency':{'reason':'concrete cited rule/conditions/inputs support'},'walkthrough':{'input':'fixed actual input','steps':['executed steps'],'output':'worked result'},'task_utility':'specific measurable task gain'}}],'cases':[],'counterexamples':[],'glossary':[{'term':'str','definition':'str','sources':[]}],'limitations':['str']})
     contract+='\nEvery method additionally has candidate_ids:[upstream validated IDs]. Preserve all organized cards and source-based themes; no empty analysis. Verification concrete records are required, do not replace them with booleans alone.'
-    from ebook_reading import validate_map, validate_coverage, _sources, add_review, reading_status
+    from ebook_reading import validate_map, validate_coverage, validate_context, writing_rules, _sources, add_review, reading_status
     topics=[{'id':'task-'+t['id'],'title':t['title'],'importance':'core','status':'read','sources':t['sources'],'gap':''} for t in overview['key_tasks']]
     topics += [{'id':'theme-'+str(i),'title':t['title'],'importance':'core','status':'read','sources':t['sources'],'gap':''} for i,t in enumerate(overview['themes'])]
     validate_map(topics,document['elements'])
     contract+='\nAlso return insights:[{title,explanation,sources}] and topic_coverage:[{topic_id,status:explained|missing,item_refs:["themes:0" or "methods:0" etc],reason}]. Every content_map ID exactly once. Explain key author arguments and conditions; missing evidence stays missing. Insights connect the focus to actual material, never invent user experience. Overview is not a first-person review.'
+    contract+='\nAlso return book_context:[{kind:characters|logic|intent,title,explanation,sources}], empty only where unsupported or irrelevant. Topic destinations may also reference book_context:0 etc.'
     def validate_reading(value):
         _analysis_contract(value); validate_coverage(value,topics)
+        validate_context(value,document['elements'])
         if not isinstance(value.get('insights'),list): raise ValueError('缺少启发列表')
         for item in value['insights']:
             if not isinstance(item,dict) or not all(isinstance(item.get(k),str) and item[k].strip() for k in ('title','explanation')): raise ValueError('启发字段无效')
             _sources(item.get('sources'),document['elements'])
         _stage_source_gate(value,document['elements'])
-    analysis=_analysis_contract(call('analysis',_rules('methodology/07-stage5-deliver.md','templates/DIGEST.md.template'),{'book':document['book'],'overview':overview,'organized':organized,'verified':verified,'content_map':topics},contract,validate=validate_reading))
+    analysis=_analysis_contract(call('analysis',_rules('methodology/07-stage5-deliver.md','templates/DIGEST.md.template')+'\n\n'+writing_rules(),{'book':document['book'],'overview':overview,'organized':organized,'verified':verified,'content_map':topics},contract,validate=validate_reading))
     analysis['book']=dict(document['book'])
     merged={c['id']:c for c in verified['candidates'] if c.get('original_candidate_ids')}
     for method in analysis['methods']:
@@ -565,7 +567,7 @@ def distill(path,output_dir,runner,progress=None,cancel_event=None,focus='',allo
 
 def _render_outputs(output,analysis,overview,audit,trials,invalid):
     sources={}
-    for category in ('themes','methods','cases','counterexamples','glossary','references','insights'):
+    for category in ('book_context','themes','methods','cases','counterexamples','glossary','references','insights'):
         for item in analysis.get(category,[]):
             for source in item['sources']:
                 entry=sources.setdefault(source['element_id'],[])
@@ -578,34 +580,47 @@ def _render_outputs(output,analysis,overview,audit,trials,invalid):
         return '出处：'+'；'.join(f'[{s["element_id"]} · {s["location"]}](#source-{s["element_id"]})' for s in item['sources'])+'；来源核对：'+('通过' if item.get('source_verified') else '待核查')
     _write(output/'BOOK_OVERVIEW.md','# '+analysis['book']['title']+'\n\n'+analysis['overview']+'\n\n## Stage 0 audit\n\n'+_json(overview))
     title_mode=analysis.get('input_mode')=='title'
-    digest=['# '+analysis['book']['title'],'',analysis['overview'],'','状态：'+analysis['quality_status'],'','范围：'+analysis['coverage']['scope_note'],'',
-            '公开资料转述、AI 解释与应用演练分别标注；资料引文匹配不代表核验过原书全文。' if title_mode else '正文解释由 AI 基于原书重述；引用原文、合成演练与模型评估分别标注。']
+    def prose(text):
+        return re.sub(r'^AI\s*(?:解释|整理)\s*[：:]\s*', '', text)
+    digest=['# '+analysis['book']['title'],'',analysis['overview']]
     if analysis['book'].get('edition'): digest+=['','版本：'+analysis['book']['edition']]
-    if analysis['book'].get('identity_url'): digest+=['','身份依据：'+analysis['book']['identity_url']]
-    if analysis.get('reading_status'): digest+=['',analysis['reading_status']['label']+' · '+analysis['reading_status']['reason']]
+    if analysis.get('book_context'): digest+=['','## 读懂这本书']
+    for item in analysis.get('book_context', []): digest+=['','### '+item['title'],'',prose(item['explanation'])]
     if analysis['themes']: digest+=['','## 核心观点']
-    for item in analysis['themes']: digest+=['','## '+item['title'],'','AI 解释：'+item['explanation'],'',links(item)]
+    for item in analysis['themes']: digest+=['','### '+item['title'],'',prose(item['explanation'])]
     methods_dir=output/'methods'; methods_dir.mkdir()
     if analysis['methods']: digest+=['','## 值得带走的方法']
     for method in analysis['methods']:
         sections=['### '+method['title'],'','状态：'+method['verification'].get('status','needs_review'),'','#### '+('公开资料摘录（未核验全文）' if title_mode else '原书引用'),*[s['quote']+' · '+s['location'] for s in method['sources']],'',links(method),'','#### 方法解释',method['interpretation'],'','#### 案例或应用演练',method['example'],'','#### 什么时候用',method['trigger'],'','#### 怎么做','',*[str(i+1)+'. '+step for i,step in enumerate(method['steps'])],'','#### 容易用错的地方','',*['- '+b for b in method['boundaries']]]
-        digest+=['']+sections
+        digest+=['','### '+method['title'],'',prose(method['interpretation']),'','#### 什么时候用',method['trigger'],
+                 '','#### 怎么做','',*[str(i+1)+'. '+step for i,step in enumerate(method['steps'])],
+                 '','#### 案例或应用示例',method['example']]
+        if method['boundaries']: digest+=['','#### 使用提醒','',*['- '+b for b in method['boundaries']]]
         _write(methods_dir/(method['id']+'.md'),'\n'.join(sections))
     for label,key in (('案例','cases'),('反例与陷阱','counterexamples')):
         if analysis[key]: digest+=['','## '+label]
-        for item in analysis[key]: digest+=['','### '+item['title'],'','AI 应用演练（不是原书案例）' if item.get('case_origin')=='ai_exercise' else 'AI 整理：资料中的内容','AI 解释：'+item['explanation'],'',links(item)]
+        for item in analysis[key]: digest+=['','### '+item['title'],'','应用示例（不是原书案例）' if item.get('case_origin')=='ai_exercise' else '',prose(item['explanation'])]
     glossary=['# '+analysis['book']['title']+' · 术语','','状态：'+analysis['quality_status'],'','范围：'+analysis['coverage']['scope_note']]
     for item in analysis['glossary']:
         entry=['','### '+item['term'],'',('公开资料中的含义（AI 解释）：' if title_mode else '原书用法的 AI 解释：')+item['definition'],'',links(item)]
         glossary+=entry
     if analysis.get('insights'):
         digest+=['','## 对我的启发']
-        for item in analysis['insights']: digest+=['','### '+item['title'],'',item['explanation'],'',links(item)]
+        for item in analysis['insights']: digest+=['','### '+item['title'],'',prose(item['explanation'])]
     review=analysis.get('review',{})
     if review.get('status')=='ready':
-        digest+=['','## 我的书评','','AI 撰写 · 阅读札记']
-        for paragraph in review['paragraphs']: digest+=['',paragraph['text'],'',links(dict(paragraph,source_verified=True))]
-    digest+=['','## 参考资料','', '<details><summary>资料范围与处理详情</summary>','',*analysis['limitations']]
+        digest+=['','## 我的书评']
+        for paragraph in review['paragraphs']: digest+=['',paragraph['text']]
+    digest+=['','## 参考资料','','范围：'+analysis['coverage']['scope_note']]
+    if analysis['book'].get('identity_url'): digest+=['','身份依据：'+analysis['book']['identity_url']]
+    digest+=['', '<details><summary>资料范围与处理详情</summary>','','状态：'+analysis['quality_status'],'',*analysis['limitations']]
+    if analysis.get('reading_status'): digest+=['',analysis['reading_status']['label']+' · '+analysis['reading_status']['reason']]
+    for category in ('book_context','themes','methods','cases','counterexamples','insights'):
+        for item in analysis.get(category,[]):
+            digest+=['','#### '+item['title'],'',links(item)]
+            if item.get('verification'): digest+=['',_json(item['verification'])]
+    for i, paragraph in enumerate(review.get('paragraphs',[])):
+        digest+=['','#### 书评第 '+str(i+1)+' 段','',links(dict(paragraph,source_verified=True))]
     if analysis['glossary']:
         digest+=['','### 词语解释']
         for item in analysis['glossary']: digest+=['','#### '+item['term'],'',item['definition'],'',links(item)]

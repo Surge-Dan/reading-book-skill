@@ -3,7 +3,11 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'reading-1'
+VERSION = 'reading-2-context'
+
+
+def writing_rules():
+    return (ROOT / 'references/book-reading-writing.md').read_text('utf-8')
 
 
 class ReadingValidationError(ValueError):
@@ -62,6 +66,19 @@ def validate_map(rows, elements):
     return rows
 
 
+def validate_context(analysis, elements):
+    rows = analysis.get('book_context', [])
+    if not isinstance(rows, list): _fail('书籍理解层格式无效')
+    for row in rows:
+        if not isinstance(row, dict) or row.get('kind') not in ('characters', 'logic', 'intent'):
+            _fail('书籍理解层类型无效')
+        if not all(isinstance(row.get(k), str) and row[k].strip() for k in ('title', 'explanation')):
+            _fail('书籍理解层正文为空')
+        _sources(row.get('sources'), elements)
+        row['source_verified'] = True
+    return rows
+
+
 def validate_coverage(analysis, topics):
     rows = analysis.get('topic_coverage')
     if not isinstance(rows, list) or len(rows) != len(topics): _fail('关键内容去向不完整')
@@ -76,7 +93,7 @@ def validate_coverage(analysis, topics):
         if topic['status'] != 'read' or not row['item_refs']: _fail('未读到内容不能声称已解释')
         bound = {s['element_id'] for s in topic['sources']}
         for ref in row['item_refs']:
-            match = re.fullmatch(r'(themes|methods|cases|counterexamples|glossary):(\d+)', ref) if isinstance(ref, str) else None
+            match = re.fullmatch(r'(book_context|themes|methods|cases|counterexamples|glossary):(\d+)', ref) if isinstance(ref, str) else None
             if not match: _fail('无效内容去向')
             items = analysis.get(match[1], []); n = int(match[2])
             if n >= len(items) or not bound.intersection(s['element_id'] for s in items[n]['sources']): _fail('内容去向与实际证据不匹配')
@@ -119,12 +136,12 @@ def validate_review(value, elements, allowed):
 
 def add_review(analysis, document, call, mode, focus):
     """One bounded stage; writing failures are visible, cancellation still stops work."""
-    items = [item for key in ('themes','methods','cases','counterexamples','glossary','insights') for item in analysis.get(key, []) if item.get('source_verified', True)]
+    items = [item for key in ('book_context','themes','methods','cases','counterexamples','glossary','insights') for item in analysis.get(key, []) if item.get('source_verified', True)]
     allowed = {s['element_id'] for item in items for s in item.get('sources', [])}
     evidence = [e for e in document['elements'] if e['element_id'] in allowed]
-    rules = (ROOT / 'references/book-review-writing.md').read_text('utf-8')
+    rules = writing_rules() + '\n\n' + (ROOT / 'references/book-review-writing.md').read_text('utf-8')
     payload = {'book':analysis['book'], 'input_mode':mode, 'focus':focus,
-               'overview':analysis['overview'], 'content':items, 'elements':evidence}
+               'overview':analysis['overview'], 'book_context':analysis.get('book_context', []), 'content':items, 'elements':evidence}
     try:
         review = call('reading-review', rules, payload, validate=lambda value: validate_review(value,evidence,allowed))
         analysis['review'] = review

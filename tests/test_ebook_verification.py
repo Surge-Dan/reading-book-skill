@@ -363,7 +363,7 @@ class VerificationTests(unittest.TestCase):
                 self.assertEqual(len(runner.calls)-count,7 if broken=='batched-v1-batch' else 5)
                 self.assertEqual(before,{name:(output/'.cache'/name).read_bytes() for name in before})
 
-    def test_first_seven_prompts_keys_and_cache_bytes_match_review_base(self):
+    def test_context_understanding_invalidates_only_changed_stage0_cache(self):
         import tempfile,subprocess
         import ebook_pipeline
         from test_ebook_core import ContractRunner
@@ -378,8 +378,15 @@ class VerificationTests(unittest.TestCase):
             path=Path(directory)/'book.txt'; path.write_text('原文',encoding='utf-8'); first=Stop(methods=True); second=Stop(methods=True)
             for engine,out,runner in [(namespace['distill'],'old',first),(ebook_pipeline.distill,'new',second)]:
                 with self.assertRaises(RuntimeError): engine(path,Path(directory)/out,runner)
-            self.assertEqual(first.calls,second.calls); self.assertEqual(len(first.calls),7)
+            self.assertEqual(len(first.calls),7); self.assertEqual(len(second.calls),7)
+            # Understanding now retains characters and argument progression. These
+            # two stages must not reuse an older, narrower understanding prompt.
+            for old,new in zip(first.calls[:2],second.calls[:2]): self.assertNotEqual(old,new)
+            self.assertEqual(first.calls[2:],second.calls[2:])
             caches=lambda out:{p.name:p.read_bytes() for p in (Path(directory)/out/'.cache').glob('*.json')}
-            self.assertEqual(caches('old'),caches('new'))
+            old,new=caches('old'),caches('new')
+            common=old.keys() & new.keys()
+            self.assertEqual(len(common),5)
+            for key in common: self.assertEqual(old[key],new[key])
 
 if __name__=='__main__': unittest.main()

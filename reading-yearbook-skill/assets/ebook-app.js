@@ -11,12 +11,13 @@
     const safeName=()=>((result?.analysis?.book?.title||'电子书精华').replace(/[<>:"/\\|?*\x00-\x1f]/g,'-').slice(0,80)||'电子书精华');
     const notice=text=>{$('ebookActionStatus').textContent=text;};
     const sourceTypes={author:'作者公开资料',publisher:'出版社资料',preview:'公开试读',interview:'作者访谈',secondary:'二手资料'};
-    const scope=()=>result?.analysis?.input_mode==='title'?'基于公开资料，未核验全文':result?.analysis?.evaluation_limit?'基于所提供正文 · 待核查 · 非隔离对照演练':'基于所提供正文 · AI 整理';
+    const scope=()=>result?.analysis?.input_mode==='title'?'基于公开资料，未核验全文':'基于所提供正文';
     const sourceLabel=(item,source)=>item.source_verified===false||source.source_verified===false?(result?.analysis?.input_mode==='title'?'模型返回引文 · 未通过资料核对':'模型返回引文 · 未通过原文核对'):source.source_type?sourceTypes[source.source_type]||'公开资料':'原文';
     function sourceLink(parent,url,label){try{const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)return;const link=el('a',label,'ebook-source-link');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';parent.append(link);}catch{}}
     function sources(parent,item){for(const s of item.sources||[]){const b=el('blockquote');b.append(el('span',sourceLabel(item,s)+' · '+(s.location||s.element_id||'位置未记录'),'ebook-source-label'),el('p',s.quote||''));if(s.url)sourceLink(b,s.url,'查看实际资料');parent.append(b);}}
-    function textParts(item,kind){const out=[];if(kind==='overview')return describe(item);if(item.case_origin)out.push(item.case_origin==='ai_exercise'?'AI 应用演练（不是原书案例）':'公开资料中的案例');if(item.explanation)out.push(item.explanation);if(item.interpretation)out.push('AI 解释：'+item.interpretation);if(item.trigger)out.push('使用时机：'+item.trigger);if(item.steps?.length)out.push('执行步骤：\n'+item.steps.map((s,i)=>`${i+1}. ${s}`).join('\n'));if(item.example)out.push('案例／演练：'+item.example);if(item.boundaries?.length)out.push('边界：\n'+item.boundaries.join('\n'));if(item.summary)out.push(item.summary);if(item.definition)out.push(item.definition);if(item.verification){const v=item.verification;out.push('核验状态：'+(v.status==='validated'?'通过来源与任务核验':v.status==='reference'?'参考内容':'待核查'));if(v.reason)out.push(v.reason);if(v.source_sufficiency?.reason)out.push('来源充分性：'+v.source_sufficiency.reason);if(v.walkthrough)out.push('合成任务演练：'+describe(v.walkthrough));if(v.task_utility)out.push('任务增益：'+describe(v.task_utility));}for(const s of item.sources||[])out.push(sourceLabel(item,s)+'：'+s.quote+'\n来源：'+s.element_id+' · '+(s.location||'')+(s.url?'\n'+s.url:''));return out.join('\n\n');}
-    function copyButton(parent,text){const b=el('button','复制这条','text-button');b.type='button';b.dataset.ebookCopy='true';b.onclick=()=>copy((scope()?scope()+'\n\n':'')+text);parent.append(b);}
+    const readerText=value=>String(value).replace(/^AI\s*(?:解释|整理)\s*[：:]\s*/, '');
+    function textParts(item,kind){const out=[];if(kind==='overview')return describe(item);if(item.case_origin==='ai_exercise')out.push('应用示例（不是原书案例）');for(const k of ['explanation','interpretation'])if(item[k])out.push(readerText(item[k]));if(item.trigger)out.push('什么时候用：'+item.trigger);if(item.steps?.length)out.push('怎么做：\n'+item.steps.map((s,i)=>`${i+1}. ${s}`).join('\n'));if(item.example)out.push('案例／示例：'+item.example);if(item.boundaries?.length)out.push('使用提醒：\n'+item.boundaries.join('\n'));for(const k of ['summary','definition'])if(item[k])out.push(readerText(item[k]));return out.join('\n\n');}
+    function copyButton(parent,text){const b=el('button','复制这条','text-button');b.type='button';b.dataset.ebookCopy='true';b.onclick=()=>copy(text+'\n\n'+scope());parent.append(b);}
     function resultSection(title){const s=el('section');s.append(el('h3',title));$('ebookResult').append(s);return s;}
     let readingObserver;
     function renderResult(){
@@ -24,9 +25,7 @@
       const a=result.analysis,container=$('ebookResult');window.EBOOK_RESULT=result;
       readingObserver?.disconnect();$('ebookResultShell').hidden=false;container.replaceChildren();shareItems=[];
       $('ebookBookTitle').textContent=a.book?.title||'电子书精华';$('ebookAuthor').textContent=(a.book?.author||'')+(a.book?.edition?' · '+a.book.edition:'');
-      if(a.book?.identity_url)sourceLink($('ebookAuthor'),a.book.identity_url,' · 书籍身份依据');
-      const qualityNotice=a.quality_status==='needs_review'||a.coverage?.complete===false?'存在待核查内容或资料缺口，请结合来源阅读。':'';
-      $('ebookQuality').textContent=[a.reading_status?.label,a.reading_status?.reason,a.source_notice||scope()||'AI 整理 · 请结合所提供正文阅读',qualityNotice,a.coverage?.scope_note].filter(Boolean).join(' · ');
+      $('ebookQuality').textContent='';$('ebookQuality').hidden=true;
       const nav=el('details',null,'ebook-reading-nav');nav.open=matchMedia('(min-width: 900px)').matches;nav.append(el('summary','阅读目录'));const links=el('nav');links.setAttribute('aria-label','阅读章节');nav.append(links);container.append(nav);
       const sections=[];
       function section(title,key){const node=resultSection(title);node.id='ebook-reading-'+key;node.dataset.readingSection=key;const link=el('a',title);link.href='#'+node.id;links.append(link);sections.push({node,link});return node;}
@@ -34,35 +33,36 @@
       function prose(value){if(typeof value==='string')return value;if(!value||typeof value!=='object')return '';return Object.values(value).filter(v=>typeof v==='string').join('\n\n');}
       function addItem(parent,item,key,index){
         const article=el('article'),heading=item.title||item.term||'';if(heading)article.append(el('h4',heading));
-        for(const [label,k]of [['','explanation'],['','interpretation'],['使用时机：','trigger'],['案例／演练：','example'],['','summary'],['','definition']])if(item[k])article.append(el('p',label+prose(item[k])));
+        for(const [label,k]of [['','explanation'],['','interpretation'],['什么时候用：','trigger'],['案例／示例：','example'],['','summary'],['','definition']])if(item[k])article.append(el('p',label+readerText(prose(item[k]))));
         for(const [label,k,tag]of [['怎么做','steps','ol'],['使用提醒','boundaries','ul']])if(item[k]?.length){article.append(el('p',label,'ebook-method-label'));const list=el(tag);item[k].forEach(t=>list.append(el('li',prose(t))));article.append(list);}
-        if(item.case_origin)article.append(el('p',item.case_origin==='ai_exercise'?'AI 应用演练（不是原书案例）':item.case_origin==='original'?'原书案例':'公开资料中的案例','ebook-meta'));
-        if(item.sources?.length)sources(details(article,'查看依据'),item);
-        if(item.verification){const v=item.verification;article.append(el('p','核验状态：'+(v.status==='validated'?'通过来源与任务核验':v.status==='reference'?'参考内容':'待核查'),'ebook-meta'));const d=details(article,'核查说明');d.append(el('p',v.reason||item.reason||'请结合来源核查。','ebook-meta'));for(const [label,value]of [['来源充分性',v.source_sufficiency],['合成任务演练',v.walkthrough],['任务增益',v.task_utility]])if(value)d.append(el('p',label+'：'+describe(value),'ebook-meta'));}
+        if(item.case_origin==='ai_exercise')article.append(el('p','应用示例（不是原书案例）','ebook-meta'));
         const body=textParts(item,key);copyButton(article,heading+'\n\n'+body);parent.append(article);shareItems.push({id:key+'-'+(item.id||index),kind:key,title:heading||parent.querySelector('h3')?.textContent||key,text:body});
       }
-      const overviewText=prose(a.overview);if(overviewText){const overview=section('书籍概览','overview');overview.append(el('p',overviewText));copyButton(overview,overviewText);shareItems.push({id:'overview',kind:'overview',title:'书籍概览',text:overviewText});}
+      const overviewText=prose(a.overview);if(overviewText){const overview=section('书籍概览','overview');overviewText.split(/\n\s*\n/).filter(Boolean).forEach(p=>overview.append(el('p',p)));copyButton(overview,overviewText);shareItems.push({id:'overview',kind:'overview',title:'书籍概览',text:overviewText});}
+      if(a.book_context?.length){const s=section('读懂这本书','book-context');a.book_context.forEach((item,i)=>addItem(s,item,'book_context',i));}
       for(const [key,title]of [['themes','核心观点'],['methods','值得带走的方法'],['cases','关键案例'],['counterexamples','反例'],['insights','对我的启发']])if(a[key]?.length){const s=section(title,key);a[key].forEach((item,i)=>addItem(s,item,key,i));}
       const review=a.review;
       if(review?.status==='ready'&&review.paragraphs?.some(p=>p.text)){
-        const s=section('我的书评','review');s.append(el('p','AI 撰写 · 以下为基于资料的阅读判断','ebook-meta'));
+        const s=section('我的书评','review');
         review.paragraphs.forEach((paragraph,i)=>{if(!paragraph.text)return;const article=el('article',null,'ebook-review-paragraph');article.append(el('p',paragraph.text));
-          // Direct quotations retain their nearby locator; supporting sources stay in the reference section.
-          for(const q of paragraph.quotes||[])article.append(el('p','引文出处：'+(q.location||q.element_id||'位置未记录'),'ebook-meta'));
-          const body='AI 书评\n\n'+paragraph.text+'\n\n'+(paragraph.sources||[]).map(s=>sourceLabel(paragraph,s)+'：'+(s.quote||'')+'\n来源：'+s.element_id+' · '+(s.location||'')+(s.url?'\n'+s.url:'')).join('\n\n');
-          const shareText='AI 书评\n\n'+paragraph.text+(paragraph.sources?.length?'\n\n依据：'+paragraph.sources.map(source=>[source.location?.split(' · ')[0],source.element_id].filter(Boolean).join(' · ')).join('；'):'');
+          const body=paragraph.text,shareText=paragraph.text;
           copyButton(article,body);s.append(article);shareItems.push({id:'review-'+i,kind:'review',title:'我的书评 · '+(i+1),text:shareText});});
-      }else if(review?.status==='unavailable')container.append(el('p','书评暂未生成'+(review.reason?' · '+review.reason:''),'ebook-meta ebook-review-unavailable'));
+      }
       const refs=section('参考资料','references');
+      refs.append(el('p',scope(),'ebook-meta'));
+      if(a.book?.identity_url)sourceLink(refs,a.book.identity_url,'书目信息');
+      const evidence=details(refs,'内容出处');for(const key of ['book_context','themes','methods','cases','counterexamples','insights','references','glossary','decision_rules'])for(const item of a[key]||[]){if(!item.sources?.length&&!item.verification)continue;evidence.append(el('h4',item.title||item.term||''));sources(evidence,item);if(item.verification){const d=details(evidence,'核查记录');d.append(el('p',describe(item.verification),'ebook-meta'));}}
       if(a.bibliography?.length){const d=details(refs,'实际读取的资料');for(const s of a.bibliography){const row=el('p',(sourceTypes[s.type]||'公开资料')+' · '+(s.title||'')+' · '+(s.accessed_at||''));if(s.url)sourceLink(row,s.url,'查看资料');d.append(row);}}
       if(review?.paragraphs?.some(p=>p.sources?.length)){const d=details(refs,'书评依据');review.paragraphs.forEach((p,i)=>{if(!p.sources?.length)return;d.append(el('h4','第 '+(i+1)+' 段'));sources(d,p);});}
       for(const [key,title]of [['references','补充参考与待核查内容'],['glossary','小词表'],['decision_rules','决策速查']])if(a[key]?.length){const d=details(refs,title);a[key].forEach((item,i)=>addItem(d,item,key,i));}
       if(a.structure_index?.length){const d=details(refs,'章节／资料主题索引');a.structure_index.forEach(row=>d.append(el('p',row.title+' · '+(row.element_ids||[]).length+' 个证据片段')));}
       const audit=details(refs,'资料范围与处理详情'),coverage=a.coverage||{};audit.append(el('p',a.input_mode==='title'?'已读取 '+(coverage.sources_read??'未记录')+' 个公开内容来源；未核验整书覆盖。':`已处理正文分块 ${coverage.chunks_processed??'未记录'} / ${coverage.chunks_total??'未记录'} · ${coverage.complete?'覆盖检查完成':'覆盖尚不完整'}`));
+      for(const text of [a.reading_status?.label,a.reading_status?.reason,a.source_notice,a.evaluation_limit])if(text)audit.append(el('p',text,'ebook-meta'));
+      if(review?.status==='unavailable')audit.append(el('p','书评暂未生成：'+review.reason,'ebook-meta ebook-review-unavailable'));
       if(coverage.scope_note)audit.append(el('p',coverage.scope_note));for(const warning of [...(a.limitations||[]),...(coverage.warnings||[])])audit.append(el('p',prose(warning)));
       for(const [label,key]of [['关键任务','key_tasks'],['任务覆盖核查','task_audit'],['候选处理记录','candidate_dispositions']])if(coverage[key]?.length){const d=details(audit,label);coverage[key].forEach(row=>d.append(el('p',describe(row),'ebook-meta')));}
       $('ebookShareOptions').replaceChildren();for(const item of shareItems){const label=el('label',null,'ebook-share-choice'),input=el('input');input.type='checkbox';input.checked=true;input.dataset.ebookShare=item.id;input.onchange=prepareShare;label.append(input,el('span',item.title));$('ebookShareOptions').append(label);}shareArt=window.ReadingShareArtwork?.createDigest({analysis:a});if(!$('ebookShare').hidden)prepareShare();
-if('IntersectionObserver' in window){readingObserver=new IntersectionObserver(()=>{const edge=Math.max(150,nav.getBoundingClientRect().bottom+60+(parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0));const current=sections.filter(({node})=>node.getBoundingClientRect().top<=edge).at(-1)||sections[0];for(const entry of sections){if(entry===current)entry.link.setAttribute('aria-current','location');else entry.link.removeAttribute('aria-current');}},{rootMargin:'0px 0px -50% 0px',threshold:[0,.1,.5,1]});sections.forEach(({node})=>readingObserver.observe(node));}
+if('IntersectionObserver' in window&&sections.length){readingObserver=new IntersectionObserver(()=>{const edge=Math.max(150,(parseFloat(getComputedStyle(sections[0].node).scrollMarginTop)||0)+(parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0)+2);const current=sections.filter(({node})=>node.getBoundingClientRect().top<=edge).at(-1)||sections[0];for(const entry of sections){if(entry===current)entry.link.setAttribute('aria-current','location');else entry.link.removeAttribute('aria-current');}},{rootMargin:'0px 0px -50% 0px',threshold:[0,.1,.5,1]});sections.forEach(({node})=>readingObserver.observe(node));}
       if(sections.length)sections[0].link.setAttribute('aria-current','location');
     }
     async function api(path,options={}){const response=await fetch((config.apiBase||'')+path,{...options,credentials:'same-origin',headers:{'X-Ebook-Token':config.token,...options.headers}});let payload;try{payload=await response.json();}catch{throw Error('工作台返回了无法读取的响应');}if(!response.ok)throw Error(payload.error||payload.message||`请求失败 (${response.status})`);return payload;}

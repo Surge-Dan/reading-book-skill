@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.16",
+  "version": "2026.10.17",
   "files": [
     {
       "path": "agents/openai.yaml",
@@ -15,15 +15,15 @@
     },
     {
       "path": "assets/ebook-app.css",
-      "sha256": "c49ebb90847f64c199adb7c23f179f23ad39a59893d4b845cf511d140d8a71cd",
+      "sha256": "f0a51559aa723472bfb8fa7bd3f34f33c4b407c797c388c9f8a706cd7f0bc62f",
       "hash_kind": "text-lf",
-      "bytes": 6285
+      "bytes": 6687
     },
     {
       "path": "assets/ebook-app.js",
-      "sha256": "63172cc4ad5cf9c5c6c55025c76c6c557f23b60921c56f6126896b43ab5994cd",
+      "sha256": "0a87d8fd6a51b4d7bbd5d5689d6529c6b798da89c148fc7b86558d52e59318ce",
       "hash_kind": "text-lf",
-      "bytes": 29028
+      "bytes": 27454
     },
     {
       "path": "assets/ebook-section.html",
@@ -81,9 +81,9 @@
     },
     {
       "path": "assets/reading-share-art.js",
-      "sha256": "ea8b90272c8be62ab8e1ebf7ce922eedd0b8fc2a804918e816653d2fce7920e5",
+      "sha256": "12c6384bccaccbfa9ff050017117073d8fff9b134454127e34327543053af160",
       "hash_kind": "text-lf",
-      "bytes": 32066
+      "bytes": 31694
     },
     {
       "path": "assets/reading-template.html",
@@ -560,10 +560,16 @@
       "bytes": 8038
     },
     {
-      "path": "references/book-review-writing.md",
-      "sha256": "db532fc65c9fc5cc51c71252f6d91ff22d72e4ff6ee440d50408623dabeb40c6",
+      "path": "references/book-reading-writing.md",
+      "sha256": "b6706859e1b2de5e85715f743ea50d755922c67667c09d5319b2dde674a526b1",
       "hash_kind": "text-lf",
-      "bytes": 3007
+      "bytes": 4102
+    },
+    {
+      "path": "references/book-review-writing.md",
+      "sha256": "0a9022ca66c7e5f5f49b737f9c4d3f186143cf1b97f032854c2e337c7d5d1235",
+      "hash_kind": "text-lf",
+      "bytes": 3414
     },
     {
       "path": "references/card-system.md",
@@ -585,9 +591,9 @@
     },
     {
       "path": "references/distillation-method.md",
-      "sha256": "bfacfa8568ddd22e578ab69f614aa935657c0f0bf1e04c9acf2948b3633311c9",
+      "sha256": "1ad8a4851639af775149d98e416509784d0dc592793bef745ffc0bd9cc4fcc85",
       "hash_kind": "text-lf",
-      "bytes": 13148
+      "bytes": 13377
     },
     {
       "path": "references/evidence-rules.md",
@@ -729,15 +735,15 @@
     },
     {
       "path": "scripts/ebook_pipeline.py",
-      "sha256": "8edac6eff0991001398a94701ebb58b49e4a08cbf63f93a6f150aaf389afef19",
+      "sha256": "2fe4dca27e3e0c1ac0c14a3399c9055f6dd590c778e63ad4643c69012d4e9ed3",
       "hash_kind": "text-lf",
-      "bytes": 55377
+      "bytes": 56668
     },
     {
       "path": "scripts/ebook_reading.py",
-      "sha256": "5e2391e79fc651dc7d6eb0087decb3bc0b9052dccdfa65a95f3ce9a9d572b0de",
+      "sha256": "714ca64d4843e99f7922f4c94421825db3d325411622590c269ccd4b67c368ac",
       "hash_kind": "text-lf",
-      "bytes": 8025
+      "bytes": 8816
     },
     {
       "path": "scripts/ebook_runner.py",
@@ -747,9 +753,9 @@
     },
     {
       "path": "scripts/ebook_title.py",
-      "sha256": "f8579512449f0c3c444a5dcf94eeec5734f0e998a5030db1886d95adbabc3ad8",
+      "sha256": "f1f3e28d4932fafde3c35d3cce1c6b09aa2cc7dc495d467473105368ebf28976",
       "hash_kind": "text-lf",
-      "bytes": 18633
+      "bytes": 19046
     },
     {
       "path": "scripts/ebook_verification.py",
@@ -837,9 +843,9 @@
     },
     {
       "path": "scripts/skill_release.py",
-      "sha256": "524a45498f3cc51c8dfe19ead57d90d63dc805f259e043330b512d75a7f509d4",
+      "sha256": "1d800d026263905fabd42afbee7c7aad7c0193a57b71623b5ae5fea60ee0d3d9",
       "hash_kind": "text-lf",
-      "bytes": 5373
+      "bytes": 5410
     },
     {
       "path": "scripts/static_graphics.py",
@@ -861,9 +867,9 @@
     },
     {
       "path": "SKILL.md",
-      "sha256": "11c39b1b17957ac3332e7007eecadec5ba7402133aabad633d9043bf6b73566e",
+      "sha256": "b0763f53fc906af1bb397426a2070b1f7888f85111fa766caa857e06a57696df",
       "hash_kind": "text-lf",
-      "bytes": 11249
+      "bytes": 11690
     },
     {
       "path": "third_party/cangjie/extractors/case-extractor.md",

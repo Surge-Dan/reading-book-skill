@@ -26,7 +26,7 @@ def main():
             page=browser.new_page(viewport={'width':1280,'height':900},accept_downloads=True)
             page.on('pageerror',lambda error:errors.append(str(error)))
             page.goto('http://127.0.0.1:55997/results/'+JOB+'.html',wait_until='networkidle')
-            assert '部分解读' in page.locator('#ebookQuality').inner_text()
+            assert '部分解读' in page.locator('[data-reading-section="references"]').text_content()
             assert page.locator('[data-reading-section="review"] p').count()>=2
             assert page.get_by_role('heading',name='RIA 方法',exact=True).count()==0
             assert not page.evaluate('document.documentElement.scrollWidth>innerWidth')

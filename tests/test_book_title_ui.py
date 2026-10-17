@@ -47,12 +47,12 @@ class TitleBrowserTests(unittest.TestCase):
             try:
                 page = browser.new_page()
                 page.set_content(offline_page(a, '基于公开资料，未核验全文'), wait_until='load')
-                self.assertIn('未核验全文', page.locator('#ebookQuality').inner_text())
+                self.assertIn('未核验全文', page.locator('[data-reading-section="references"]').text_content())
                 footers = page.evaluate("""async () => {const art=ReadingShareArtwork.createDigest({analysis:EBOOK_RESULT.analysis});const out=[];for(const ratio of ['1:1','3:4','4:5']){const pages=await art.pages([{id:'x',title:'观点',text:'测试内容'.repeat(1000)}],ratio);for(const p of pages){const c=await art.render(p,ratio);out.push(c.readingLayout.text.filter(t=>t.role==='footer').map(t=>t.text).join(' '));}}return out;}""")
                 self.assertTrue(all('未核验全文' in text for text in footers))
             finally: browser.close()
 
-    def test_single_copy_keeps_decision_sources_and_ai_case_label(self):
+    def test_single_copy_keeps_content_and_case_origin_sources_stay_in_references(self):
         a = analysis_reply(); source = a['themes'][0]['sources'][0]
         source.update(source_type='author',url='https://example.org/book')
         method = {'id':'m1','title':'检查','trigger':'条件明确','steps':['记录问题'],'boundaries':['条件不明停止'],
@@ -68,9 +68,11 @@ class TitleBrowserTests(unittest.TestCase):
                 decision = page.locator('#ebookResult details').filter(has=page.locator('summary',has_text='决策速查'))
                 decision.locator(':scope > summary').click()
                 decision.get_by_role('button',name='复制这条').click()
-                with self.subTest('decision source'):
+                with self.subTest('decision content'):
                     copied = page.evaluate('window.copied')
-                    for value in (source['quote'],source['element_id'],'作者公开资料',source['url']): self.assertIn(value, copied)
+                    for value in ('比较方案','记录问题','未核验全文'): self.assertIn(value, copied)
+                    self.assertNotIn(source['url'], copied)
+                    self.assertIn(source['quote'],page.locator('[data-reading-section="references"]').text_content())
                 case = page.locator('#ebookResult article').filter(has=page.get_by_role('heading',name='练习',exact=True))
                 case.get_by_role('button',name='复制这条').click()
                 with self.subTest('case origin'): self.assertIn('不是原书案例', page.evaluate('window.copied'))
